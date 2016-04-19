@@ -13,7 +13,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access public
      */
     public $mib_file_name = false;
@@ -23,7 +23,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access private
      */
     private $mib_file = false;
@@ -33,7 +33,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access private
      */
     private $mib_object = false;
@@ -43,7 +43,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access public
      */
     public $mib_directory = false;
@@ -55,7 +55,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access private
      */
     private $oid = false;
@@ -65,7 +65,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access private
      */
     private $mib_trap = false;
@@ -75,7 +75,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access public
      */
     public $file = false;
@@ -85,7 +85,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access public
      */
     public $trap_parsed = false;
@@ -95,7 +95,7 @@ class Snmp_read_MIB {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|array
      * @access public
      */
     public $trap_objects = false;
@@ -174,6 +174,7 @@ class Snmp_read_MIB {
      */
     public function read_mib_directory () {
         if ($handle = opendir($this->mib_directory)) {
+            $out = array();
             while (false !== ($entry = readdir($handle))) {
                 if (strpos($entry, ".txt")!==false || strpos($entry, ".my")!==false || strpos($entry, ".mib")!==false) {
                     $out[] = $entry;
@@ -389,7 +390,7 @@ class Trap_read extends Snmp_read_MIB {
      *
      * (default value: 100)
      *
-     * @var int
+     * @var int|string
      * @access private
      */
     private $print_limit = 100;             // result limit
@@ -408,7 +409,7 @@ class Trap_read extends Snmp_read_MIB {
 	 * @var mixed
 	 * @access protected
 	 */
-	protected $Resut;
+	protected $Result;
 
 	/**
 	 * severities
@@ -582,6 +583,9 @@ class Trap_read extends Snmp_read_MIB {
 	private function fetch_multiple_severities ($severities) {
         // define search
         if (sizeof($severities)>0) {
+            $tmp = array();
+            $tmp_sev = array();
+            // loo)
         	foreach ($severities as $s) {
             	$tmp[] = "severity = ?";
             	$tmp_sev[] = $s;
@@ -685,7 +689,7 @@ class Trap_update extends Trap_read {
 	 * @var mixed
 	 * @access protected
 	 */
-	protected $Resut;
+	protected $Result;
 
 
 

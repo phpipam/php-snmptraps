@@ -18,6 +18,14 @@ class Trap {
     public $message = false;
 
     /**
+     * Message details
+     *
+     * @var mixed
+     * @access public
+     */
+    public $message_details;
+
+    /**
      * message details
      *
      * @var mixed
@@ -550,11 +558,11 @@ class Trap {
      * @return void
      */
     private function write_error ($error = "") {
-        // init
-        $Trap_file = new Trap_file;
         // create object
         $err_obj = new StdClass ();
         $err_obj->Error = $error;
+        // init
+        $Trap_file = new Trap_file ($err_obj);
         // write
         $Trap_file->write_error ($error);
     }
@@ -654,7 +662,6 @@ class Trap_file {
      * Opens file for writing (appending)
      *
      * @access private
-     * @param mixed $filename
      * @return void
      */
     private function open_file () {

@@ -82,6 +82,7 @@ class Result {
 			}
 			// multiple - format
 			else {
+    			$out = array();
 				foreach( $text as $l ) { $out[] = "\t* $l"; }
 				// join
 				$text = implode("\n", $out);
@@ -130,6 +131,7 @@ class Result {
 			// change danger to error for popup
 			$htext = $class==="danger" ? "error" : $class;
 
+            $out = array();
 			$out[] = '<div class="pHeader">'._(ucwords($htext)).'</div>';
 			$out[] = '<div class="pContent">';
 			$out[] = '<div class="alert alert-'.$class.'">'.$text.'</div>';

@@ -43,7 +43,7 @@ class User extends Common_functions {
 	 *
 	 * @access public
 	 */
-	public function __construct (Database_PDO $database, $api = false) {
+	public function __construct (Database_PDO $database) {
         # set result
         $this->Result = new Result ();
 		# Save database object
@@ -75,15 +75,12 @@ class User extends Common_functions {
 	 * @return void
 	 */
 	private function register_session () {
-		// not for api
-		if ($this->api !== true) {
-			//set session name
-			$this->set_session_name();
-			//register session
-			session_name($this->sessname);
-			if(@$_SESSION===NULL) {
-			session_start();
-			}
+		//set session name
+		$this->set_session_name();
+		//register session
+		session_name($this->sessname);
+		if(@$_SESSION===NULL) {
+		session_start();
 		}
 	}
 
@@ -116,10 +113,7 @@ class User extends Common_functions {
 	 * @return void
 	 */
 	private function write_session_parameters () {
-		// not for api
-		if ($this->api !== true) {
-			$_SESSION['trapusername'] = $this->user->username;
-		}
+        $_SESSION['trapusername'] = $this->user->username;
 	}
 
 	/**
@@ -176,8 +170,6 @@ class User extends Common_functions {
 
 			# error print for AJAX
 			if(@$_SERVER['HTTP_X_REQUESTED_WITH'] == "XMLHttpRequest") {
-				# for AJAX always check origin
-				$this->check_referrer ();
 				# kill session
 				$this->destroy_session ();
 				# error
@@ -283,7 +275,6 @@ class User extends Common_functions {
 	 *	http://adldap.sourceforge.net
 	 *
 	 * @access private
-  	 * @param array $ad
   	 * @param mixed $username
 	 * @param mixed $password
 	 * @return void
@@ -298,7 +289,7 @@ class User extends Common_functions {
 				# save to session
 				$this->write_session_parameters();
 
-				$this->Result->show("success", _($method . " Login successful"));
+				$this->Result->show("success", _("Login successful"));
 
 				# write last logintime
 				$this->update_login_time();
@@ -335,22 +326,6 @@ class User extends Common_functions {
 		}
 
 		return $dirconn;
-	}
-
-	/**
-	 *	AD (Active directory) authentication function
-	 *
-	 *
-	 * @access private
-	 * @param mixed $username
-	 * @param mixed $password
-	 * @return void
-	 */
-	private function auth_AD ($username, $password) {
-		// parse settings for LDAP connection and store them to array
-		$ad = json_decode($this->authmethodparams, true);
-		// authenticate
-		$this->directory_authenticate($ad, $username, $password);
 	}
 
 
@@ -421,20 +396,6 @@ class User extends Common_functions {
         else                        { return "No crypt types supported"; }
     }
 
-
-
-
-
-
-
-
-
-
-	/**
-	 *	@updating user methods
-	 *	------------------------------
-	 */
-
     /**
      * Updates last users login time
      *
@@ -452,45 +413,5 @@ class User extends Common_functions {
             }
         }
     }
-
-	/**
-	 * User self update method
-	 *
-	 * @access public
-	 * @param mixed $post //posted user details
-	 * @return void
-	 */
-	public function self_update($post) {
-		# set items to update
-		$items  = array("real_name"=>$post['real_name'],
-						"mailNotify"=>$post['mailNotify'],
-						"mailChangelog"=>$post['mailChangelog'],
-						"email"=>$post['email'],
-						"lang"=>$post['lang'],
-						"id"=>$this->user->id,
-						//display
-						"compressOverride"=>$post['compressOverride'],
-						"hideFreeRange"=>$this->verify_checkbox(@$post['hideFreeRange']),
-						"printLimit"=>@$post['printLimit']
-						);
-		if(strlen($post['password1'])>0) {
-		$items['password'] = $this->crypt_user_pass ($post['password1']);
-		}
-
-	    # prepare log file
-	    $log = $this->array_to_log ($post);
-
-		# update
-		try { $this->Database->updateObject("users", $items); }
-		catch (Exception $e) {
-			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
-			return false;
-		}
-		# update language
-		$this->update_session_language ();
-
-		# ok, update log table
-	    return true;
-	}
 }
 ?>

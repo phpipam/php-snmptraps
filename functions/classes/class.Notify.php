@@ -37,6 +37,14 @@ class Trap_notify {
     protected $trap_details;
 
     /**
+     * Database handler
+     *
+     * @var mixed
+     * @access protected
+     */
+    protected $Database;
+
+    /**
      * filename to write errors to
      *
      * @var mixed
@@ -105,8 +113,6 @@ class Trap_notify {
      * Send notification function.
      *
      * @access public
-     * @param mixed $message_details
-     * @param bool $use_database (default: false)
      * @return void
      */
     public function send_notification () {
@@ -697,7 +703,7 @@ class pushover {
      * @var int
      * @access private
      */
-    private $p_prioroty = 0;
+    private $p_priority = 0;
 
 
     /**

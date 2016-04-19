@@ -14,7 +14,7 @@ class Table_print_snmp {
      * @var mixed
      * @access protected
      */
-    protected $Resut;
+    protected $Result;
 
     /**
      * Default print limit
@@ -25,6 +25,14 @@ class Table_print_snmp {
      * @access public
      */
     public $print_limit = 100;
+
+    /**
+     * Table fields to display
+     *
+     * @var mixed|array
+     * @access public
+     */
+    public $tfields;
 
 
     /**
@@ -114,6 +122,7 @@ class Table_print_snmp {
         // format
         $item = $this->format_snmp_table_content ($item, true);
         // print if some
+        $html = array();
         foreach ($this->tfields as $k=>$l) {
             $html[] = "<tr class='$severity'>";
             $html[] = "<td class='field-$k'>$l</td>";
@@ -242,7 +251,8 @@ class Table_print_snmp {
      * Formats hostname
      *
      * @access private
-     * @param mixed $hostname
+     * @param mixed $severity
+     * @param bool $single
      * @return void
      */
     private function format_snmp_table_severity ($severity, $single) {
@@ -254,6 +264,7 @@ class Table_print_snmp {
      *
      * @access private
      * @param mixed $hostname
+     * @param mixed $single
      * @return void
      */
     private function format_snmp_table_hostname ($hostname, $single) {
@@ -473,8 +484,8 @@ class Table_print extends Table_print_snmp {
      *    ["Extra"]=> string(0) ""
      *
      * @access public
-     * @param object $fieldf
-     * @param mixed $valuef
+     * @param object $field
+     * @param bool|mixed $value
      * @return void
      */
     public function prepare_input_item ($field, $value = false) {
@@ -632,6 +643,9 @@ class Table_print extends Table_print_snmp {
     private function prepare_date_input ($field, $value) {
         // value
         $value = $value===false ? "" : "value='$value'";
+
+        // init
+        $html = array();
 
         // just for first
         if($this->datetimeset===false) {
