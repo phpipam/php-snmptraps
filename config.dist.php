@@ -76,6 +76,7 @@ $filename = "/tmp/traps.txt";
  *  otherwise provide array of required methods:
  *      - pushover
  *      - mail
+ *      - sms
  *      - custom (read docs)
  *
  * @var bool
