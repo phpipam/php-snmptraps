@@ -13,25 +13,6 @@ CREATE TABLE `exceptions` (
   UNIQUE KEY `oid` (`oid`,`content`,`hostname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `exceptions` WRITE;
-/*!40000 ALTER TABLE `exceptions` DISABLE KEYS */;
-
-INSERT INTO `exceptions` (`id`, `oid`, `hostname`, `content`, `comment`)
-VALUES
-	(1,'CISCO-SYSLOG-MIB::clogMessageGenerated','osr2','EARL L3 ASIC: Non-fatal interrupt FIB interrupt','Ignore EARL L3 ASIC: Non-fatal interrupt FIB interrupt for osr2'),
-	(2,'CISCO-SYSLOG-MIB::clogMessageGenerated','all','Deny IP teardrop fragment',NULL),
-	(3,'CISCO-SMI::cisco.0.1','all','synReceived','ssh attempt'),
-	(4,'CISCO-SMI::ciscoMgmt.43.2.0.1','all','','snmp traps'),
-	(5,'CISCO-SYSLOG-MIB::clogMessageGenerated','all','ASA-2-106020','%ASA-2-106020: Deny IP teardrop fragment '),
-	(6,'CISCO-SYSLOG-MIB::clogMessageGenerated','all','ASA-3-710003','%ASA-3-710003: TCP access denied by ACL '),
-	(7,'CISCO-SMI::ciscoMgmt','all','IEEE8021-PAE-MIB::dot1xAuthPaeState',NULL),
-	(8,'CISCO-CONFIG-MAN-MIB::ciscoConfigManEvent','all',NULL,'Ignore - config change traps'),
-	(9,'CISCO-IF-EXTENSION-MIB::cieLinkDown','all',NULL,NULL),
-	(10,'CISCO-IF-EXTENSION-MIB::cieLinkUp','all',NULL,NULL);
-
-/*!40000 ALTER TABLE `exceptions` ENABLE KEYS */;
-UNLOCK TABLES;
-
 
 # Dump of table maintaneance
 # ------------------------------------------------------------

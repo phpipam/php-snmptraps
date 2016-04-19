@@ -116,14 +116,14 @@ $notification_params['sms'] = array(
  * @var array
  */
 $notification_params['mail'] = array (
-    "type"=>"smtp",                         // mailserver type ('localhost','smtp')
+    "type"=>"localhost",                    // mailserver type ('localhost','smtp')
     "server"=>array("127.0.0.1"),           // array of mailservers
     "port"=>25,                             // smtp port number
     "security"=>"none",                     // security type ('none','ssl','tls')
     "auth"=>false,                          // authentication (true, false)
     "user"=>"",                             // username for smtp auth
     "pass"=>"",                             // password for smtp auth
-    "from"=>"lan-trap@domain.si"            // as who to send mail
+    "from"=>"lsnmptraps@domain.si"          // as who to send mail
 );
 
 /**
@@ -164,7 +164,7 @@ $url = "http:/127.0.0.1/";
  * @var array
  */
 $ad = array (
-    'base_dn'=>"CN=domain,CN=local",
+    'base_dn'=>"DC=domain,DC=local",
     'ad_port'=>389,
     'account_suffix'=>"domain.local",
     'domain_controllers'=>array("127.0.0.1")
