@@ -12,7 +12,7 @@ class Trap {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|object|array
      * @access public
      */
     public $message = false;
@@ -20,7 +20,7 @@ class Trap {
     /**
      * Message details
      *
-     * @var mixed
+     * @var mixed|object|array
      * @access public
      */
     public $message_details;
@@ -57,7 +57,7 @@ class Trap {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|string
      * @access public
      */
     public $oid_file = false;
@@ -86,7 +86,6 @@ class Trap {
      *
      * @access public
      * @param mixed $message
-     * @return void
      */
     public function __construct ($message) {
         # save message
@@ -178,7 +177,9 @@ class Trap {
     private function set_content () {
         // if some
         if (sizeof($this->message)>4) {
-            for ($m=4; $m<sizeof($this->message); $m++) {
+            $size = sizeof($this->message);
+            // loop
+            for ($m=4; $m<$size; $m++) {
                 // it must match OID
                 if (strpos($this->message[$m], $this->oid_file)!==false) {
                     // separate oid from content
@@ -197,7 +198,8 @@ class Trap {
 
             # if none then save all
             if (!isset($this->message_details->content) || sizeof($this->message_details->content)==0) {
-            for ($m=4; $m<sizeof($this->message); $m++) {
+            $size = sizeof($this->message);
+            for ($m=4; $m<$size; $m++) {
                 // separate oid from content
                 $content = trim(strstr($this->message[$m], " "));
                 $oid = trim(strstr($this->message[$m], " ", true));
@@ -609,7 +611,7 @@ class Trap_file {
      *
      * (default value: false)
      *
-     * @var bool
+     * @var bool|object
      * @access private
      */
     private $file_handler = false;
@@ -638,7 +640,6 @@ class Trap_file {
      *
      * @access public
      * @param mixed $trap
-     * @return void
      */
     public function __construct($trap) {
         // save trap

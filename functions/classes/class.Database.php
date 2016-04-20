@@ -9,6 +9,16 @@ abstract class DB {
 
 
     /**
+     * Debugging flag
+     *
+     * (default value: false)
+     *
+     * @var bool
+     * @access protected
+     */
+    protected $debug = false;
+
+    /**
      * Default db username
      *
      * (default value: null)
@@ -56,7 +66,7 @@ abstract class DB {
      * @var string
      * @access public
      */
-    public $dbname     = '';        // needed for DB check
+    public $dbname = '';        // needed for DB check
 
     /**
      * hosnamr
@@ -66,7 +76,7 @@ abstract class DB {
      * @var string
      * @access protected
      */
-    protected $host     = 'localhost';
+    protected $host = 'localhost';
 
     /**
      * Default port number
@@ -76,7 +86,17 @@ abstract class DB {
      * @var string
      * @access protected
      */
-    protected $port     = '3306';
+    protected $port = '3306';
+
+    /**
+     * ssl
+     *
+     * (default value: false)
+     *
+     * @var bool
+     * @access protected
+     */
+    protected $ssl = false;
 
 
 
@@ -90,7 +110,6 @@ abstract class DB {
      * @param mixed $password (default: null)
      * @param mixed $charset (default: null)
      * @param mixed $ssl (default: null)
-     * @return void
      */
     public function __construct($username = null, $password = null, $charset = null, $ssl = null) {
         if (isset($username)) $this->username = $username;
@@ -166,7 +185,6 @@ abstract class DB {
      */
     public function resetConn() {
         unset($this->pdo);
-        $this->install = false;
     }
 
     /**
@@ -178,7 +196,6 @@ abstract class DB {
      */
     private function log_query ($query) {
         if($this->debug) {
-
             $myFile = "/tmp/queries.txt";
             $fh = fopen($myFile, 'a') or die("can't open file");
             fwrite($fh, $query->queryString."\n");
@@ -331,7 +348,6 @@ abstract class DB {
         //we cannot update an object without an id specified so quit
         if (!isset($obj[$primarykey])) {
             throw new Exception('Missing primary key');
-            return false;
         }
 
         $tableName = $this->escape($tableName);
@@ -465,7 +481,7 @@ abstract class DB {
      * @return void
      */
     public function objectExists($tableName, $query = null, $values = array(), $id = null) {
-        return is_object($this->getObject($tableName, $query, $values, $id));
+        return is_object($this->getObject($tableName, $id));
     }
 
     /**
@@ -721,9 +737,9 @@ abstract class DB {
     /**
     * Delete an object from the database
     *
-    * @param {string} table name
-    * @param {int} object id
-    * @return {boolean} success
+    * @param string table name
+    * @param int object id
+    * @return bool success
     */
     public function deleteObject($tableName, $id) {
         $tableName = $this->escape($tableName);
@@ -734,9 +750,9 @@ abstract class DB {
     /**
     * Delete a list of objects from the database
     *
-    * @param {string} table name
-    * @param {array} list of ids
-    * @return {boolean} success
+    * @param string table name
+    * @param array list of ids
+    * @return bool success
     */
     public function deleteObjects($tableName, $ids) {
         $tableName = $this->escape($tableName);
@@ -750,9 +766,9 @@ abstract class DB {
      * Delete specified row
      *
      * @access public
-     * @param {string} $tableName
-     * @param {string $field
-     * @param {string $value
+     * @param string $tableName
+     * @param string $field
+     * @param string $value
      * @return void
      */
     public function deleteRow($tableName, $field, $value, $field2=null, $value2 = null) {
@@ -770,7 +786,7 @@ abstract class DB {
      * truncate specified table
      *
      * @access public
-     * @param {string} $tableName
+     * @param string $tableName
      * @return void
      */
     public function emptyTable($tableName) {
@@ -816,16 +832,6 @@ class Database_PDO extends DB {
     protected $pdo_ssl_opts = array ();
 
     /**
-     * flag if installation is happenig!
-     *
-     * (default value: false)
-     *
-     * @var bool
-     * @access public
-     */
-    public $install = false;
-
-    /**
      * Debugging flag
      *
      * (default value: false)
@@ -867,6 +873,7 @@ class Database_PDO extends DB {
         $host==null     ? : $this->host = $host;
         $port==null     ? : $this->port = $port;
         $dbname==null     ? : $this->dbname = $dbname;
+        $dbname==null     ? : $this->charset = $charset;
 
         $this->Result = new Result ;
 
@@ -932,9 +939,7 @@ class Database_PDO extends DB {
      * @return void
      */
     protected function makeDsn() {
-        # for installation
-        if($this->install)    { return 'mysql:host=' . $this->host . ';port=' . $this->port . ';charset=' . $this->charset; }
-        else                { return 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbname . ';charset=' . $this->charset; }
+        return 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbname . ';charset=' . $this->charset;
     }
 
     /**
@@ -1021,7 +1026,6 @@ class Database_wrapper extends Database_PDO {
      * @param mixed $table
      * @param mixed $sortField (default:id)
      * @param mixed bool (default:true)
-     * @return void
      */
     public function fetch_all_objects ($table=null, $sortField="id", $sortAsc=true) {
         # null table

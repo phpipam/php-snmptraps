@@ -29,16 +29,6 @@ class Snmp_read_MIB {
     private $mib_file = false;
 
     /**
-     * Mib object - extracted from OID
-     *
-     * (default value: false)
-     *
-     * @var bool|string
-     * @access private
-     */
-    private $mib_object = false;
-
-    /**
      * Directory of mib files
      *
      * (default value: false)
@@ -426,10 +416,13 @@ class Trap_read extends Snmp_read_MIB {
 
 
 
+
 	/**
-	 * __construct function
+	 * __construct function.
 	 *
 	 * @access public
+	 * @param Database_PDO $database
+	 * @param int $print_limit (default: 100)
 	 */
 	public function __construct (Database_PDO $database, $print_limit = 100) {
 		# Save database object
