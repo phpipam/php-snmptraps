@@ -321,6 +321,7 @@ class Trap {
                         else                                            { $this->message_details->msg = "Interface ".$c[1]. " IPv6 state change"; }
                     }
                     elseif ($c[0] == "ifDescr")                         { $this->message_details->msg .= " (".$c[1].")"; }
+                    elseif ($c[0] == "ifAlias")                         { $this->message_details->msg .= " ".$c[1]; }
                 }
             }
         }
@@ -339,8 +340,8 @@ class Trap {
                 // explode
                 $c = explode(" ", $c);
                 // check - first name, then status
-                if (strpos($c[0], "ifName")!==false)                { $this->message_details->msg .= " Interface ".$c[1];    $this->message_details->content[] = "IF-MIB::ifName => ".$c[1]; }
-                elseif (strpos($c[0], "vtpVlanIndex")!==false)      { $this->message_details->msg .= " vlan ".$c[1];         $this->message_details->content[] = "CISCO-VTP-MIB::vtpVlanIndex => ".$c[1];  }
+                if (strpos($c[0], "ifName")!==false)                { $this->message_details->msg .= " :: Interface ".$c[1];    $this->message_details->content[] = "IF-MIB::ifName => ".trim($c[1]); }
+                elseif (strpos($c[0], "vtpVlanIndex")!==false)      { $this->message_details->msg .= " :: vlan ".$c[1];         $this->message_details->content[] = "CISCO-VTP-MIB::vtpVlanIndex => ".trim($c[1]);  }
             }
         }
     }
@@ -357,7 +358,7 @@ class Trap {
                 // explode
                 $c = explode(" => ", $c);
                 // check
-                if(strpos($c[0], "cikePeerRemoteAddr")!==false)        { $this->message_details->msg .= " peer ".$this->hex_to_ip($c[1]);  $this->message_details->content[] = "Remote address => ".$this->hex_to_ip($c[1]); }
+                if(strpos($c[0], "cikePeerRemoteAddr")!==false)        { $this->message_details->msg .= " :: peer ".$this->hex_to_ip($c[1]);  $this->message_details->content[] = "Remote address => ".$this->hex_to_ip($c[1]); }
                 elseif(strpos($c[0], "cikeTunHistTermReason")!==false) { $this->message_details->msg .= " (".$c[1].")";                 $this->message_details->content[] = "Terminate reason => ".$this->hex_to_ip($c[1]); }
             }
         }
@@ -375,7 +376,7 @@ class Trap {
                 // explode
                 $c = explode(" => ", $c);
                 // check - first name, then status
-                if ($c[0]=="mteHotTrigger")     { $this->message_details->msg .= " ".$c[1]; }
+                if ($c[0]=="mteHotTrigger")     { $this->message_details->msg .= " :: ".$c[1]; }
                 elseif ($c[0]=="mteHotValue")   { $this->message_details->msg .= " (".$c[1]."%)"; }
            }
         }
@@ -393,7 +394,7 @@ class Trap {
                 // explode
                 $c = explode(" ", $c);
                 // check - first name, then status
-                if(strpos($c[0], "authAddr")!==false)  { $this->message_details->msg .= " ".$c[1]; }
+                if(strpos($c[0], "authAddr")!==false)  { $this->message_details->msg .= " :: ".$c[1]; }
            }
         }
     }
@@ -412,8 +413,8 @@ class Trap {
                 $c = explode(" => ", $c);
                 // check
                 if(strpos($c[0], "bgpPeerState")!==false)  {
-                    $this->message_details->msg .= " peer ".str_replace("bgpPeerState.", "", $c[0]);
-                    $this->message_details->msg .= " (".$c[1].")";
+                    $this->message_details->msg .= " :: peer ".str_replace("bgpPeerState.", "", $c[0]);
+                    $this->message_details->msg .= " (state ".$c[1].")";
                 }
             }
         }
