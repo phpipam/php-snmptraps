@@ -238,9 +238,8 @@ table td.info2,
 .info2,
 .muted {
 	color: #999;
-	text-shadow: 1px 1px 1px white;
-
 	margin: 2px;
+	text-shadow: none !important;
 }
 .info2 checkbox {
 	margin-top: 2px;

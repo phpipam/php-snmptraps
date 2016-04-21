@@ -375,8 +375,7 @@ table.table-condensed td {
 table td.info2,
 .info2,
 .muted {
-	color: #999;
-	text-shadow: 1px 1px 1px white;
+	color: #504d4d;
 
 	margin: 2px;
 }

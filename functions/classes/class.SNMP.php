@@ -654,6 +654,54 @@ class Trap_read extends Snmp_read_MIB {
 		# return
 		return sizeof($traps)>0 ? $traps : false;
 	}
+
+	/**
+	 * Searches database for traps.
+	 *
+	 * @access public
+	 * @param array $post (default: array())
+	 * @return void
+	 */
+	public function search_traps ($post = array()) {
+    	# init arrays
+    	$query = array();
+    	$values = array();
+
+    	# set query
+    	$query[] = "select * from `traps` ";
+    	// severity
+    	if(isset($post['severity'])) {
+        	$query[]  = " where `severity` = ? ";
+        	$values[] = $post['severity'];
+    	}
+    	// hostname
+    	if (isset($post['hostname'])) {
+        	$query[]  = sizeof($query)>1 ? " and `hostname` = ? " : " where `hostname` = ? ";
+        	$values[] = $post['hostname'];
+    	}
+    	// date
+    	if (isset($post['start_date'])) {
+        	$query[]  = sizeof($query)>1 ? " and `date` between ? and ? " : " where `date` between ? and ? ";
+        	$values[] = $post['start_date'];
+        	$values[] = $post['stop_date'];
+    	}
+    	// message
+    	if (isset($post['message'])) {
+        	$query[]  = sizeof($query)>1 ? " and `message` like ? " : " where `message` like ? ";
+        	$values[] = "%".$post['message']."%";
+    	}
+    	// limit
+    	$query[] = " order by `id` $post[order] limit ".$this->print_limit.";";
+
+ 		# execute
+		try { $traps = $this->Database->getObjectsQuery(implode("\n",$query), $values); }
+		catch (Exception $e) {
+			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
+			return false;
+		}
+		# return
+		return sizeof($traps)>0 ? $traps : false;
+	}
 }
 
 
