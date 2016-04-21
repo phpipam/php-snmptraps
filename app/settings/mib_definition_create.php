@@ -19,6 +19,9 @@ $User->is_admin ();
 $Snmp_read_MIB = new Snmp_read_MIB;
 $Snmp_read_MIB->set_mib_directory ($mib_directory);
 
+# trap
+$Trap_read = new Trap_read ($Database);
+
 
 // set items
 $mib = new StdClass;
@@ -30,49 +33,62 @@ $tmp = $Snmp_read_MIB->read_mib_file ($_GET['mibfile']);
 // save
 $mib->notification_objects_full = $Snmp_read_MIB->detect_mib_objects ();
 // save oid
-$mib->oid = $Snmp_read_MIB->detect_mib_oid();
+$mib->oid = $Snmp_read_MIB->detect_mib_oid ();
 
 // title
-$title = "Create new severity definition";
+$title = "Create new severity definitions from MIB";
 
 // content
 $html[] = " <form id='modal-form'>";
 $html[] = " <table class='table table-striped table-noborder table-condensed'>";
 
-// select notification
+// headers
 $html[] = " <tr>";
-$html[] = " <td>Select notification:</td>";
-$html[] = " <td>";
-$html[] = " <select name='oid' class='form-control input-sm input-w-auto'>";
-foreach ($mib->notification_objects_full as $o) {
-$html[] = " <option value='$mib->oid::$o'>$o</option>";
-}
-$html[] = " </select>";
-$html[] = " </td>";
+$html[] = " <th>Notification</th>";
+$html[] = " <th>Severity</th>";
+$html[] = " <th>Old severity</th>";
+$html[] = " <th>Comment</th>";
 $html[] = " </tr>";
+
+$html[] = " <tr>";
+$html[] = " <th colspan='4'><hr></th>";
+$html[] = " </tr>";
+
+// content
+foreach ($mib->notification_objects_full as $k=>$o) {
+
+$Trap_read->process_oid ("$mib->oid::$o");
+
+// check if it exists and set
+$item = $Trap_read->fetch_severity_definition ("$mib->oid::$o");
+if($item===false)   { $oldseverity = "new item"; $item = new StdClass(); $item->comment = str_replace(array("'", "\""), "", $Trap_read->trap_description); }
+else                { $oldseverity = $item->severity; }
+
+$html[] = " <tr>";
+// notification
+$html[] = " <td>";
+$html[] = " $o";
+$html[] = " <input type='hidden' name='oid-$k' value='$mib->oid::$o'>";
+$html[] = " </td>";
 // severity
-$html[] = " <tr>";
-$html[] = " <td>Select severity:</td>";
 $html[] = " <td>";
-$html[] = " <select name='severity' class='form-control input-sm input-w-auto'>";
+$html[] = " <select class='form-control input-sm' name='severity-$k'>";
 foreach ($Snmp_read_MIB->define_severities() as $s) {
-$html[] = " <option value='$s'>$s</option>";
+# selected
+$selected = $oldseverity==$s ? "selected" : "";
+$html[] = " <option value='$s' $selected>$s</option>";
 }
 $html[] = " </select>";
 $html[] = " </td>";
-$html[] = " </tr>";
+// old severity
+$html[] = " <td class='text-center'>$oldseverity</td>";
 // comment
-$html[] = " <tr>";
-$html[] = " <td>Comment:</td>";
 $html[] = " <td>";
-$html[] = " <input type='text' name='comment' class='form-control input-sm'></input";
+$html[] = " <input type='text' name='comment-$k' class='form-control input-sm' value='$item->comment'>";
 $html[] = " </select>";
-$html[] = " </td>";
-$html[] = " </tr>";
 
-
-$html[] = " <input type='hidden' name='script' value='severity_definitions'>";
-$html[] = " <input type='hidden' name='action' value='add'>";
+}
+// end
 $html[] = "</table>";
 $html[] = " </form>";
 
@@ -82,5 +98,5 @@ $content = implode("\n", $html);
 
 
 # print modal
-$Modal->modal_print ($title, $content, "Add", "app/settings/item-submit.php");
+$Modal->modal_print ($title, $content, "Create", "app/settings/mib-definitions-save.php");
 ?>

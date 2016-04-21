@@ -201,6 +201,7 @@ class Snmp_read_MIB {
         // make sure file exists
         if (file_exists($this->mib_directory.$this->mib_file.".my"))      { $this->mib_file_name = $this->mib_directory.$this->mib_file.".my"; }
         elseif (file_exists($this->mib_directory.$this->mib_file.".txt")) { $this->mib_file_name = $this->mib_directory.$this->mib_file.".txt"; }
+        elseif (file_exists($this->mib_directory.$this->mib_file.".mib")) { $this->mib_file_name = $this->mib_directory.$this->mib_file.".mib"; }
         else                                                              { return false; }
     }
 
@@ -214,7 +215,7 @@ class Snmp_read_MIB {
     public function read_mib_file ($filename=false) {
         if($filename!==false)   { $this->mib_file_name = $filename; }
         // we only allow .txt and .my
-        if (strpos($filename, ".txt")!==false || strpos($filename, ".my")!==false || strpos($filename, ".mib")!==false) {
+        if (strpos($this->mib_file_name, ".txt")!==false || strpos($this->mib_file_name, ".my")!==false || strpos($this->mib_file_name, ".mib")!==false) {
             // read file and put it to array
             $file_h = fopen($this->mib_file_name,"r");
             if (filesize($this->mib_file_name)>0) {
@@ -472,6 +473,14 @@ class Trap_read extends Snmp_read_MIB {
      *  @check database methods ---------------------
      */
 
+    /**
+     * fetch_severity_definition function.
+     *
+     * @access public
+     * @param mixed $oid
+     * @param mixed $content (default: null)
+     * @return void
+     */
     public function fetch_severity_definition ($oid, $content = null) {
         # set query
         if (is_null($content))  { $query = "select * from `severity_definitions` where `oid` = ?;"; $values = array($oid); }
