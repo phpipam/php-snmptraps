@@ -125,8 +125,12 @@ class Table_print_snmp {
         // print if some
         $html = array();
         foreach ($this->tfields as $k=>$l) {
+            // add hr for raw
+            if($k=="content")   { $item->$k = "<hr>".$item->$k; }
+            elseif($k=="raw")   { $item->$k = "<hr>".$item->$k."<hr>"; }
+
             $html[] = "<tr class='$severity'>";
-            $html[] = "<td class='field-$k'>$l</td>";
+            $html[] = "<td style='vertical-align: middle !important;' class='field-$k'>$l</td>";
             $html[] = "<td class='field-$k'>".$item->$k."</td>";
             $html[] = "</tr>";
         }
@@ -316,6 +320,7 @@ class Table_print_snmp {
      * @return void
      */
     private function format_snmp_table_content_breaks ($content, $single) {
+        return implode("<br>",array_filter(explode("\n", $content)));
         return str_replace("\n", "<br>", $content);
     }
 

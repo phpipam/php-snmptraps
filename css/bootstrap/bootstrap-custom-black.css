@@ -210,6 +210,9 @@ table.snmp tr:hover td {
 table.snmp tr.danger td.field-message a {
     color: #a7254e;
 }
+.modal td.field-message a {
+    font-size: 13px;
+}
 table.snmp tr.warning td.field-message a {
     color: #D66300;
 }

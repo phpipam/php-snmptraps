@@ -76,6 +76,16 @@ $ad = array (
 $filename = "/tmp/traps.txt";
 
 /**
+ * Default MIB directory
+ *
+ * (default value: "/usr/share/snmp/mibs/")
+ *
+ * @var string
+ * @access public
+ */
+$mib_directory = "/usr/share/snmp/mibs/";
+
+/**
  * Send notifications flag
  *
  * false to not send

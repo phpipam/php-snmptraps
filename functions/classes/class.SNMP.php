@@ -31,12 +31,12 @@ class Snmp_read_MIB {
     /**
      * Directory of mib files
      *
-     * (default value: false)
+     * (default value: "/usr/share/snmp/mibs/")
      *
      * @var bool|string
      * @access public
      */
-    public $mib_directory = false;
+    public $mib_directory = "/usr/share/snmp/mibs/";
 
     /**
      * OID from trap
@@ -118,7 +118,7 @@ class Snmp_read_MIB {
         // save OID
         $this->oid = $oid;
         // set directory for MIB files
-        $this->set_mib_direcotry ();
+        $this->set_mib_directory ();
         // verify and set file
         $this->verify_mib_file ($oid);
         // if not existing die
@@ -151,8 +151,8 @@ class Snmp_read_MIB {
      * @param bool $dir (default: false)
      * @return void
      */
-    public function set_mib_direcotry ($dir = false) {
-        if ($dir!==false)                       { $this->mib_directory = $dir; }
+    public function set_mib_directory ($dir = false) {
+        if ($dir!==false && strlen($dir)>0)     { $this->mib_directory = $dir; }
         elseif ($this->mib_directory===false)   { $this->mib_directory = "/usr/share/snmp/mibs/"; }
     }
 
@@ -163,16 +163,21 @@ class Snmp_read_MIB {
      * @return void
      */
     public function read_mib_directory () {
-        if ($handle = opendir($this->mib_directory)) {
-            $out = array();
-            while (false !== ($entry = readdir($handle))) {
-                if (strpos($entry, ".txt")!==false || strpos($entry, ".my")!==false || strpos($entry, ".mib")!==false) {
-                    $out[] = $entry;
+        if (file_exists($this->mib_directory)) {
+            if ($handle = opendir($this->mib_directory)) {
+                $out = array();
+                while (false !== ($entry = readdir($handle))) {
+                    if (strpos($entry, ".txt")!==false || strpos($entry, ".my")!==false || strpos($entry, ".mib")!==false) {
+                        $out[] = $entry;
+                    }
                 }
+                closedir($handle);
+                // return
+                return $out;
             }
-            closedir($handle);
-            // return
-            return $out;
+            else {
+                return false;
+            }
         }
         else {
             return false;

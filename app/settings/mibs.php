@@ -14,7 +14,7 @@ Here is a list of MIBS accessible by system to load descriptions etc. You can ch
 
 # SNMP class to read file
 $Snmp_read_MIB = new Snmp_read_MIB;
-$Snmp_read_MIB->set_mib_direcotry ();
+$Snmp_read_MIB->set_mib_directory ($mib_directory);
 
 # make sure user is admin
 $User->is_admin ();
@@ -23,6 +23,7 @@ $User->is_admin ();
 $mibs = $Snmp_read_MIB->read_mib_directory();
 
 // loop and get items
+if ($mibs!==false) {
 foreach ($mibs as $k=>$m) {
     // new array object
     $mibs_processed[$k] = new StdClass;
@@ -45,6 +46,7 @@ foreach ($mibs as $k=>$m) {
     else {
         $mibs_processed[$k]->create_definition = "";
     }
+}
 }
 
 # set fields
