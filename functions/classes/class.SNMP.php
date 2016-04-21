@@ -687,7 +687,8 @@ class Trap_read extends Snmp_read_MIB {
     	}
     	// message
     	if (isset($post['message'])) {
-        	$query[]  = sizeof($query)>1 ? " and `message` like ? " : " where `message` like ? ";
+        	$query[]  = sizeof($query)>1 ? " and (`message` like ? or `content` like ?) " : " where (`message` like ? or `content` like ?) ";
+        	$values[] = "%".$post['message']."%";
         	$values[] = "%".$post['message']."%";
     	}
     	// limit

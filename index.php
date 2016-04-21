@@ -46,7 +46,7 @@ else {
 	<meta http-equiv="X-UA-Compatible" content="chrome=1">
 
 	<!-- title -->
-	<title>Snmptraps</title>
+	<title><?php print $title; ?></title>
 
 	<!-- css -->
 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">

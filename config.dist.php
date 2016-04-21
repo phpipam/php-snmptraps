@@ -8,10 +8,6 @@ $db['pass'] = "snmptrapd";
 $db['name'] = "snmptrapd";
 $db['port'] = 3306;
 
-/*	AD connect details
- ******************************/
-$ad = false;
-
 /**
  * php debugging on/off
  *
@@ -28,11 +24,8 @@ $debugging = true;
 $phpsessname = "snmptrapd";
 
 /**
- *	BASE definition if phpipam
- * 	is not in root directory (e.g. /phpipam/)
- *
- *  Also change
- *	RewriteBase / in .htaccess
+ *	BASE definition if snmptraps
+ * 	is not in root directory (e.g. /snmptraps/)
  ******************************/
 if(!defined('BASE'))
 define('BASE', "/");
@@ -53,6 +46,20 @@ define('BASE', "/");
  * @access public
  */
 $use_database  = true;
+
+/**
+ * AD connection parameters
+ *
+ *  if AD selected for authentication
+ *
+ * @var array
+ */
+$ad = array (
+    'base_dn'=>"DC=domain,DC=local",
+    'ad_port'=>389,
+    'account_suffix'=>"domain.local",
+    'domain_controllers'=>array("127.0.0.1")
+);
 
 /**
  * Write result to file or not ?
@@ -157,17 +164,23 @@ $notification_params['pushover'] = array (
 $url = "http:/127.0.0.1/";
 
 /**
- * Mail parameters
+ * Site title
  *
- *  if Mail selected for notifications
+ * (default value: "Snmptraps server")
  *
- * @var array
+ * @var string
+ * @access public
  */
-$ad = array (
-    'base_dn'=>"DC=domain,DC=local",
-    'ad_port'=>389,
-    'account_suffix'=>"domain.local",
-    'domain_controllers'=>array("127.0.0.1")
-);
+$title = "Snmptraps server";
+
+/**
+ * Footer text
+ *
+ * (default value: "")
+ *
+ * @var string
+ * @access public
+ */
+$footer = "php-snmptrap management";
 
 ?>

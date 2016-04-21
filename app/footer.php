@@ -1,1 +1,1 @@
-php-snmptrap management
+<?php print @$footer . " :: version ". implode(".", $version) ." :: <a href='app/settings/user-self-edit.php' class='load-modal'>". $User->user->real_name."</a>"; ?>

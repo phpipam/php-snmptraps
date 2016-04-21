@@ -91,6 +91,12 @@ a {
 .navbar i {
     margin-right: 8px;
 }
+.dropdown-header {
+    font-size: 14px;
+}
+ul.dropdown-menu li a {
+    font-size: 12px;
+}
 
 
 

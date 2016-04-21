@@ -287,7 +287,7 @@ class sms {
      */
     public function send ($message_details, $recipients) {
         # set content
-        $content = "[".$message_details->hostname."] - ".$message_details->msg." (".$message_details->severity.") \n".implode("\n", $message_details->content);
+        $content = "[".$message_details->hostname."] - ".$message_details->msg." (".$message_details->severity.") \n\n".implode("\n", $message_details->content);
 
         # validate and send
         foreach ($recipients as $r) {
@@ -524,7 +524,7 @@ class mail {
         $body[] = "Date: ".date("d/m H:i:s")."<br>";
         $body[] = "Severity: ".$message_details->severity."<br>";
         $body[] = "OID: ".$message_details->oid."<br>";
-        $body[] = "Content: ".implode("<br>", $message_details->content)."<br>";
+        $body[] = "Content:<br>".implode("<br>&nbsp;&nbsp;&nbsp; ", $message_details->content)."<br>";
         $body[] = "</div>";
 
         # get content
