@@ -17,7 +17,7 @@ $User->is_admin ();
 
 # SNMP class to read file
 $Snmp_read_MIB = new Snmp_read_MIB;
-$Snmp_read_MIB->set_mib_direcotry ();
+$Snmp_read_MIB->set_mib_directory ($mib_directory);
 
 
 // set items
