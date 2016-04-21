@@ -223,6 +223,32 @@ th#header-actions {
 }
 
 
+div.full_screen {
+    position: absolute;
+    width: 100%;
+    top:0px;
+    left: 0px;
+    padding-top: 5px;
+}
+div.full_screen h4,
+div.full_screen hr {
+    display: none;
+}
+th.header-full_screen {
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 1px;
+    white-space: nowrap;
+}
+th.header-full_screen .full_screen_live {
+    background: red;
+}
+th.header-full_screen i {
+    cursor: pointer;
+}
+
+
+
 
 /* @span ----------- */
 table.snmp tr.danger span {

@@ -28,7 +28,7 @@ if (isset($_GET['page'])) {
     # badges
     print "<div class='container-fluid text-right row'>";
     print "<div class='col-lg-6 col-sm-12'></div>";
-    print "<div class='col-lg-6 col-sm-12'>";
+    print "<div class='col-lg-6 col-sm-12 hosts-wrapper'>";
     foreach ($unique_hosts as $h) {
         // ignore unknown
         if ($h->hostname!="<UNKNOWN>") {
@@ -57,7 +57,7 @@ if (isset($_GET['page'])) {
 
     # print table
     print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
-    $Table_print->print_snmp_table ($all_traps);
+    $Table_print->print_snmp_table ($all_traps, true, true, false, true);
     print "</table>";
 }
 else {

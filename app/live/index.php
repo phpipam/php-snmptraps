@@ -34,7 +34,7 @@ print "<div class='container-fluid row'>";
 print "<h4>Live message update</h4><hr>";
 print "<div class='container pull-left'>Messages will be updated each 15 seconds</div>";
 print "<table class='table snmp live sorted table-noborder table-condensed table-hover'>";
-$Table_print->print_snmp_table ($traps);
+$Table_print->print_snmp_table ($traps, true, true, false, true);
 print "</table>";
 
 print "</div>";

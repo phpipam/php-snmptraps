@@ -91,7 +91,7 @@ if ($error!==true) {
 
     # print table
     print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
-    $Table_print->print_snmp_table ($traps);
+    $Table_print->print_snmp_table ($traps, true, true, false, true);
     print "</table>";
 }
 

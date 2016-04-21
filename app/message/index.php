@@ -44,7 +44,7 @@ if(isset($_GET['page'])) {
 
             # structure
             print "<h4>Details for message <strong>$_GET[page]</strong></h4><hr>";
-            print "<div class='container-fluid' style='padding:10px;'>";
+            print "<div class='container-fluid message-wrapper' style='padding:10px;'>";
 
             // print
             print "<table class='table snmp table-noborder table-auto table-condense1d table-hover table-striped'>";
@@ -75,7 +75,7 @@ if (isset($_GET['page'])) {
 
     # print table
     print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
-    $Table_print->print_snmp_table ($all_traps);
+    $Table_print->print_snmp_table ($all_traps, true, true, false, true);
     print "</table>";
 }
 ?>

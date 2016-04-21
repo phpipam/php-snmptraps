@@ -96,14 +96,15 @@ class Table_print_snmp {
      * @param bool $headers
      * @param bool $tbody       //needed for live update
      * @param bool $newClass    //needed for live update
+     * @param bool $fullScreen    //needed for stretch
      * @return void
      */
-    public function print_snmp_table ($table, $headers = true, $tbody = true, $newClass = false) {
+    public function print_snmp_table ($table, $headers = true, $tbody = true, $newClass = false, $fullScreen = false) {
         //headers
         if ($headers)
-        $this->print_snmp_table_headers ();
+        $this->print_snmp_table_headers ($fullScreen);
         //table
-        $this->print_snmp_table_content ($table, $tbody, $newClass);
+        $this->print_snmp_table_content ($table, $tbody, $newClass, $fullScreen);
     }
 
     /**
@@ -138,9 +139,10 @@ class Table_print_snmp {
      * Prints table headers
      *
      * @access protected
+     * @param mixed $fullScreen
      * @return void
      */
-    protected function print_snmp_table_headers () {
+    protected function print_snmp_table_headers ($fullScreen) {
         $html[] = "<thead>";
         $html[] = "<tr>";
         // headers
@@ -150,6 +152,8 @@ class Table_print_snmp {
             // save
             $html[] = "<th id='header-$k' class='$hidden'>$f</th>";
         }
+        if($fullScreen)
+        $html[] = "<th class='header-full_screen disable-sorting'><i class='fa fa-arrows-alt'></i></th>";
         $html[] = "</tr>";
         $html[] = "</thead>";
         // join and print
@@ -163,9 +167,10 @@ class Table_print_snmp {
      * @param mixed $table
      * @param bool $tbody       //needed for live update
      * @param bool $newClass    //needed for live update
+     * @param mixed $fullScreen
      * @return void
      */
-    private function print_snmp_table_content ($table, $tbody = true, $newClass = false) {
+    private function print_snmp_table_content ($table, $tbody = true, $newClass = false, $fullScreen) {
         // start
         if($tbody)
         $html[] = "<tbody>";
@@ -188,15 +193,21 @@ class Table_print_snmp {
                     // save
                     $html[] = "<td class='field-$k $hidden'>".$f->$k."</td>";
                 }
+                // fullscreen
+                if ($fullScreen)
+                $html[] = "<td></td>";
                 $html[] = "</tr>";
             }
         }
         else {
-           $html[] = "<tr>";
-           $html[] = "  <td colspan='".sizeof($this->tfields)."'>";
-           $html[] = $this->Result->show("info", "No records found", false, false, true);
-           $html[] = "  </td>";
-           $html[] = "</tr>";
+            // calculate size
+            $size = $fullScreen ? sizeof($this->tfields)+1 : sizeof($this->tfields);
+            // save
+            $html[] = "<tr>";
+            $html[] = "  <td colspan='$size'>";
+            $html[] = $this->Result->show("info", "No records found", false, false, true);
+            $html[] = "  </td>";
+            $html[] = "</tr>";
         }
         if($tbody)
         $html[] = "</tbody>";

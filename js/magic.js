@@ -92,6 +92,13 @@ function readCookie(name) {
 }
 
 
+$('th.header-full_screen i').click(function() {
+   // toggle fullscreen class
+   $(this).closest('div.container-fluid').toggleClass('full_screen full_screen_live');
+   $('nav.navbar, .search-wrapper, .footer, .hosts-wrapper, .message-wrapper').toggleClass('hidden');
+});
+
+
 
 
 /*	submit login

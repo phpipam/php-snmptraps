@@ -23,7 +23,7 @@ if($unique_hosts!==false) {
 <h4>Search messages</h4><hr>
 
 
-<div class="container-fluid" style="padding: 10px;">
+<div class="container-fluid search-wrapper" style="padding: 10px;">
 <form name="search" id="search" method="post">
 <table class="table table-condensed table-noborder table-auto">
 
