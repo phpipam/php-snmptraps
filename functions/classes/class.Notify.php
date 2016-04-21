@@ -185,7 +185,7 @@ class Trap_notify {
      */
     private function db_get_notification_users () {
         // try to fetch
-		try { $users = $this->Database->getObjectsQuery("select * from `users` where `notification_severities` like ? and CURTIME() not between `quiet_time_start` and `quiet_time_stop`;", array("%".$this->trap_details->severity."%")); }
+		try { $users = $this->Database->getObjectsQuery("select * from `users` where `notification_severities` like ? and CURTIME() not between `quiet_time_start` and '00:00:00' and CURTIME() not between '00:00:00' and `quiet_time_start`;", array("%".$this->trap_details->severity."%")); }
 		catch (Exception $e) {
 			$this->write_error ("Database error: ".$e->getMessage());
 		}

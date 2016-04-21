@@ -64,6 +64,8 @@ else {
     # print title
     print "<h4>Select host</h4>";
 
+    print "<div class='container-fluid text-left row'>";
+    print "<div class='col-md-6 col-sm-12'>";
     foreach ($unique_hosts as $h) {
         // ignore unknown
         if ($h->hostname!="<UNKNOWN>") {
@@ -73,6 +75,6 @@ else {
             print "<span class='badge badge1 badge5 marged $active'><a href='host/$h->hostname/'>$h->hostname</a></span>";
         }
     }
-
+    print "</div>";
 }
 ?>
