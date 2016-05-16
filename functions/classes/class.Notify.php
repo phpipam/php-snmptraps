@@ -524,7 +524,7 @@ class mail {
         $body[] = "Date: ".date("d/m H:i:s")."<br>";
         $body[] = "Severity: ".$message_details->severity."<br>";
         $body[] = "OID: ".$message_details->oid."<br>";
-        $body[] = "Content:<br>".implode("<br>&nbsp;&nbsp;&nbsp; ", $message_details->content)."<br>";
+        $body[] = "Content:<br>&nbsp;&nbsp;&nbsp; ".implode("<br>&nbsp;&nbsp;&nbsp; ", $message_details->content)."<br>";
         $body[] = "</div>";
 
         # get content

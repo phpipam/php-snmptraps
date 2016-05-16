@@ -141,6 +141,7 @@ CREATE TABLE `users` (
   `quiet_time_stop` time DEFAULT '00:00:00',
   `last_login` timestamp NULL DEFAULT NULL,
   `last_activity` timestamp NULL DEFAULT NULL,
+  `reload_page` INT(32)  NULL  DEFAULT '900',
   PRIMARY KEY (`username`),
   KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

@@ -267,12 +267,15 @@ class Trap {
                                "Message",
                                "message"
                                );
+        // changed flag
+        $changed = false;
         // loop through message, search for Severity in each content, default null
         foreach ($search_values as $sv) {
             foreach ($this->message_details->content as $c) {
                 if ( strpos($c, $sv)!==false ) {
                     $tmp = explode(" => ", $c);
-                    $this->message_details->msg = $tmp[1];
+                    $this->message_details->msg = $changed ? $this->message_details->msg." :: ".$tmp[1] : $tmp[1];
+                    $changed = true;
                 }
             }
         }
@@ -291,6 +294,8 @@ class Trap {
         $this->detect_if ();
         // detect BRIDGE-MIB::topologyChange
         $this->detect_topologyChange ();
+        // detect vlan created
+        $this->detect_vtpVlanCreated ();
         // detect IKE
         $this->detect_ike ();
         // detect mteTrigger
@@ -330,6 +335,23 @@ class Trap {
     }
 
     /**
+     * detect_vtpVlanCreated function.
+     *
+     * @access private
+     * @return void
+     */
+    private function detect_vtpVlanCreated () {
+         if ($this->message_details->msg == "detect_vtpVlanCreated") {
+            foreach($this->message_details->content as $k=>$c) {
+                // explode
+                $c = explode(" => ", $c);
+                // check - first name, then status
+                if (strpos($c[0], "vtpVlanName")!==false)     { $this->message_details->msg .= " :: ".$c[1]." (vlan ".array_pop(explode(".", $c[0])).")"; }
+           }
+        }
+    }
+
+    /**
      * Detect VTP VLAN toppology change and new root
      *
      * @access private
@@ -342,8 +364,8 @@ class Trap {
                 // explode
                 $c = explode(" ", $c);
                 // check - first name, then status
-                if (strpos($c[0], "ifName")!==false)                { $this->message_details->msg .= " :: Interface ".$c[1];    $this->message_details->content[] = "IF-MIB::ifName => ".trim($c[1]); }
-                elseif (strpos($c[0], "vtpVlanIndex")!==false)      { $this->message_details->msg .= " :: vlan ".$c[1];         $this->message_details->content[] = "CISCO-VTP-MIB::vtpVlanIndex => ".trim($c[1]);  }
+                if (strpos($c[0], "ifName")!==false)                { $this->message_details->msg .= " (Interface ".$c[1].")"; }
+                elseif (strpos($c[0], "vtpVlanIndex")!==false)      { $this->message_details->msg .= " :: vlan ".$c[1]; }
             }
         }
     }
@@ -361,7 +383,7 @@ class Trap {
                 $c = explode(" => ", $c);
                 // check
                 if(strpos($c[0], "cikePeerRemoteAddr")!==false)        { $this->message_details->msg .= " :: peer ".$this->hex_to_ip($c[1]);  $this->message_details->content[] = "Remote address => ".$this->hex_to_ip($c[1]); }
-                elseif(strpos($c[0], "cikeTunHistTermReason")!==false) { $this->message_details->msg .= " (".$c[1].")";                 $this->message_details->content[] = "Terminate reason => ".$this->hex_to_ip($c[1]); }
+                elseif(strpos($c[0], "cikeTunHistTermReason")!==false) { $this->message_details->msg .= " (".$c[1].")";                       $this->message_details->content[] = "Terminate reason => ".$this->hex_to_ip($c[1]); }
             }
         }
     }

@@ -42,6 +42,56 @@ $('.disabled a').click(function() {
 });
 
 
+// interval var
+var interval;
+var isPaused = false;
+var modal_paused = false;
+
+// reload page progress bar
+var interval = setInterval(function() {
+    if (isPaused==false) {
+        // get reload value
+        var reload_at = $('div.progress-bar-reload').html();
+        // get current value
+        var old_state = $('div.progress-bar').attr('aria-valuenow');
+        var new_state = parseInt(old_state)+2;
+        // calculate bar percentage
+        var new_percentage = Math.round(new_state/reload_at *100);
+
+        // if same or more reload page
+        if (new_percentage>100) {
+            window.location.reload();
+        }
+        else {
+            // write new percentage till reload
+            $('div.progress-bar').attr('aria-valuenow', new_state);
+            $('div.progress-bar').html(new_percentage+"%");
+            $('div.progress-bar').attr("style", "width:"+new_percentage+"%");
+            // change seconds
+            $('.pbar_percentage').html(reload_at-new_state);
+        }
+    }
+}, 2000);
+
+// timer functions
+function stop_timer () {
+    isPaused = true;
+    $('.fa-toggle-timer').removeClass('fa-pause').addClass('fa-play');
+}
+function resume_timer () {
+    isPaused = false;
+    $('.fa-toggle-timer').removeClass('fa-play').addClass('fa-pause');
+}
+function toggle_timer () {
+    if (isPaused)   resume_timer ();
+    else            stop_timer ();
+}
+
+// stop on btn click in footer
+$('.fa-toggle-timer').click(function() {
+    toggle_timer ();
+});
+
 
 //prevent loading for disabled buttons
 $('a.disabled, button.disabled').click(function() { return false; });
@@ -52,6 +102,10 @@ $(document).on("click", '.load-modal', function() {
     $('#modal1 .modal-content').load($(this).attr('href'));
     // show
     $('#modal1').modal('show');
+    // paused by modal
+    if (isPaused==false)        modal_paused = true;
+    // stop timer
+    stop_timer ();
     // dont reload
     return false;
 });
@@ -60,9 +114,21 @@ $(document).on("click", '.load-modal-big', function() {
     $('#modal2 .modal-content').load($(this).attr('href'));
     // show
     $('#modal2').modal('show');
+    // paused by modal
+    if (isPaused==false)        modal_paused = true;
+    // stop timer
+    stop_timer ();
     // dont reload
     return false;
 });
+// hide modal - resume timer
+$('#modal1, #modal2').on('hidden.bs.modal', function () {
+    // if hidden by modal start
+    if(modal_paused) {
+        modal_paused = false;
+        resume_timer ();
+    }
+})
 
 /* @cookies */
 function createCookie(name,value,days) {

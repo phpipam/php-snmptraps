@@ -41,6 +41,36 @@ a {
 }
 
 
+/* @progress bar ------------ */
+.pbar,
+.progress-bar-gray {
+    border-radius: 3px;
+}
+.pbar {
+    background: rgba(255,255,255,0.2);
+    height: 20px;
+}
+.pbar_text {
+    position: absolute;
+    right: 0px;
+    padding-top: 2px;
+    padding-right: 20px;
+    text-shadow: 1px 1px 0px black;
+}
+.pbar_percentage {
+    color: red;
+    text-shadow: none;
+}
+.progress-bar-gray {
+    background-color: silver;
+    color: black;
+}
+.footer .fa {
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+
 /* @navigation ----------- */
 .navbar.navbar-default.navbar-inverse {
     background-color: #3a3f44;
@@ -523,7 +553,8 @@ td#actions .btn-group .btn {
 .fa-href {
 	cursor: pointer;
 }
-td.field-actions {
+td.field-actions,
+td.field-id  {
     width: 60px;
 }
 
