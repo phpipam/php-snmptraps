@@ -18,6 +18,17 @@ $menu = array(
 
 <nav class="navbar navbar-default navbar-inverse" style="width:100%;">
 
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+
+
     <div id="navbar" class="collapse navbar-collapse" style="padding-left: 0px;padding-right: 0px;">
         <ul class="nav navbar-nav">
             <?php
@@ -43,7 +54,7 @@ $menu = array(
         </ul>
 
 
-        <ul class="nav navbar-nav navbar-right">
+        <ul class="nav navbar-nav navbar-collapse navbar-right">
 
             <?php if($User->is_admin(false) !== false) { ?>
             <li class="<?php if($_GET['app']=="settings") { print "active"; } ?>">

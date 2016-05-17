@@ -133,13 +133,13 @@
                                 $('<div class="form-group">')
                                 .append(
                                     $('<input/>')
-                                        .addClass('form-control input-sm')
+                                        .addClass('form-control input-sm ')
                                         .attr('id', 'search')
                                         .attr('placeholder', searchFieldText)
                                 )
                             )
                             .append(
-                                $('<div class="form-group">')
+                                $('<div class="form-group" style="text-align:right">')
                                 .append($('<label/>')
                                             .addClass('control-label')
                                             .text(pageFieldText)
@@ -147,7 +147,7 @@
                                 .append(
                                     $('<select/>')
                                         .attr('id', 'page-rows-form')
-                                        .addClass('form-control input-sm')
+                                        .addClass('form-control input-w-auto input-sm')
                                         .append(
                                             $('<option>', {
                                                 value: 25,

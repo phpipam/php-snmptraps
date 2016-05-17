@@ -40,7 +40,7 @@ else {
 	<meta name="robots" content="noindex, nofollow">
 	<meta http-equiv="X-UA-Compatible" content="IE=9" >
 
-	<meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=1, user-scalable=yes">
+	<meta name="viewport" content="width=device-width, initial-scale=0.6, maximum-scale=0.8, user-scalable=yes">
 
 	<!-- chrome frame support -->
 	<meta http-equiv="X-UA-Compatible" content="chrome=1">

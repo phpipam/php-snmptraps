@@ -152,7 +152,7 @@ class Table_print_snmp {
         // headers
         foreach ($this->tfields as $k=>$f) {
             // set hidden
-            $hidden = in_array($k, array("ip")) ? "hidden-xs" : "";
+            $hidden = in_array($k, array("ip", "content", "header-full_screen")) ? "hidden-xs" : "";
             // save
             $html[] = "<th id='header-$k' class='$hidden'>$f</th>";
         }
@@ -193,7 +193,7 @@ class Table_print_snmp {
                 // loop
                 foreach ($this->tfields as $k=>$l) {
                     // set hidden
-                    $hidden = in_array($k, array("ip")) ? "hidden-xs" : "";
+                    $hidden = in_array($k, array("ip", "content", "header-full_screen")) ? "hidden-xs" : "";
                     // save
                     $html[] = "<td class='field-$k $hidden'>".$f->$k."</td>";
                 }

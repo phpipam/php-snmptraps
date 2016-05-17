@@ -49,7 +49,7 @@ var modal_paused = false;
 
 // reload page progress bar
 var interval = setInterval(function() {
-    if (isPaused==false) {
+    if (isPaused==false && window.location.href.indexOf("settings") == -1 && window.location.href.indexOf("live") == -1) {
         // get reload value
         var reload_at = $('div.progress-bar-reload').html();
         // get current value
