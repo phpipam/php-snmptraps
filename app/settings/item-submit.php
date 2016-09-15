@@ -44,21 +44,30 @@ if($_POST['script']=="users" && $_POST['action']!="delete") {
             $notification_severities[] = str_replace("notification_severities-", "", $k);
             unset($_POST[$k]);
         }
+        elseif (strpos($k, "hostnames")!==false) {
+            $hostnames[] = str_replace("hostnames-", "", $k);
+            unset($_POST[$k]);
+        }
     }
 
     // join
     $_POST['notification_types'] = implode(";", $notification_types);
     $_POST['notification_severities'] = implode(";", $notification_severities);
+    $_POST['hostnames'] = implode(";", $hostnames);
 
     // empty fix
     if (strlen($_POST['notification_types'])==0)        { $_POST['notification_types'] = "none"; }
     if (strlen($_POST['notification_severities'])==0)   { $_POST['notification_severities'] = "none"; }
+    if (strlen($_POST['hostnames'])==0)                 { $_POST['hostnames'] = "all"; }
 
     // password
     if($_POST['action']=="edit" && strlen($_POST['password'])==0)   { unset($_POST['password']); }
     elseif ($_POST['auth_method']=="ad")                { unset($_POST['password']); }
     elseif (strlen($_POST['password'])<8)               { $Result->show("danger", "Invalid password - 8 characters required!", true); }
     else                                                { $_POST['password'] = $User->crypt_user_pass ($_POST['password']); }
+
+    // hostnames
+    if ($_POST['role']=="administrator")                { $_POST['hostnames'] = "all"; }
 }
 
 # add

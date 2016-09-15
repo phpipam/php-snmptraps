@@ -142,6 +142,7 @@ CREATE TABLE `users` (
   `last_login` timestamp NULL DEFAULT NULL,
   `last_activity` timestamp NULL DEFAULT NULL,
   `reload_page` INT(32)  NULL  DEFAULT '900',
+  `hostnames` text COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`username`),
   KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

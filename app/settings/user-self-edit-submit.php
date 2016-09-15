@@ -61,7 +61,13 @@ elseif (strlen($_POST['password'])<8)               { $Result->show("danger", "I
 else                                                { $_POST['password'] = $User->crypt_user_pass ($_POST['password']); }
 
 // no role change
+if(isset($_POST['id']))                             { unset($_POST['id']); }
 if(isset($_POST['role']))                           { unset($_POST['role']); }
+if(isset($_POST['auth_method']))                    { unset($_POST['auth_method']); }
+if(isset($_POST['last_login']))                     { unset($_POST['last_login']); }
+if(isset($_POST['last_activity']))                  { unset($_POST['last_activity']); }
+if(isset($_POST['username']))                       { unset($_POST['username']); }
+if(isset($_POST['hostnames']))                      { unset($_POST['hostnames']); }
 
 
 // add action

@@ -408,6 +408,16 @@ class Trap_read extends Snmp_read_MIB {
 	protected $Result;
 
 	/**
+	 * Permitted hostnames
+	 *
+	 * (default value: "all")
+	 *
+	 * @var bool
+	 * @access public
+	 */
+	public $hostnames = "all";
+
+	/**
 	 * severities
 	 *
 	 * (default value: array())
@@ -449,6 +459,20 @@ class Trap_read extends Snmp_read_MIB {
 	public function reset_print_limit ($print_limit) {
     	if (is_numeric($print_limit)) {
         	$this->print_limit = $print_limit;
+    	}
+	}
+
+	/**
+	 * Sets permitted hostnames
+	 *
+	 * @access public
+	 * @param mixed $hostnames
+	 * @return void
+	 */
+	public function set_permitted_hostnames ($hostnames = "all") {
+    	// all
+    	if($hostnames!=="all") {
+        	$this->hostnames = $hostnames;
     	}
 	}
 
@@ -542,14 +566,52 @@ class Trap_read extends Snmp_read_MIB {
 	}
 
 	/**
+	 * Returns array to append to check for selected queries
+	 *
+	 * @access private
+	 * @param string $type (default: "where")
+	 * @return void
+	 */
+	private function set_hostnames_query ($type = "where") {
+    	// hostnames
+    	if ($this->hostnames!=="all") {
+        	foreach ($this->hostnames as $s) {
+            	$hname[] = "hostname = ?";
+            	$params[] = $s;
+        	}
+        	// where
+        	if($type === "where") {
+            	$hostnames = " where ".implode(" or ", $hname);
+            }
+            // and
+            else {
+            	$hostnames = " and ( ".implode(" or ", $hname)." ) ";
+            }
+    	}
+    	else {
+        	$hostnames = "";
+        	$params = array();
+    	}
+    	// result
+    	return array(
+    	            "query"=>$hostnames,
+    	            "params"=>$params
+    	           );
+	}
+
+	/**
 	 * Fetches all traps from database
 	 *
 	 * @access private
 	 * @return void
 	 */
 	private function fetch_all_traps () {
-		# execute
-		try { $traps = $this->Database->getObjects("traps", "id", false, $this->print_limit); }
+    	// hostnames
+    	$hostnames = $this->set_hostnames_query ("where");
+    	// set query
+    	$query = "select * from traps $hostnames[query] order by id desc limit $this->print_limit;";
+    	// fetch traps
+		try { $traps = $this->Database->getObjectsQuery($query, $hostnames['params']); }
 		catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
 			return false;
@@ -566,12 +628,14 @@ class Trap_read extends Snmp_read_MIB {
 	 * @return void
 	 */
 	public function get_new_traps ($id) {
+    	// hostnames
+    	$hostnames = $this->set_hostnames_query ("and");
     	// validate
     	if (!is_numeric($id) || $id==0 || is_null($id)) {
         	return false;
     	}
  		# execute
-		try { $traps = $this->Database->getObjectsQuery("select * from `traps` where `id` > ? order by `id` asc;", array($id)); }
+		try { $traps = $this->Database->getObjectsQuery("select * from `traps` where `id` > ? $hostnames[query] order by `id` asc;", array_merge(array($id), $hostnames['params'])); }
 		catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
 			return false;
@@ -592,19 +656,26 @@ class Trap_read extends Snmp_read_MIB {
         if (sizeof($severities)>0) {
             $tmp = array();
             $tmp_sev = array();
-            // loo)
+            // loop
         	foreach ($severities as $s) {
             	$tmp[] = "severity = ?";
             	$tmp_sev[] = $s;
         	}
+        	// hostnames
+        	$hostnames = $this->set_hostnames_query ("and");
+        	$tmp_sev = array_merge($tmp_sev, $hostnames['params']);
         	// set query
-        	$query = "select * from traps where ".implode(" or ", $tmp)." order by id desc limit $this->print_limit;";
+        	$query = "select * from traps where (".implode(" or ", $tmp).") $hostnames[query] order by id desc limit $this->print_limit;";
     	}
     	else {
+        	// hostnames
+        	$hostnames = $this->set_hostnames_query ("and");
     	    // set query
-            $query = "select * from traps where `severity` = ? order by id desc limit $this->print_limit;";
+            $query = "select * from traps where `severity` = ? $hostnames[query] order by id desc limit $this->print_limit;";
             $tmp_sev[] = $severities[0];
+        	$tmp_sev = array_merge($tmp_sev, $hostnames['params']);
     	}
+
     	// fetch traps
 		try { $traps = $this->Database->getObjectsQuery($query, $tmp_sev); }
 		catch (Exception $e) {
@@ -641,6 +712,12 @@ class Trap_read extends Snmp_read_MIB {
 	 * @return void
 	 */
 	public function fetch_traps_host ($host) {
+    	# validate
+    	if($this->hostnames!=="all") {
+        	if(!in_array($host, $this->hostnames)) {
+            	$this->Result->show("danger", _("Error: Not allowed to view this host"), true);
+        	}
+    	}
  		# execute
 		try { $traps = $this->Database->findObjects("traps", "hostname", $host, "id", false, false, false, $this->print_limit); }
 		catch (Exception $e) {
@@ -664,6 +741,16 @@ class Trap_read extends Snmp_read_MIB {
 		catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ").$e->getMessage(), false);
 			return false;
+		}
+		# filter
+		if($this->hostnames!=="all") {
+    		if(sizeof($traps)>0) {
+        		foreach($traps as $k=>$t) {
+            		if(!in_array($t->hostname, $this->hostnames)) {
+                		unset($traps[$k]);
+            		}
+        		}
+    		}
 		}
 		# return
 		return sizeof($traps)>0 ? $traps : false;
@@ -705,6 +792,12 @@ class Trap_read extends Snmp_read_MIB {
         	$values[] = "%".$post['message']."%";
         	$values[] = "%".$post['message']."%";
     	}
+		// filter permitted hostnames
+		if($this->hostnames!=="all") {
+            $hostnames = sizeof($values)>0 ? $this->set_hostnames_query ("and") : $this->set_hostnames_query ("where");
+            $values = array_merge($values, $hostnames['params']);
+            $query[] = $hostnames['query'];
+		}
     	// limit
     	$query[] = " order by `id` $post[order] limit ".$this->print_limit.";";
 

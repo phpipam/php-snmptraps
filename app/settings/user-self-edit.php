@@ -39,7 +39,7 @@ if ($User->user->auth_method!=="local") { unset($User->user->password); }
 // loop
 foreach ($fields_db as $f) {
     // no id
-    if(!in_array($f->Field, array("id", "role", "auth_method", "last_login", "last_activity", "username"))) {
+    if(!in_array($f->Field, array("id", "role", "auth_method", "last_login", "last_activity", "username", "hostnames"))) {
         // ignore pass
         if($f->Field=="password") {
             $User->user->{$f->Field} = "";

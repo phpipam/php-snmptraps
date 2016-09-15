@@ -11,6 +11,8 @@ $User->check_user_session();
 
 # set limit
 $Trap->reset_print_limit (30);
+# set permitted hostnames
+$Trap->set_permitted_hostnames ($User->hostnames);
 # fetch all traps for each
 $all_error_traps    = $Trap->fetch_traps (array("emergency", "alert", "critical"));
 

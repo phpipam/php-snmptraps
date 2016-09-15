@@ -446,7 +446,7 @@ class Table_print extends Table_print_snmp {
                         $f->actions = $this->format_table_actions ($script, $target, $f->id);
                     }
                     // replace ; with breaks
-                    if ($l=="notification_severities" || $l=="notification_types") {
+                    if ($l=="notification_severities" || $l=="notification_types" || $l=="hostnames") {
                         $f->$l = "&middot; ".str_replace(";", "<br>&middot; ", $f->$l);
                     }
                     // save
@@ -502,12 +502,13 @@ class Table_print extends Table_print_snmp {
      * @access public
      * @param object $field
      * @param bool|mixed $value
+     * @param array $additional_params (default: false)
      * @return void
      */
-    public function prepare_input_item ($field, $value = false) {
+    public function prepare_input_item ($field, $value = false, $additional_params = false) {
         // severities override
-        if ($field->Field=="notification_severities" || $field->Field=="notification_types") {
-            return $this->prepare_multiple_checkboxes ($field, $value);
+        if ($field->Field=="notification_severities" || $field->Field=="notification_types" || $field->Field=="hostnames") {
+            return $this->prepare_multiple_checkboxes ($field, $value, $additional_params);
         }
         // varchar
         elseif (strpos($field->Type, "varchar")!==false) {
@@ -545,9 +546,10 @@ class Table_print extends Table_print_snmp {
      * @access private
      * @param mixed $field
      * @param mixed $value
+     * @param array $additional_params
      * @return void
      */
-    private function prepare_multiple_checkboxes ($field, $value) {
+    private function prepare_multiple_checkboxes ($field, $value, $additional_params) {
         // get all possible items
         if ($field->Field=="notification_severities")   {
             $options =  array('emergency','alert','critical','error','warning','notice','informational','debug', 'unknown');
@@ -555,6 +557,9 @@ class Table_print extends Table_print_snmp {
         elseif ($field->Field=="notification_types") {
             include(dirname(__FILE__)."/../../config.php");
             $options = $notification_methods;
+        }
+        elseif ($field->Field=="hostnames") {
+            $options = $additional_params;
         }
         else {
             return "";

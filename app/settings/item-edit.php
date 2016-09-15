@@ -134,7 +134,7 @@ else {
                     // content
                     $html[] = "<tr>";
                     $html[] = " <td>$f->Field <span class='alert alert-danger'>$required</span></td>";
-                    $html[] = " <td>".$Table_print->prepare_input_item ($f, $item->{$f->Field})."</td>";
+                    $html[] = " <td>".$Table_print->prepare_input_item ($f, $item->{$f->Field}, $unique_hosts)."</td>";
                     $html[] = "</tr>";
                 }
             }

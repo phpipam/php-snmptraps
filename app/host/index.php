@@ -14,6 +14,8 @@ $_GET = $User->strip_input_tags ($_GET);
 
 # set limit to 10
 $Trap->reset_print_limit (200);
+# set permitted hostnames
+$Trap->set_permitted_hostnames ($User->hostnames);
 
 # fetch all traps
 if(isset($_GET['page'])) {

@@ -8,6 +8,8 @@
 
 # verify that user is logged in
 $User->check_user_session();
+# set permitted hostnames
+$Trap->set_permitted_hostnames ($User->hostnames);
 
 # fetch all unique hosts
 $unique_hosts = $Trap->fetch_unique_hosts ();

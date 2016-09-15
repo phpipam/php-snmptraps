@@ -68,6 +68,16 @@ class User extends Common_functions {
 	public $isoperator = false;
 
 	/**
+	 * Permitted hostnames
+	 *
+	 * (default value: false)
+	 *
+	 * @var bool
+	 * @access public
+	 */
+	public $hostnames = false;
+
+	/**
 	 * Users IP address
 	 *
 	 * @var mixed
@@ -218,6 +228,25 @@ class User extends Common_functions {
 	}
 
 	/**
+	 * Saves permitted hosts for user
+	 *
+	 * @access private
+	 * @return void
+	 */
+	private function set_permitted_hosts () {
+    	// admin always all
+    	if($this->isadmin) {
+        	$this->hostnames = "all";
+    	}
+    	else {
+        	// all?
+        	if($this->user->hostnames!="all") {
+            	$this->hostnames = explode(";", $this->user->hostnames);
+        	}
+    	}
+	}
+
+	/**
 	 * Checks if current user is admin or not
 	 *
 	 * @access public
@@ -334,9 +363,11 @@ class User extends Common_functions {
 			if($user->role == "administrator")	{ $this->isadmin = true; $this->isoperator = true; }
 			if($user->role == "operator")	    { $this->isoperator = true; }
 
-
 			if(sizeof($usert)==0)	{ $this->Result->show("danger", _("Invalid username or password"), true);}
 			else 					{ $this->user = $user; }
+
+			// set permitted hosts
+			$this->set_permitted_hosts ();
 		}
 	}
 

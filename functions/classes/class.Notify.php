@@ -133,12 +133,29 @@ class Trap_notify {
                 // put to notification methods
                 $methods = array();
                 foreach ($users as $u) {
-                    // to array
-                    $user_methods = explode(";", $u->notification_types);
-                    // save
-                    foreach ($user_methods as $m) {
-                        if ($m!="none" && strlen($m)>0) {
-                            $methods[$m][] = $u;
+                    $permitted = false;
+                    // validate if hostname is permitted !
+                    if($u->hostnames!=="all") {
+                        $hostnames = explode(";", $u->hostnames);
+                        if(is_array($hostnames)) {
+                            if(in_array($this->trap_details->hostname, $hostnames)) {
+                                $permitted = true;
+                            }
+                        }
+                    }
+                    else {
+                        $permitted = true;
+                    }
+
+                    // permitted ?
+                    if ($permitted) {
+                        // to array
+                        $user_methods = explode(";", $u->notification_types);
+                        // save
+                        foreach ($user_methods as $m) {
+                            if ($m!="none" && strlen($m)>0) {
+                                $methods[$m][] = $u;
+                            }
                         }
                     }
                 }
