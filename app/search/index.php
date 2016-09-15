@@ -18,6 +18,10 @@ if($unique_hosts!==false) {
     $unique_hosts = $out;               // needed for result check
 }
 
+# strip tags
+if(isset($_POST))
+$_POST = $User->strip_input_tags ($_POST);
+
 ?>
 
 <h4>Search messages</h4><hr>

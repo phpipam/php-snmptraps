@@ -30,6 +30,10 @@ $fields_db = $Common->get_table_definition("users");
 $notification_types = array();
 $notification_severities = array();
 
+# strip tags
+$_POST = $User->strip_input_tags ($_POST);
+
+
 // loop
 foreach ($_POST as $k=>$p) {
     if (strpos($k, "notification_types")!==false) {

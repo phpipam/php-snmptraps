@@ -9,6 +9,9 @@
 # verify that user is logged in
 $User->check_user_session();
 
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
+
 # set limit to 10
 $Trap->reset_print_limit (200);
 

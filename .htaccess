@@ -4,8 +4,7 @@ RewriteEngine on
 
 # passthroughs
 RewriteRule ^index.php$ - [L]
-RewriteRule ^(css|js|app|test)/.*$ - [L]
-RewriteRule ^(css|js|app|test)/.*$ - [L]
+RewriteRule ^(css|js|app|test|api)/.*$ - [L]
 
 # redirect errors
 ErrorDocument 400 /error/400/

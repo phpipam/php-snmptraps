@@ -21,6 +21,9 @@ $Table_print= new Table_print ();
 # verify that user is logged in
 $User->check_user_session();
 
+# strip tags
+$_POST = $User->strip_input_tags ($_POST);
+
 # fetch all traps
 $traps = $Trap->get_new_traps ($_POST['id']);
 

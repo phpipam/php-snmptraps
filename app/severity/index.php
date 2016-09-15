@@ -12,6 +12,9 @@ $User->check_user_session();
 # set limit to 10
 $Trap->reset_print_limit (200);
 
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
+
 # set severity
 if($_GET['page']=="all")                { $traps = $Trap->fetch_traps ("all"); }
 elseif($_GET['page']=="major")          { $traps = $Trap->fetch_traps (array("emergency", "alert", "critical")); }

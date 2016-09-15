@@ -16,6 +16,10 @@ $Common = new Database_wrapper ();
 # make sure user is admin
 $User->is_admin ();
 
+# strip tags
+$_POST = $User->strip_input_tags ($_POST);
+
+
 # valid scripts
 $scripts = array("maintaneance", "exceptions", "severity_definitions", "users");
 

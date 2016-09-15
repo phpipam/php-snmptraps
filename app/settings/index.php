@@ -13,6 +13,9 @@ $items = array(
 );
 // default
 if(!isset($_GET['page']))   { $_GET['page'] = "severity_definitions"; }
+
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
 ?>
 
 
@@ -46,7 +49,7 @@ if(!isset($_GET['page']))   { $_GET['page'] = "severity_definitions"; }
         // open settings
         if (isset($_GET['page'])) {
             // exists
-            if (file_exists(dirname(__FILE__)."/".$_GET['page'].".php")) {
+            if (file_exists(dirname(__FILE__)."/".$_GET['page'].".php") && in_array($_GET['page'], $items)) {
                 include(dirname(__FILE__)."/".$_GET['page'].".php");
             }
             // not

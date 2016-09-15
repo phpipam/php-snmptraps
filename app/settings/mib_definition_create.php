@@ -22,6 +22,9 @@ $Snmp_read_MIB->set_mib_directory ($mib_directory);
 # trap
 $Trap_read = new Trap_read ($Database);
 
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
+
 
 // set items
 $mib = new StdClass;

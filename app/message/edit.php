@@ -18,6 +18,9 @@ $Common     = new Database_wrapper ();
 # verify that user is logged in
 $User->check_user_session();
 
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
+
 # fetch item
 $item = $Trap->fetch_snmp_trap ($_GET['id']);
 

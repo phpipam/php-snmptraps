@@ -24,6 +24,9 @@ $Modal      = new Modal ();
 # make sure user is admin
 $User->is_admin ();
 
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
+
 
 // validate script
 if (!in_array($_GET['script'], $scripts)) {

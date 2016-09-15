@@ -12,6 +12,9 @@ $User->check_user_session();
 # set limit to 10
 $Trap->reset_print_limit (200);
 
+# strip tags
+$_GET = $User->strip_input_tags ($_GET);
+
 # decode
 $_GET['page'] = base64_decode($_GET['page']);
 

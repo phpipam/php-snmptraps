@@ -17,6 +17,10 @@ $Common = new Database_wrapper ();
 # make sure user is admin
 $User->is_admin ();
 
+# strip tags
+$_POSt = $User->strip_input_tags ($_POSt);
+
+
 # create array of items
 $values = array();
 // loop

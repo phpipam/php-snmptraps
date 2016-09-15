@@ -9,6 +9,9 @@
 # verify that user is logged in
 $User->check_user_session();
 
+# strip tags
+$_POST = $User->strip_input_tags ($_POST);
+
 # error flag
 $error = false;
 
