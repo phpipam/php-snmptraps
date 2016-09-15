@@ -56,6 +56,7 @@ if($_POST['script']=="users" && $_POST['action']!="delete") {
 
     // password
     if($_POST['action']=="edit" && strlen($_POST['password'])==0)   { unset($_POST['password']); }
+    elseif ($_POST['auth_method']=="ad")                { unset($_POST['password']); }
     elseif (strlen($_POST['password'])<8)               { $Result->show("danger", "Invalid password - 8 characters required!", true); }
     else                                                { $_POST['password'] = $User->crypt_user_pass ($_POST['password']); }
 }

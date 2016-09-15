@@ -32,6 +32,6 @@ $version['minor']  = "1";
  * @var mixed
  * @access public
  */
-$version['patch']  = "05";
+$version['patch']  = "10";
 
 ?>
