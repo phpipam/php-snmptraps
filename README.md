@@ -31,7 +31,7 @@ The can be easily extended to any other custom notification type.
 This guide assumes you have a working net-snmp, apache, php and mysql installation with default apache files stored
  in /var/www/.
 
-1. Set traphandler
+1.Set traphandler
 
 First, edit file `/etc/snmp/snmptrapd.conf` and add traphandler for default files to traphandler.php:
 
@@ -42,7 +42,7 @@ agentaddress my_ip_address:162
 traphandle default /usr/bin/php /var/www/traphandler.php
 ``` 
 
-2. Prepare and edit config file
+2.Prepare and edit config file
 
 Now go to /var/www/ directory and copy config.dist.php to config.php:
 ```
@@ -51,13 +51,13 @@ cp /var/www/config.dist.php /var/www/config.php
 and edit the config file to match your settings. 
 
 
-3. Set mod_rewrite
+3.Set mod_rewrite
 
 mod_rewrite is required for snmptraps. Example here:
 
 http://phpipam.net/documents/prettified-links-with-mod_rewrite/
 
-4. Import database schema
+4.Import database schema
 
 Now you have to import chema for mysql database with following command:
 
@@ -81,7 +81,7 @@ mysql -u root -p snmptraps < db/SCHEMA.sql
 That should be it, fire up browser and login. Default user/pass is Admin/snmptraps.
 
 
-5. Send test message and debugging
+5.Send test message and debugging
 
 To test snmptrap you can use the following command:
 
