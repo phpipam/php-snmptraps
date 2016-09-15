@@ -132,11 +132,11 @@ class Result {
 			$htext = $class==="danger" ? "error" : $class;
 
             $out = array();
-			$out[] = '<div class="pHeader">'._(ucwords($htext)).'</div>';
-			$out[] = '<div class="pContent">';
+			$out[] = '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button><h4 class="modal-title">'._(ucwords($htext)).'</h4></div>';
+			$out[] = '<div class="modal-body">';
 			$out[] = '<div class="alert alert-'.$class.'">'.$text.'</div>';
 			$out[] = '</div>';
-			$out[] = '<div class="pFooter"><button class="btn btn-sm btn-default '.$pclass.'">'._('Close').'</button></div>';
+			$out[] = '<div class="modal-footer"><button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Close</button></div>';
 
 			// return
 			return implode("\n", $out);

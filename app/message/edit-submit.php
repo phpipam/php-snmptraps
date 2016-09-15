@@ -10,8 +10,8 @@ $User       = new User ($Database);
 
 $Trap_update = new Trap_update ($Database);
 
-# verify that user is logged in
-$User->check_user_session();
+# make sure user is operator
+$User->is_operator (true);
 
 # strip tags
 $_GET = $User->strip_input_tags ($_GET);

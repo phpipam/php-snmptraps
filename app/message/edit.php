@@ -15,8 +15,8 @@ $Trap       = new Trap_read ($Database);
 $Modal      = new Modal ();
 $Common     = new Database_wrapper ();
 
-# verify that user is logged in
-$User->check_user_session();
+# make sure user is operator
+$User->is_operator (true, true);
 
 # strip tags
 $_GET = $User->strip_input_tags ($_GET);

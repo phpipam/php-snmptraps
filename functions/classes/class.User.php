@@ -8,30 +8,107 @@
 
 class User extends Common_functions {
 
-	/**
-	 * public variables
-	 */
-	public $username;						// (char) username
-	public $authenticated = false;			// (bin) flag if user is authenticated
-	public $timeout = false;				// (bin) timeout flag
-	public $user = null;					// (obj) user details
-	public $isadmin = false;				// (bin) flag if user is admin
 
 	/**
-	 * private variables
+	 * Username
+	 *
+	 * @var mixed
+	 * @access public
 	 */
-	private $ip;							// (char) Users IP address
+	public $username;
 
 	/**
-	 * protected variables
+	 * Flag if user is authenticated
+	 *
+	 * (default value: false)
+	 *
+	 * @var bool
+	 * @access public
 	 */
-	protected $sessname = "snmptraps";		// session name - default is snmptraps
-	protected $debugging = false;			// (bool) debugging flag
+	public $authenticated = false;
 
 	/**
-	 * object holders
+	 * Tomeout flag for login
+	 *
+	 * (default value: false)
+	 *
+	 * @var bool
+	 * @access public
 	 */
-	protected $Database;					// for Database connection
+	public $timeout = false;
+
+	/**
+	 * User details object
+	 *
+	 * (default value: null)
+	 *
+	 * @var mixed
+	 * @access public
+	 */
+	public $user = null;
+
+	/**
+	 * Admin flag
+	 *
+	 * (default value: false)
+	 *
+	 * @var bool
+	 * @access public
+	 */
+	public $isadmin = false;
+
+	/**
+	 * operato flag
+	 *
+	 * (default value: false)
+	 *
+	 * @var bool
+	 * @access public
+	 */
+	public $isoperator = false;
+
+	/**
+	 * Users IP address
+	 *
+	 * @var mixed
+	 * @access private
+	 */
+	private $ip;
+
+	/**
+	 * PHP Session name
+	 *
+	 * (default value: "snmptraps")
+	 *
+	 * @var string
+	 * @access protected
+	 */
+	protected $sessname = "snmptraps";
+
+	/**
+	 * Debugging flag
+	 *
+	 * (default value: false)
+	 *
+	 * @var bool
+	 * @access protected
+	 */
+	protected $debugging = false;
+
+	/**
+	 * Database object
+	 *
+	 * @var mixed
+	 * @access protected
+	 */
+	protected $Database;
+
+    /**
+     * Result object
+     *
+     * @var mixed
+     * @access public
+     */
     public $Result;
 
 
@@ -145,12 +222,31 @@ class User extends Common_functions {
 	 *
 	 * @access public
 	 * @param bool $die (default: true)
+	 * @param bool $popup (default: false)
 	 * @return void
 	 */
-	public function is_admin ($die = true) {
+	public function is_admin ($die = true, $popup = false) {
 		if($this->isadmin)		{ return true; }
 		else {
-			if($die)			{ $this->Result->show("danger", _('Administrator level privileges required'), true); }
+			if($die && $popup)	{ $this->Result->show("danger", _('Administrator level privileges required'), true, true); }
+			elseif($die)		{ $this->Result->show("danger", _('Administrator level privileges required'), true); }
+			else				{ return false; }
+		}
+	}
+
+	/**
+	 * Checks if current user is operator or not
+	 *
+	 * @access public
+	 * @param bool $die (default: true)
+	 * @param bool $popup (default: false)
+	 * @return void
+	 */
+	public function is_operator ($die = true, $popup = false) {
+		if($this->isoperator)		{ return true; }
+		else {
+			if($die && $popup)	{ $this->Result->show("danger", _('Operator level privileges required'), true, true); }
+			elseif($die)		{ $this->Result->show("danger", _('Operator level privileges required'), true); }
 			else				{ return false; }
 		}
 	}
@@ -235,7 +331,9 @@ class User extends Common_functions {
 			$usert = (array) $user;
 
 			# admin?
-			if($user->role == "administrator")	{ $this->isadmin = true; }
+			if($user->role == "administrator")	{ $this->isadmin = true; $this->isoperator = true; }
+			if($user->role == "operator")	    { $this->isoperator = true; }
+
 
 			if(sizeof($usert)==0)	{ $this->Result->show("danger", _("Invalid username or password"), true);}
 			else 					{ $this->user = $user; }

@@ -132,7 +132,7 @@ CREATE TABLE `users` (
   `real_name` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
   `auth_method` set('local','ad') COLLATE utf8_bin NOT NULL DEFAULT 'local',
   `password` char(128) COLLATE utf8_bin DEFAULT NULL,
-  `role` set('user','administrator') CHARACTER SET utf8 NOT NULL DEFAULT 'user',
+  `role` set('user','operator','administrator') CHARACTER SET utf8 NOT NULL DEFAULT 'user',
   `email` varchar(64) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `tel` varchar(15) COLLATE utf8_bin DEFAULT NULL,
   `notification_types` varchar(128) COLLATE utf8_bin DEFAULT 'mail',
