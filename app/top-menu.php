@@ -66,6 +66,7 @@ $menu = array(
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user"></i> <span class="caret"></span></a>
                 <ul class="dropdown-menu">
                     <li class="dropdown-header"><?php print $User->user->real_name; ?><hr></li>
+                    <li class='role'><a><?php print ucwords($User->user->role); ?></a></li>
                     <li><a href='app/settings/user-self-edit.php' class="load-modal"><i class='fa fa-pencil'></i>Profile</a></li>
                     <li><a href='logout/' class="settings"><i class='fa fa-sign-out'></i>Logout</a></li>
                 </ul>

@@ -127,6 +127,15 @@ a {
 ul.dropdown-menu li a {
     font-size: 12px;
 }
+ul.dropdown-menu li.role a {
+    padding: 5px;
+    padding-right: 25px;
+    text-align: right;
+    color: rgb(167, 37, 78) !important;
+}
+ul.dropdown-menu li.role:hover a {
+    background: rgb(58, 63, 68) !important;
+}
 
 
 
@@ -703,6 +712,7 @@ td.info2 {
 	text-shadow: black 2px 2px 2px;
 /* 	white-space: nowrap;	 */
 }
+
 
 
 
