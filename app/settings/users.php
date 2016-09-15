@@ -28,7 +28,7 @@ $tfields = array();
 if($fields_db!==false) {
     foreach ($fields_db as $f) {
         // no id
-        if($f->Field!=="id" && $f->Field!=="password" && $f->Field!=="last_activity") {
+        if($f->Field!=="id" && $f->Field!=="password" && $f->Field!=="last_activity" && $f->Field!=="reload_page") {
             $tfields[] = $f->Field;
         }
     }

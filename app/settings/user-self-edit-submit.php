@@ -60,6 +60,9 @@ if(strlen($_POST['password'])==0)                   { unset($_POST['password']);
 elseif (strlen($_POST['password'])<8)               { $Result->show("danger", "Invalid password - 8 characters required!", true); }
 else                                                { $_POST['password'] = $User->crypt_user_pass ($_POST['password']); }
 
+// no role change
+if(isset($_POST['role']))                           { unset($_POST['role']); }
+
 
 // add action
 $_POST['action'] = "edit";
