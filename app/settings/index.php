@@ -49,7 +49,7 @@ $_GET = $User->strip_input_tags ($_GET);
         // open settings
         if (isset($_GET['page'])) {
             // exists
-            if (file_exists(dirname(__FILE__)."/".$_GET['page'].".php") && in_array($_GET['page'], $items)) {
+            if (file_exists(dirname(__FILE__)."/".$_GET['page'].".php") && array_key_exists($_GET['page'], $items)) {
                 include(dirname(__FILE__)."/".$_GET['page'].".php");
             }
             // not
