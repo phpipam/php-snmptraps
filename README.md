@@ -54,6 +54,7 @@ and edit the config file to match your settings.
 3. Set mod_rewrite
 
 mod_rewrite is required for snmptraps. Example here:
+
 http://phpipam.net/documents/prettified-links-with-mod_rewrite/
 
 4. Import database schema
