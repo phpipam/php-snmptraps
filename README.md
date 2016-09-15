@@ -51,7 +51,12 @@ cp /var/www/config.dist.php /var/www/config.php
 and edit the config file to match your settings. 
 
 
-3. Import database schema
+3. Set mod_rewrite
+
+mod_rewrite is required for snmptraps. Example here:
+http://phpipam.net/documents/prettified-links-with-mod_rewrite/
+
+4. Import database schema
 
 Now you have to import chema for mysql database with following command:
 
@@ -75,7 +80,7 @@ mysql -u root -p snmptraps < db/SCHEMA.sql
 That should be it, fire up browser and login. Default user/pass is Admin/snmptraps.
 
 
-4. Send test message and debugging
+5. Send test message and debugging
 
 To test snmptrap you can use the following command:
 
