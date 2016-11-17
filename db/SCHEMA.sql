@@ -130,7 +130,7 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(25) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `real_name` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
-  `auth_method` set('local','ad') COLLATE utf8_bin NOT NULL DEFAULT 'local',
+  `auth_method` set('local','ad', 'krb') COLLATE utf8_bin NOT NULL DEFAULT 'local',
   `password` char(128) COLLATE utf8_bin DEFAULT NULL,
   `role` set('user','operator','administrator') CHARACTER SET utf8 NOT NULL DEFAULT 'user',
   `email` varchar(64) CHARACTER SET utf8 NOT NULL DEFAULT '',

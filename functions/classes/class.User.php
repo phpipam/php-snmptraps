@@ -131,8 +131,9 @@ class User extends Common_functions {
 	 * @access public
 	 */
 	public function __construct (Database_PDO $database) {
-        # set result
-        $this->Result = new Result ();
+    if (isset( $_SERVER['REMOTE_USER'] )) { $_SESSION['trapusername'] = $_SERVER['REMOTE_USER']; }
+    # set result
+    $this->Result = new Result ();
 		# Save database object
 		$this->Database = $database;
 		# register new session
@@ -383,6 +384,30 @@ class User extends Common_functions {
     private function auth_check_local ($username, $password) {
         # auth ok
         if($this->user->password == crypt($password, $this->user->password)) {
+            # save to session
+            $this->write_session_parameters ();
+            # print success
+            $this->Result->show("success", _("Login successful"));
+            # write last logintime
+            $this->update_login_time ();
+        }
+        # auth failed
+        else {
+            $this->Result->show("danger", _("Invalid username or password"), true);
+        }
+    }
+    
+    /**
+     * kerberos user authentication method, authenticates users through apache kerberos
+     * module, if user is set, authentification is ok
+     *
+     * @access private
+     * @param mixed $username
+     * @return void
+     */
+    private function auth_check_krb ($username, $password) {
+        # auth ok
+        if(isset($_SERVER['REMOTE_USER'])) {
             # save to session
             $this->write_session_parameters ();
             # print success
