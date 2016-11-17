@@ -28,7 +28,7 @@ $phpsessname = "snmptrapd";
  * 	is not in root directory (e.g. /snmptraps/)
  ******************************/
 if(!defined('BASE'))
-define('BASE', "/");
+define('BASE', "/index.php");
 
 
 
@@ -134,7 +134,7 @@ $notification_params['sms'] = array(
  */
 $notification_params['mail'] = array (
     "type"=>"localhost",                    // mailserver type ('localhost','smtp')
-    "server"=>array("127.0.0.1"),           // array of mailservers
+    "server"=>"127.0.0.1",                  // array of mailservers seperated by ;
     "port"=>25,                             // smtp port number
     "security"=>"none",                     // security type ('none','ssl','tls')
     "auth"=>false,                          // authentication (true, false)
