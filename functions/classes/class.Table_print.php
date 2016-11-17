@@ -187,7 +187,7 @@ class Table_print_snmp {
                 // set severity
                 $severity = $this->set_severity_class ($f->severity, $newClass);
                 // save
-                $html[] = "<tr class='$severity tooltip2' data-id='$f->id' title='".str_replace("\n", "<br>", $f->content)."'>";
+                $html[] = "<tr class='$severity tooltip2' data-id='$f->id' title='".str_replace("\n", "<br>", htmlspecialchars($f->content, ENT_QUOTES))."'>";
                 // format
                 $f = $this->format_snmp_table_content ($f, false, $newClass);
                 // loop
