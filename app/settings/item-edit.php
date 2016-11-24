@@ -43,6 +43,10 @@ else {
         $item = true;
     }
 
+
+    // table definitions
+    $fields_db = $Common->get_table_definition($_GET['script']);
+
     // distinct hosts
     $uniq = $Common->fetch_unique_items ("traps", "hostname");
     if ($uniq!==false) {
@@ -50,9 +54,6 @@ else {
             $unique_hosts[] = $u->hostname;
         }
     }
-
-    // table definitions
-    $fields_db = $Common->get_table_definition($_GET['script']);
 
     // remove unneeded
     if ($_GET['script']=="users") {

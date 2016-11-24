@@ -507,7 +507,7 @@ class Table_print extends Table_print_snmp {
      */
     public function prepare_input_item ($field, $value = false, $additional_params = false) {
         // severities override
-        if ($field->Field=="notification_severities" || $field->Field=="notification_types" || $field->Field=="hostnames") {
+        if ($field->Field=="notification_severities" || $field->Field=="notification_types") {
             return $this->prepare_multiple_checkboxes ($field, $value, $additional_params);
         }
         // varchar
