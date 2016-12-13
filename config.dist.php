@@ -157,6 +157,21 @@ $notification_params['pushover'] = array (
     "key"=>""        // Pushover APP group / user key
 );
 
+/**
+ * slack parameters
+ *
+ *  if slack/mattermost selected for notifications
+ *
+ *
+ * @var array
+ */
+$notification_params['slack'] = array (
+    "url"=>"",              // url
+    "key"=>"",              // key
+    "mentions"=>array (),   // (optional) mentions (include @)
+    "channel"=>""           // (optional) channel name (example: off-topic)
+);
+
 
 
 

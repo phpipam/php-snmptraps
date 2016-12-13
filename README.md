@@ -22,6 +22,7 @@ Notifications are set per-user/severity, by default aupported are:
 * Email notification
 * Pushover notification
 * SMS notification
+* Slack/Mattermost notification
 
 The can be easily extended to any other custom notification type.
 
@@ -40,15 +41,15 @@ First, edit file `/etc/snmp/snmptrapd.conf` and add traphandler for default file
 agentaddress my_ip_address:162
 # set php-snmptraps as default trap handler
 traphandle default /usr/bin/php /var/www/traphandler.php
-``` 
+```
 
 2.Prepare and edit config file
 
 Now go to /var/www/ directory and copy config.dist.php to config.php:
 ```
 cp /var/www/config.dist.php /var/www/config.php
-``` 
-and edit the config file to match your settings. 
+```
+and edit the config file to match your settings.
 
 
 3.Set mod_rewrite
@@ -85,7 +86,7 @@ That should be it, fire up browser and login. Default user/pass is Admin/snmptra
 
 To test snmptrap you can use the following command:
 
-```snmptrap -v 2c -c public my_public_ip '' .1.3.6.1.4.1.2636.4.1.1 .1.3.6.1.4.1.2636.4.1.1 s "Power supply failure"``` 
+```snmptrap -v 2c -c public my_public_ip '' .1.3.6.1.4.1.2636.4.1.1 .1.3.6.1.4.1.2636.4.1.1 s "Power supply failure"```
 
 Check also the file you set in config.php for possible errors:
 

@@ -792,4 +792,164 @@ class pushover {
     }
 }
 
+
+
+
+/**
+ * slack class to send pushover notifications to slack via webhooks
+ *
+ *
+ * @author: Miha Petkovsek <miha.petkovsek@gmail.com>
+ */
+class slack {
+
+    /**
+     * slack APP URL
+     *
+     *
+     * @var array
+     */
+    private $url = false;
+
+    /**
+     * Pushover webhook key
+     *
+     * (default value: false)
+     *
+     * @var string
+     */
+    private $key = false;
+
+    /**
+     * Channel to send to
+     *
+     * @var string
+     */
+    private $channel = "";
+
+    /**
+     * Mentions
+     *
+     * @var string
+     */
+    private $mentions = "";
+
+    /**
+     * Username to send via
+     *
+     * note: Enable Overriding of Usernames from Webhooks must be enabled
+     *
+     * @var string
+     */
+    private $username = "php-snmptraps";
+
+    /**
+     * Color
+     *
+     * @var string
+     */
+    private $color = "#333333";
+
+
+    /**
+     * __construct function.
+     *
+     * @access public
+     * @param array $params (default: array())
+     * @return void
+     */
+    public function __construct($params = array()) {
+        // import parameters from config file
+        include(dirname(__FILE__)."/../../config.php");
+        $this->settings = array();
+        $this->settings = array("url"=>$url);
+
+        // check
+        if (!isset($params['slack']['url']) && !isset($params['slack']['key']))  { $this->write_error ("Error: Invalid slack parameters"); ; }
+        // save params
+        $this->url = $params['slack']['url'];
+        $this->key = $params['slack']['key'];
+        // set optional params
+        if(isset($params['slack']['channel'])) {
+            if(strlen($params['slack']['channel'])>0) {
+                $this->channel = $params['slack']['channel'];
+            }
+        }
+        if(isset($params['slack']['mentions'])) {
+            if(sizeof($params['slack']['mentions'])>0) {
+                foreach ($params['slack']['mentions'] as $m) {
+                    $this->mentions .= $m." ";
+                }
+            }
+        }
+        if(isset($params['slack']['username'])) {
+            if(strlen($params['slack']['username'])>0) {
+                $this->username = $params['slack']['username'];
+            }
+        }
+    }
+
+    /**
+     * Sets POST alert to webhooks service.
+     *
+     *  https://your_url/hooks/hooks_key
+     *
+     *  test: curl -i -v -X POST -d 'payload={"text": "New trap received."}' https://your_url/hooks/your_key
+     *
+     * @access public
+     * @param mixed $message_details
+     * @param mixed $recipients
+     * @return void
+     */
+    public function send ($message_details, $recipients) {
+        // set color
+        $this->set_color($message_details->severity);
+        // set payload
+        $payload = array (
+                            "username"    => $this->username,
+                            "fallback"    => $this->mentions." [".$message_details->severity."] ".$message_details->hostname." ".$message_details->oid."\n".implode("\n", $message_details->content),
+                            "mrkdwn"      => true,
+                            "text"        => $this->mentions." new snmp trap received",
+                            "attachments" => array (
+                                                   array (
+                                                            "color"      => $this->color,
+                                                            "title"      => "[".$message_details->severity."] ".$message_details->hostname." ".$message_details->oid,
+                                                            "title_link" => $this->settings['url']."message/".base64_encode($message_details->msg)."/",
+                                                            "text"       => "* ".implode("\n* ", $message_details->content)
+                                                        )
+                                                   )
+                          );
+        // set channel
+        if($this->channel != "") {
+            $payload['channel'] = $this->channel;
+        }
+        // to json
+        $payload = "payload=".json_encode($payload);
+        // init curl
+        curl_setopt_array($ch = curl_init(), array(
+            // set URL
+            CURLOPT_URL => $this->url.$this->key,
+            CURLOPT_POSTFIELDS => $payload
+            )
+        );
+        // send
+        curl_exec($ch);
+        // close
+        curl_close($ch);
+    }
+
+    /**
+     * Sets color to links
+     *
+     * @method set_color
+     * @param  string    $s
+     */
+    private function set_color ($s) {
+        if ($s=="emergency" || $s=="alert" || $s=="critical")       { $this->color = "#A7254E"; }
+        elseif ($s=="error" || $s=="warning")                       { $this->color = "#D66300"; }
+        elseif ($s=="notice"|| $s=="debug" || $s=="informational")  { $this->color = "#66AA00"; }
+        else                                                        { $this->color = "#3366CC"; }
+    }
+}
+
 ?>
