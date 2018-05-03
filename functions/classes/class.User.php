@@ -166,8 +166,8 @@ class User extends Common_functions {
 		//set session name
 		$this->set_session_name();
 		//register session
-		session_name($this->sessname);
 		if(@$_SESSION===NULL) {
+		session_name($this->sessname);
 		session_start();
 		}
 	}
@@ -396,7 +396,7 @@ class User extends Common_functions {
             $this->Result->show("danger", _("Invalid username or password"), true);
         }
     }
-    
+
     /**
      * kerberos user authentication method, authenticates users through apache kerberos
      * module, if user is set, authentification is ok
