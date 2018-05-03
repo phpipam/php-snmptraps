@@ -34,6 +34,7 @@ if (isset($_GET['page'])) {
     print "<div class='container-fluid text-right row'>";
     print "<div class='col-lg-6 col-sm-12'></div>";
     print "<div class='col-lg-6 col-sm-12 hosts-wrapper'>";
+    if(isset($unique_hosts)) {
     foreach ($unique_hosts as $h) {
         // ignore unknown
         if ($h->hostname!="<UNKNOWN>") {
@@ -42,6 +43,7 @@ if (isset($_GET['page'])) {
             // print
             print "<span class='badge badge1 badge5 marged $active'><a href='host/$h->hostname/'>$h->hostname</a></span>";
         }
+    }
     }
     print "</div>";
     print "</div>";

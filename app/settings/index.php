@@ -4,12 +4,12 @@ $User->is_admin ();
 
 // items
 $items = array(
-    "general" => "General settings",
+    "general"              => "General settings",
     "severity_definitions" => "Severity definitions",
-    "exceptions" => "Ignored messages",
-    "maintaneance" => "Maintaneance",
-    "mibs" => "MIB files",
-    "users" => "User management"
+    "exceptions"           => "Ignored messages",
+    "maintaneance"         => "Maintenance",
+    "mibs"                 => "MIB files",
+    "users"                => "User management"
 );
 // default
 if(!isset($_GET['page']))   { $_GET['page'] = "severity_definitions"; }

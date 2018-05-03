@@ -1,8 +1,8 @@
 <h4 class="red">Ignored messages (Exceptions)</h4>
 <br>
 
-Below messages will not be placed to database, and notification message for below definitions will not be sent. If only OID is set, than trap containing this OID will not be processes.
-If hostname is set it will match hostname also, same goes for messages for better fine-tuning.
+Messages listed here will not be written to the database and Notifications will not be sent.
+If either only the OID, hostname or the message is set, then traps containing this OID, hostname or message will not be processed. This allows for more granular control and better fine tuning.
 <br><br>
 <?php
 

@@ -14,7 +14,7 @@ It comes with nice HMTL5 UI:
 
 and more.
 
-You can set severity level for each received message, ignore specific message types, create maintaneance periods
+You can set severity level for each received message, ignore specific message types, create maintenance periods
 for hosts, set per-user quiet hours and more.
 
 

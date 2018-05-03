@@ -1,7 +1,7 @@
-<h4 class="red">Maintaneance periods for hosts</h4>
+<h4 class="red">Maintenance periods for hosts</h4>
 <br>
 
-Here you can set maintaneance periods for specific hosts. During maintaneance period you will not be receiving notifications for this host, but notifications will still be arraving to database.
+Here you can set maintenance periods for specific hosts. Notifications will be disabled for the duration of Maintenance period for such hosts. Notifications will still be received and written to the database.
 <br><br>
 <?php
 
@@ -51,5 +51,3 @@ $Table_print->print_add_item ("app/settings/item-edit.php", "maintaneance");
 print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
 $Table_print->print_table ($maintaneance, true, "app/settings/item-edit.php", "maintaneance");
 print "</table>";
-
-?>
