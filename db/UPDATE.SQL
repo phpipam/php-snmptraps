@@ -7,3 +7,7 @@ ALTER TABLE `users` CHANGE `role` `role` SET('user','operator','administrator') 
 -- add hostnames to filter permitted hosts
 ALTER TABLE `users` ADD `hostnames` text COLLATE utf8_bin NOT NULL;
 
+
+/* @version 0.2.1 */
+ALTER TABLE `traps` ADD INDEX `severity` (`severity`);
+ALTER TABLE `traps` ADD INDEX `hostname` (`hostname`);

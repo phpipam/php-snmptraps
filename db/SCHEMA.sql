@@ -111,14 +111,15 @@ CREATE TABLE `traps` (
   `hostname` varchar(32) DEFAULT NULL,
   `ip` varchar(15) DEFAULT NULL,
   `oid` varchar(128) DEFAULT NULL,
-  `date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `date` timestamp NULL DEFAULT current_timestamp(),
   `message` varchar(256) DEFAULT NULL,
   `severity` varchar(32) DEFAULT 'unknown',
-  `content` text,
-  `raw` text,
-  PRIMARY KEY (`id`)
+  `content` text DEFAULT NULL,
+  `raw` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `severity` (`severity`),
+  KEY `hostname` (`hostname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 
 
 # Dump of table users
