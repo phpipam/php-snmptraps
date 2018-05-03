@@ -66,8 +66,6 @@ var_dump($mibs_processed);
 // print snmp location info
 $Result->show("info", "MIB directory: ".$Snmp_read_MIB->mib_directory, false);
 # print table
-print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
+print "<table class='table snmp sorted table-noborder table-condensed table-hover' data-cookie-id-table='settings_mib'>";
 $Table_print->print_table ($mibs_processed, true, "", "");
 print "</table>";
-
-?>

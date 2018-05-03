@@ -6,10 +6,8 @@
 # functions
 require('../../functions/functions.php');
 
-
 # valid scriots
 $scripts = array("maintaneance", "exceptions", "severity_definitions", "users");
-
 
 # Objects
 $Database   = new Database_PDO;
@@ -33,7 +31,6 @@ $notification_severities = array();
 # strip tags
 $_POST = $User->strip_input_tags ($_POST);
 
-
 // loop
 foreach ($_POST as $k=>$p) {
     if (strpos($k, "notification_types")!==false) {
@@ -54,7 +51,6 @@ $_POST['notification_severities'] = implode(";", $notification_severities);
 if (strlen($_POST['notification_types'])==0)        { $_POST['notification_types'] = "none"; }
 if (strlen($_POST['notification_severities'])==0)   { $_POST['notification_severities'] = "none"; }
 
-
 // password
 if(strlen($_POST['password'])==0)                   { unset($_POST['password']); }
 elseif (strlen($_POST['password'])<8)               { $Result->show("danger", "Invalid password - 8 characters required!", true); }
@@ -69,7 +65,6 @@ if(isset($_POST['last_activity']))                  { unset($_POST['last_activit
 if(isset($_POST['username']))                       { unset($_POST['username']); }
 if(isset($_POST['hostnames']))                      { unset($_POST['hostnames']); }
 
-
 // add action
 $_POST['action'] = "edit";
 $_POST['id'] = $User->user->id;
@@ -77,5 +72,3 @@ $_POST['id'] = $User->user->id;
 // execute
 if($Common->update_object ("users", $_POST)===true)        { $Result->show ("success", 'Profile updated', false); }
 else                                                       { $Result->show ("danger",  'Failed to update profile', false);}
-
-?>

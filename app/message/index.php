@@ -77,8 +77,7 @@ if (isset($_GET['page'])) {
 
 
     # print table
-    print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
+    print "<table class='table snmp sorted table-noborder table-condensed table-hover' data-cookie-id-table='message'>";
     $Table_print->print_snmp_table ($all_traps, true, true, false, true);
     print "</table>";
 }
-?>

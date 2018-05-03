@@ -6,10 +6,8 @@
 # functions
 require('../../functions/functions.php');
 
-
 # valid scriots
 $scripts = array("maintaneance", "exceptions", "severity_definitions", "users");
-
 
 # Objects
 $Database   = new Database_PDO;
@@ -62,4 +60,3 @@ $content = implode("\n", $html);
 
 # print modal
 $Modal->modal_print ($title, $content, "Save", "app/settings/user-self-edit-submit.php");
-?>

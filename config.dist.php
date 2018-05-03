@@ -207,5 +207,3 @@ $title = "Snmptraps server";
  * @access public
  */
 $footer = "php-snmptrap management";
-
-?>

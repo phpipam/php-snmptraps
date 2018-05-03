@@ -35,7 +35,7 @@ print "<div class='container-fluid row'>";
 # critical
 print "<h4>Live message update</h4><hr>";
 print "<div class='container pull-left'>Messages will be updated every 15 seconds</div>";
-print "<table class='table snmp live sorted table-noborder table-condensed table-hover'>";
+print "<table class='table snmp live sorted table-noborder table-condensed table-hover' data-cookie-id-table='live'>";
 $Table_print->print_snmp_table ($traps, true, true, false, true);
 print "</table>";
 

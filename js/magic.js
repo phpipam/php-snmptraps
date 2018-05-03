@@ -157,8 +157,7 @@ function readCookie(name) {
     return null;
 }
 
-
-$('th.header-full_screen i').click(function() {
+$(document).on("click", 'th.header-full_screen', function() {
    // toggle fullscreen class
    $(this).closest('div.container-fluid').toggleClass('full_screen full_screen_live');
    $('nav.navbar, .search-wrapper, .footer, .hosts-wrapper, .message-wrapper').toggleClass('hidden');
@@ -202,24 +201,26 @@ $('form#login').submit(function() {
 //default row count
 if(readCookie('table-page-size')==null) { def_size = 25; }
 else                                    { def_size = readCookie('table-page-size'); }
-// table
-$('table.sorted').bdt({
-   pageRowCount: def_size,
-   searchFormClass: 'form-inline pull-right',
-   divClass: 'text-right'
-});
-$('table.sorted-left').bdt({
-   pageRowCount: def_size,
-   searchFormClass: 'form-inline pull-left clearfix',
-   divClass: 'text-left clearfix'
-});
-$('table.sorted').stickyTableHeaders();
-$("li.disabled a").click(function () {
-   return false;
-});
-$('form.search-form').submit(function() {
-   return false;
-})
+
+// bootstrap-table general
+$('table.sorted')
+                 .attr("data-toggle", "table")
+                 .attr('data-pagination', 'true')
+                 .attr('data-page-size', '50')
+                 .attr('data-page-list', '[50,100,250,500,All]')
+                 .attr('data-search','true')
+                 .attr('data-classes','table-no-bordered')
+                 .attr('data-icon-size','sm')
+                 .attr('data-show-footer','false')
+                 .attr('data-show-columns','true')
+                 .attr('data-icons-prefix','fa')
+                 .attr('data-icons','icons')
+                 .attr('data-cookie', 'true')
+                 .attr('data-sortable', 'false')
+                 .attr('onlyInfoPagination', 'true')
+                 .attr('smartDisplay', true)
+                 .attr('showPaginationSwitch', true)
+                 .attr('minimumCountColumns', true)
 
 
 return false;

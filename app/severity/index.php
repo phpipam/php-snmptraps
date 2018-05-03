@@ -40,11 +40,8 @@ print "<div class='container-fluid row'>";
 
 # critical
 print "<h4>".ucwords($_GET['page'])." severities</h4><hr>";
-print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
+print "<table class='table snmp sorted table-noborder table-condensed table-hover'  data-cookie-id-table='severity'>";
 $Table_print->print_snmp_table ($traps, true, true, false, true);
 print "</table>";
 
 print "</div>";
-
-
-?>

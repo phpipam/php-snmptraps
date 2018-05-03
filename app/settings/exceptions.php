@@ -42,8 +42,6 @@ $Table_print->set_snmp_table_fields ($tfields);
 // print add item
 $Table_print->print_add_item ("app/settings/item-edit.php", "exceptions");
 # print table
-print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
+print "<table class='table snmp sorted table-noborder table-condensed table-hover' data-cookie-id-table='settings_exceptions'>";
 $Table_print->print_table ($maintaneance, true, "app/settings/item-edit.php", "exceptions");
 print "</table>";
-
-?>

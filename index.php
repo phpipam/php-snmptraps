@@ -49,18 +49,19 @@ else {
 	<title><?php print $title; ?></title>
 
 	<!-- css -->
-	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">
-<!-- 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-custom.css"> -->
-	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-custom-black.css">
-	<link rel="stylesheet" type="text/css" href="css/font-awesome/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css?v=<?php print implode(".", $version); ?>">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-custom-black.css?v=<?php print implode(".", $version); ?>">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-table/bootstrap-table.min.css?v=<?php print implode(".", $version); ?>">
+	<link rel="stylesheet" type="text/css" href="css/font-awesome/font-awesome.min.css?v=<?php print implode(".", $version); ?>">
 
 	<!-- js -->
 	<script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
-	<script type="text/javascript" src="js/magic.js"></script>
-	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/magic.js?v=<?php print implode(".", $version); ?>"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js?v=<?php print implode(".", $version); ?>"></script>
 	<script type="text/javascript" src="js/tooltip.js"></script>
-	<script type="text/javascript" src="js/bdt/jquery.sortelements.js"></script>
-	<script type="text/javascript" src="js/bdt/jquery.bdt.js"></script>
+	<script type="text/javascript" src="js/bootstrap-table/bootstrap-table.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap-table/bootstrap-table-cookie.js"></script>
+
 	<script type="text/javascript" src="js/stickytableheaders/jquery.stickytableheaders.min.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){

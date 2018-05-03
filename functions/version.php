@@ -24,7 +24,7 @@ $version['master'] = "0";
  * @var mixed
  * @access public
  */
-$version['minor']  = "1";
+$version['minor']  = "2";
 
 /**
  * Patch
@@ -32,6 +32,4 @@ $version['minor']  = "1";
  * @var mixed
  * @access public
  */
-$version['patch']  = "10";
-
-?>
+$version['patch']  = "1";

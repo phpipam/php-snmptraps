@@ -93,10 +93,7 @@ if ($error!==true) {
 
 
     # print table
-    print "<table class='table snmp sorted table-noborder table-condensed table-hover'>";
+    print "<table class='table snmp sorted table-noborder table-condensed table-hover' data-cookie-id-table='search'>";
     $Table_print->print_snmp_table ($traps, true, true, false, true);
     print "</table>";
 }
-
-
-?>

@@ -41,8 +41,6 @@ $Table_print->set_snmp_table_fields ($tfields);
 // print add item
 $Table_print->print_add_item ("app/settings/item-edit.php", "users");
 # print table
-print "<table class='table snmp sorted table-noborder table-hover'>";
+print "<table class='table snmp sorted table-noborder table-hover' data-cookie-id-table='settings_users'>";
 $Table_print->print_table ($users, true, "app/settings/item-edit.php", "users");
 print "</table>";
-
-?>
