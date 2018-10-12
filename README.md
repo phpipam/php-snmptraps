@@ -27,6 +27,15 @@ Notifications are set per-user/severity, by default aupported are:
 The can be easily extended to any other custom notification type.
 
 
+## screenshots
+
+Some sample UI screenshots can be found below:
+!(/css/screenshots/Screen1.png?raw=true "Screen1")
+!(/css/screenshots/Screen2.png?raw=true "Screen2")
+!(/css/screenshots/Screen3.png?raw=true "Screen3")
+!(/css/screenshots/Screen4.png?raw=true "Screen4")
+
+
 ## setup
 
 This guide assumes you have a working net-snmp, apache, php and mysql installation with default apache files stored
