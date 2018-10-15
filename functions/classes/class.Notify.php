@@ -532,21 +532,23 @@ class mail {
 
         # set mail body content
         $body = array();
-        $body[] = "<div style='padding:10px;'>";
+        $body[] = "<div style='padding:10px;'><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;color:#333;'>";
         $body[] = "New snmp trap received:";
         $body[] = "<br><br>";
-        $body[] = "Hostname: ".$message_details->hostname."<br>";
-        $body[] = "IP: ".$message_details->ip."<br>";
-        $body[] = "Message: ".$message_details->msg."<br>";
-        $body[] = "Date: ".date("d/m H:i:s")."<br>";
-        $body[] = "Severity: ".$message_details->severity."<br>";
-        $body[] = "OID: ".$message_details->oid."<br>";
-        $body[] = "Content:<br>&nbsp;&nbsp;&nbsp; ".implode("<br>&nbsp;&nbsp;&nbsp; ", $message_details->content)."<br>";
-        $body[] = "</div>";
+        $body[] = "<table>";
+        $body[] = "<tr><td>Hostname:</td><td style='padding-left: 10px;'><strong>".$message_details->hostname."</strong></td></tr>";
+        $body[] = "<tr><td>IP:</td><td style='padding-left: 10px;'>".$message_details->ip."</td></tr>";
+        $body[] = "<tr><td>Message:</td><td style='padding-left: 10px;'><strong>".$message_details->msg."</strong></td></tr>";
+        $body[] = "<tr><td>Date:</td><td style='padding-left: 10px;'>".date("d/m/Y H:i:s")."</td></tr>";
+        $body[] = "<tr><td>Severity:</td><td style='padding-left: 10px;'><strong>".$message_details->severity."</strong></td></tr>";
+        $body[] = "<tr><td>OID:</td><td style='padding-left: 10px;'>".$message_details->oid."</td></tr>";
+        $body[] = "<tr><td><strong>Content</strong>:</td><td style='padding-left: 10px;vertical-align:top;'>".implode("<br>", $message_details->content)."</td></tr>";
+        $body[] = "</table>";
+        $body[] = "</font></div>";
 
         # get content
         $mail_content_html  = $this->generate_message (implode("\r\n", $body));
-        $mail_content_plain = $this->generate_message_plain (implode("\r\n", $body));
+        $mail_content_plain = $this->generate_message_plain (implode("\r\n", strip_tags(str_replace("<br>","\n",$body))));
 
         # try to send
         try {
@@ -651,12 +653,12 @@ class mail {
 	public function set_footer () {
 		$html[] = "<table style='margin-left:10px;margin-top:25px;width:auto;padding:0px;border-collapse:collapse;'>";
 		$html[] = "<tr>";
-		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:13px;'>E-mail</font></td>";
-		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:13px;'><a href='mailto:".$this->mail_settings->from."' style='color:#08c;'>".$this->mail_settings->from."</a></font></td>";
+		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;'>E-mail</font></td>";
+		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;'><a href='mailto:".$this->mail_settings->from."' style='color:#08c;'>".$this->mail_settings->from."</a></font></td>";
 		$html[] = "</tr>";
 		$html[] = "<tr>";
-		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:13px;'>www</font></td>";
-		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:13px;'><a href='".$this->settings['url']."message/".base64_encode($this->message_details->msg)."/' style='color:#08c;'>".$this->settings['url']."message/".base64_encode($this->message_details->msg)."/</a></font></td>";
+		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;'>www</font></td>";
+		$html[] = "	<td><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;'><a href='".$this->settings['url']."message/".base64_encode($this->message_details->msg)."/' style='color:#08c;'>".$this->settings['url']."message/".base64_encode($this->message_details->msg)."/</a></font></td>";
 		$html[] = "</tr>";
 		$html[] = "</table>";
 		# return
