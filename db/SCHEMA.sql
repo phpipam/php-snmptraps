@@ -143,6 +143,7 @@ CREATE TABLE `users` (
   `last_login` timestamp NULL DEFAULT NULL,
   `last_activity` timestamp NULL DEFAULT NULL,
   `reload_page` INT(32)  NULL  DEFAULT '900',
+  `dash_layout` VARCHAR(128)  NULL  DEFAULT '6:30;6:30;12:15;12:15',
   `hostnames` text COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`username`),
   KEY `id` (`id`)

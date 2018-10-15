@@ -24,7 +24,7 @@ $version['master'] = "0";
  * @var mixed
  * @access public
  */
-$version['minor']  = "2";
+$version['minor']  = "3";
 
 /**
  * Patch
@@ -32,7 +32,7 @@ $version['minor']  = "2";
  * @var mixed
  * @access public
  */
-$version['patch']  = "7";
+$version['patch']  = "0";
 
 /**
  * Minimum php version required

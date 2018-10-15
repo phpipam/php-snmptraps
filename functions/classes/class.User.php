@@ -369,7 +369,45 @@ class User extends Common_functions {
 
 			// set permitted hosts
 			$this->set_permitted_hosts ();
+			// set dashboard layout
+			$this->set_dash_layout ();
 		}
+	}
+
+	/**
+	 * Set dashbooard layout
+	 * @method set_dash_layout
+	 */
+	private function set_dash_layout () {
+		// set default result
+		$res    = [];
+		$res[0] = ["width"=>6,  "elements"=>30];
+		$res[1] = ["width"=>6,  "elements"=>30];
+		$res[2] = ["width"=>12, "elements"=>15];
+		$res[3] = ["width"=>12, "elements"=>15];
+
+		// check if set in dB
+		if(isset($this->user->dash_layout)) {
+			// validate
+			$elements = explode(";", $this->user->dash_layout);
+			// check - must be 4 elements
+			if(sizeof($elements)==4) {
+				foreach ($elements as $cnt=>$el) {
+					$e = explode(":", $el);
+					if (is_numeric($e[0]) && is_numeric($e[1])) {
+						//dont show
+						if ($e[1]=="0") {
+							unset($res[$cnt]);
+						}
+						else {
+							$res[$cnt] = ["width"=>$e[0], "elements"=>$e[1]];
+						}
+					}
+				}
+			}
+		}
+		// save
+		$this->user->dash_layout_parsed = $res;
 	}
 
     /**

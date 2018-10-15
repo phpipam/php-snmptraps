@@ -48,7 +48,10 @@ foreach ($fields_db as $f) {
         // content
         $html[] = "<tr>";
         $html[] = " <td>$f->Field <span class='alert alert-danger'>$required</span></td>";
-        $html[] = " <td>".$Table_print->prepare_input_item ($f, $User->user->{$f->Field})."</td>";
+        $html[] = " <td>".$Table_print->prepare_input_item ($f, $User->user->{$f->Field});
+        if(strlen($f->Default)>0 && (strpos($f->Type, "varchar")!==false || strpos($f->Type, "int")!==false || strpos($f->Type, "time")!==false))
+        $html[] = "     <span class='text-muted' style='color:#666;'>Default: ".$f->Default."</span>";
+        $html[] = " </td>";
         $html[] = "</tr>";
     }
 }
