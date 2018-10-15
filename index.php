@@ -79,8 +79,12 @@ else {
 <!-- loader -->
 <div class="loading"><?php print _('Loading');?>...<br><i class="fa fa-spinner fa-spin"></i></div>
 
-<!-- header -->
+<?php
+// validate php vesrsion
+require('functions/check_version.php');
+?>
 
+<!-- header -->
 <div class="container-fluid" style="margin:0px;padding:0px;">
 	<?php include('app/top-menu.php'); ?>
 </div>

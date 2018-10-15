@@ -73,7 +73,7 @@ $ad = array (
  * @var string|bool
  * @access public
  */
-$filename = "/tmp/traps.txt";
+$filename = false;
 
 /**
  * Default MIB directory

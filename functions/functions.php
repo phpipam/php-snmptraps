@@ -17,5 +17,3 @@ require( dirname(__FILE__) . '/classes/class.User.php' );
 require( dirname(__FILE__) . '/classes/class.SNMP.php' );
 require( dirname(__FILE__) . '/classes/class.Table_print.php' );
 require( dirname(__FILE__) . '/classes/class.Modal.php' );
-
-?>

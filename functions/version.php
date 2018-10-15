@@ -33,3 +33,11 @@ $version['minor']  = "2";
  * @access public
  */
 $version['patch']  = "7";
+
+/**
+ * Minimum php version required
+ *
+ * @var mixed
+ * @access public
+ */
+$version['php'] = "7.0";

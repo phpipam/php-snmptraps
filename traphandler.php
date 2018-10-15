@@ -20,6 +20,11 @@ require( dirname(__FILE__) . '/functions/classes/class.Result.php' );
 require( dirname(__FILE__) . '/functions/classes/class.Notify.php' );
 require( dirname(__FILE__) . '/functions/classes/class.traphandler.php' );
 require( dirname(__FILE__) . '/config.php' );
+require( dirname(__FILE__) . '/functions/version.php' );
+
+
+# --- check php version
+require('functions/check_version.php');
 
 
 # --- process
@@ -60,5 +65,3 @@ if ($notification_methods !== false && $Trap->exception === false) {
 
 # --- close connaection and file
 $File->close_file ();
-
-?>
