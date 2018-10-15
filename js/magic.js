@@ -194,14 +194,6 @@ $('form#login').submit(function() {
     return false;
 });
 
-
-
-
-
-//default row count
-if(readCookie('table-page-size')==null) { def_size = 25; }
-else                                    { def_size = readCookie('table-page-size'); }
-
 // bootstrap-table general
 $('table.sorted')
                  .attr("data-toggle", "table")
@@ -215,13 +207,54 @@ $('table.sorted')
                  .attr('data-show-columns','true')
                  .attr('data-icons-prefix','fa')
                  .attr('data-icons','icons')
-                 .attr('data-cookie', 'true')
-                 .attr('data-sortable', 'false')
-                 .attr('onlyInfoPagination', 'true')
+                 // .attr('data-cookie', 'true')
+                 .attr('onlyInfoPagination', 'false')
                  .attr('smartDisplay', true)
                  .attr('showPaginationSwitch', true)
                  .attr('minimumCountColumns', true)
+                 .attr('data-sortable', 'true')
+                 .attr('data-sort-order', 'desc')
+                 .attr('data-sort-name', 'date')
+
+$('table.sorted-ajax')
+                .attr('data-side-pagination','server')
+                .attr('data-toggle','table')
+                .attr('data-row-style','rowClass')
 
 
 return false;
 });
+
+
+
+
+/**
+ *
+ * datatable field formatter for live loading data
+ *
+ */
+
+/**
+ * Add class to row
+ */
+function rowClass (row,index) {
+    return {
+        classes: row.classes
+    };
+}
+
+/**
+ * Add class to td cell
+ */
+function cellStyleMessage(value, row, index) {
+    return {
+        classes: "field-message"
+    };
+}
+
+/**
+ * Format ID field
+ */
+function formatter_id (value) {
+    return "<div class='btn-group'><a class='btn btn-default btn-xs load-modal-big' href='app/trap/popup.php?id="+value+"'><i class='fa fa-eye'></i></a><a class='btn btn-default btn-xs' href='trap/"+value+"/'><i class='fa fa-angle-right' style='width:12px;'></i></a></div>";
+}

@@ -59,10 +59,10 @@ else {
 	<script type="text/javascript" src="js/magic.js?v=<?php print implode(".", $version); ?>"></script>
 	<script type="text/javascript" src="js/bootstrap.min.js?v=<?php print implode(".", $version); ?>"></script>
 	<script type="text/javascript" src="js/tooltip.js"></script>
-	<script type="text/javascript" src="js/bootstrap-table/bootstrap-table.min.js"></script>
-	<script type="text/javascript" src="js/bootstrap-table/bootstrap-table-cookie.js"></script>
+	<script type="text/javascript" src="js/bootstrap-table/bootstrap-table.min.js?v=<?php print implode(".", $version); ?>"></script>
+	<script type="text/javascript" src="js/bootstrap-table/bootstrap-table-cookie.js?v=<?php print implode(".", $version); ?>"></script>
 
-	<script type="text/javascript" src="js/stickytableheaders/jquery.stickytableheaders.min.js"></script>
+	<script type="text/javascript" src="js/stickytableheaders/jquery.stickytableheaders.min.js?v=<?php print implode(".", $version); ?>"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
 	     if ($("[rel=tooltip]").length) { $("[rel=tooltip]").tooltip(); }

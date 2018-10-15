@@ -56,14 +56,14 @@ class Table_print_snmp {
      */
     protected function set_default_table_fields () {
         $this->tfields = array(
-                                "id"=>"ID",
-                                "hostname"=>"Hostname",
-                                "ip"=>"IP address",
-                                "oid"=>"OID",
-                                "date"=>"Date",
-                                "message"=>"Message",
-                                "severity"=>"Severity",
-                                "content"=>"Content"
+                                "id"       => "ID",
+                                "hostname" => "Hostname",
+                                "ip"       => "IP address",
+                                "oid"      => "OID",
+                                "date"     => "Date",
+                                "message"  => "Message",
+                                "severity" => "Severity",
+                                "content"  => "Content"
                                 );
     }
 
@@ -104,6 +104,7 @@ class Table_print_snmp {
         if ($headers)
         $this->print_snmp_table_headers ($fullScreen);
         //table
+        if($tbody)
         $this->print_snmp_table_content ($table, $tbody, $newClass, $fullScreen);
     }
 
@@ -153,11 +154,17 @@ class Table_print_snmp {
         foreach ($this->tfields as $k=>$f) {
             // set hidden
             $hidden = in_array($k, array("ip", "content", "header-full_screen")) ? "hidden-xs" : "";
+            // set formatter for json table
+            switch ($k) {
+                case "id"      : $formatter = " data-formatter='formatter_$k'"; break;
+                case "message" : $formatter = " data-cell-style='cellStyleMessage'"; break;
+                default        : $formatter = "";
+            }
             // save
-            $html[] = "<th id='header-$k' class='$hidden'>$f</th>";
+            $html[] = "<th id='header-$k' class='$hidden' data-field='$k' data-row-attributes='field-$k' $formatter>$f</th>";
         }
         if($fullScreen)
-        $html[] = "<th class='header-full_screen disable-sorting'><i class='fa fa-arrows-alt'></i></th>";
+        $html[] = "<th class='header-full_screen disable-sorting' data-field='full_screen'><i class='fa fa-arrows-alt'></i></th>";
         $html[] = "</tr>";
         $html[] = "</thead>";
         // join and print
@@ -222,12 +229,12 @@ class Table_print_snmp {
     /**
      * Sets tr class
      *
-     * @access private
+     * @access public
      * @param mixed $s
      * @param bool $newClass    //needed for live update
      * @return void
      */
-    private function set_severity_class ($s, $newClass) {
+    public function set_severity_class ($s, $newClass) {
         // red
         if ($s=="emergency" || $s=="alert" || $s=="critical")       { $c = "danger"; }
         elseif ($s=="error" || $s=="warning")                       { $c = "warning"; }
@@ -246,7 +253,7 @@ class Table_print_snmp {
      * @param mixed $newClass
      * @return void
      */
-    private function format_snmp_table_content ($line, $single = false, $newClass = false) {
+    public function format_snmp_table_content ($line, $single = false, $newClass = false) {
         // format
         foreach ($line as $k=>$v) {
             if ($k=="severity")        { $line->severity = $this->format_snmp_table_severity ($v, $single); }
@@ -271,7 +278,7 @@ class Table_print_snmp {
      * @return void
      */
     private function format_snmp_table_severity ($severity, $single) {
-        return $single ? "<span class='badge badge1 alert-".$this->set_severity_class ($severity, false)."'>$severity</span>" : "<span class='badge badge1'>$severity</span>";
+        return $single ? "<span class='badge badge1 severity alert-".$this->set_severity_class ($severity, false)."'>$severity</span>" : "<span class='severity badge badge1'>$severity</span>";
     }
 
     /**

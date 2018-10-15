@@ -196,7 +196,7 @@ abstract class DB {
      */
     private function log_query ($query) {
         if($this->debug) {
-            $myFile = "/tmp/queries.txt";
+            $myFile = dirname(__FILE__)."/queries.txt";
             $fh = fopen($myFile, 'a') or die("can't open file");
             fwrite($fh, $query->queryString."\n");
             fclose($fh);

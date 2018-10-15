@@ -225,8 +225,9 @@ table.snmp td {
     vertical-align: top !important;
     padding: 2px 6px !important;
 }
-table.snmp td.field-date {
-    white-space: nowrap;
+table.snmp td.field-date,
+table.snmp td.field-hostname {
+    white-space: nowrap !important;
 }
 table.snmp tr.danger td,
 table.snmp tr.warning td,
@@ -247,6 +248,12 @@ table.snmp tr:hover td {
 }
 .fixed-table-container {
 	border: none;
+}
+.fixed-table-loading {
+	background: rgba(0,0,0,0.7) !important;
+	padding: 20px;
+	min-height: 50px;
+	color: white;
 }
 
 .modal-header h4.modal-title {
@@ -337,6 +344,14 @@ table.snmp tr.info span {
 table.snmp tr span {
     border: none;
     color: white !important;
+}
+span.severity {
+	width:100%;
+	max-width:90px;
+}
+th#header-severity,
+td.field-severity {
+	width: 95px !important;
 }
 
 
@@ -784,7 +799,9 @@ td.info2 {
 #dashboard .table td {
     border: none;
 }
-
+#dashboard .table td.field-id .btn-group {
+	width: 50px;
+}
 span.badge-active {
     background: black !important;
 }

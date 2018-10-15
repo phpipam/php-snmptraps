@@ -9,39 +9,37 @@
 # verify that user is logged in
 $User->check_user_session();
 
-# set limit to 10
-$Trap->reset_print_limit (200);
 # set permitted hostnames
 $Trap->set_permitted_hostnames ($User->hostnames);
+$Trap->reset_print_limit  (1);
 # strip tags
 $_GET = $User->strip_input_tags ($_GET);
 
-# set severity
-if($_GET['page']=="all")                { $traps = $Trap->fetch_traps ("all"); }
-elseif($_GET['page']=="major")          { $traps = $Trap->fetch_traps (array("emergency", "alert", "critical")); }
-elseif($_GET['page']=="minor")          { $traps = $Trap->fetch_traps (array("error", "warning")); }
-elseif($_GET['page']=="informational")  { $traps = $Trap->fetch_traps (array("notice", "informational", "debug")); }
-elseif($_GET['page']=="unknown")        { $traps = $Trap->fetch_traps (array("unknown")); }
-
+# headers
+$traps = $Trap->fetch_traps ("all");
 
 # set fields
-$tfields = array(   "id"=>"",
-                    "hostname"=>"Hostname",
-                    "ip"=>"IP address",
-                    "date"=>"Date",
-                    "message"=>"Message",
-                    "severity"=>"Severity",
-                    "content"=>"Content"
-                    );
+$tfields = array(
+					"id"       => "",
+					"hostname" => "Hostname",
+					"ip"       => "IP address",
+					"date"     => "Date",
+					"message"  => "Message",
+					"severity" => "Severity",
+					"content"  => "Content"
+                );
 $Table_print->set_snmp_table_fields ($tfields);
 
-# structure
+// structure
 print "<div class='container-fluid row'>";
-
-# critical
+// title
 print "<h4>".ucwords($_GET['page'])." severities</h4><hr>";
-print "<table class='table snmp sorted table-noborder table-condensed table-hover'  data-cookie-id-table='severity'>";
-$Table_print->print_snmp_table ($traps, true, true, false, true);
+// table
+// print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-cookie-id-table='severity' data-url='".BASE."app/json/?app=severity&type={$_GET[page]}'>";
+print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=severity&type={$_GET[page]}'>";
+// headers only
+$Table_print->print_snmp_table ($traps, true, false, false, true);
+// data
 print "</table>";
 
 print "</div>";
