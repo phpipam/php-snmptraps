@@ -639,7 +639,7 @@ div.loading {
 
 	border: 1px solid rgba(0,0,0,0.6);
 
-	z-index: 999;
+	z-index: 999999;
 }
 div.loading i {
 	font-size: 24px;
