@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS `exceptions`;
 CREATE TABLE `exceptions` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `oid` varchar(128) NOT NULL DEFAULT '',
-  `hostname` varchar(32) DEFAULT NULL,
+  `hostname` varchar(256) DEFAULT NULL,
   `content` varchar(128) DEFAULT NULL,
   `comment` text,
   PRIMARY KEY (`id`),
