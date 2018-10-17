@@ -42,14 +42,14 @@ class Trap {
      * @access public
      */
     public $severities =  array(
-                             "emergency" => "emergency",
-                           	 "alert" => "alert",
-                           	 "critical" => "critical",
-                           	 "error" => "error",
-                           	 "warning" => "warning",
-                           	 "notice" => "notice",
-                           	 "informational" => "informational",
-                           	 "debug" => "debug"
+                                "emergency"     => "emergency",
+                                "alert"         => "alert",
+                                "critical"      => "critical",
+                                "error"         => "error",
+                                "warning"       => "warning",
+                                "notice"        => "notice",
+                                "informational" => "informational",
+                                "debug"         => "debug"
                             );
 
     /**
@@ -541,18 +541,22 @@ class Trap {
      */
     public function write_trap () {
         // first check for exceptions
-        foreach ($this->fetch_exceptions() as $exc) {
-            if (($exc->hostname==$this->message_details->hostname || $exc->hostname=="all") && strpos($this->message_details->oid, $exc->oid)!==false) {
-                // check for string
-                if (strlen($exc->content)>0) {
-                    if (strpos(implode("\n", $this->message_details->content), $exc->content)!==false) {
+        $exceptions = $this->fetch_exceptions ();
+        // check and loop
+        if ($exceptions!==false) {
+            foreach ($exceptions as $exc) {
+                if (($exc->hostname==$this->message_details->hostname || $exc->hostname=="all") && strpos($this->message_details->oid, $exc->oid)!==false) {
+                    // check for string
+                    if (strlen($exc->content)>0) {
+                        if (strpos(implode("\n", $this->message_details->content), $exc->content)!==false) {
+                            $this->exception = true;
+                            return true;
+                        }
+                    }
+                    else {
                         $this->exception = true;
                         return true;
                     }
-                }
-                else {
-                    $this->exception = true;
-                    return true;
                 }
             }
         }
