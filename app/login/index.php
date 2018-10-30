@@ -30,6 +30,9 @@ $User	= new User ($Database);
 	<!-- title -->
 	<title>Snmptraps</title>
 
+	<!-- icon -->
+    <link rel="icon" type="image/png" href="<?php print BASE; ?>css/favicon_big.png">
+
 	<!-- css -->
 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">
 <!-- 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-custom.css"> -->
@@ -44,6 +47,8 @@ $User	= new User ($Database);
 
 <!-- body -->
 <body>
+
+<hr>
 
 <!-- wrapper -->
 <div class="wrapper">

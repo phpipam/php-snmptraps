@@ -48,6 +48,9 @@ else {
 	<!-- title -->
 	<title><?php print $title; ?></title>
 
+	<!-- icon -->
+	<link rel="icon" type="image/png" href="<?php print BASE; ?>css/favicon_big.png">
+
 	<!-- css -->
 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css?v=<?php print implode(".", $version); ?>">
 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-custom-black.css?v=<?php print implode(".", $version); ?>">
@@ -89,7 +92,6 @@ require('functions/check_version.php');
 	<?php include('app/top-menu.php'); ?>
 </div>
 
-
 <!-- content -->
 <div class="content_overlay">
 <div class="container-fluid" id="mainContainer">
@@ -100,8 +102,6 @@ require('functions/check_version.php');
     ?>
 </div>
 </div>
-
-
 
 <!-- modals -->
 <div class="modal fade" id="modal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
