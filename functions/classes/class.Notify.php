@@ -548,7 +548,7 @@ class mail {
 
         # get content
         $mail_content_html  = $this->generate_message (implode("\r\n", $body));
-        $mail_content_plain = $this->generate_message_plain (implode("\r\n", strip_tags(str_replace("<br>","\n",$body))));
+        $mail_content_plain = $this->generate_message_plain (strip_tags(implode("\r\n", str_replace("<br>","\n",$body))));
 
         # try to send
         try {
