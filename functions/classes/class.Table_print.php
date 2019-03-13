@@ -238,7 +238,7 @@ class Table_print_snmp {
         // red
         if ($s=="emergency" || $s=="alert" || $s=="critical")       { $c = "danger"; }
         elseif ($s=="error" || $s=="warning")                       { $c = "warning"; }
-        elseif ($s=="notice"|| $s=="debug" || $s=="informational")  { $c = "success"; }
+        elseif ($s=="notice"|| $s=="debug" || $s=="informational" || $s=="audit")  { $c = "success"; }
         else                                                        { $c = "info"; }
         // newclass ?
         return $newClass ? $c." new" : $c;
@@ -559,7 +559,7 @@ class Table_print extends Table_print_snmp {
     private function prepare_multiple_checkboxes ($field, $value, $additional_params) {
         // get all possible items
         if ($field->Field=="notification_severities")   {
-            $options =  array('emergency','alert','critical','error','warning','notice','informational','debug', 'unknown');
+            $options =  array('emergency','alert','critical','error','warning','notice','informational','debug', 'unknown','audit');
         }
         elseif ($field->Field=="notification_types") {
             include(dirname(__FILE__)."/../../config.php");
