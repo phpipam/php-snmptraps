@@ -49,7 +49,7 @@ else {
 	<title><?php print $title; ?></title>
 
 	<!-- icon -->
-	<link rel="icon" type="image/png" href="<?php print BASE; ?>css/favicon_big.png">
+	<link rel="icon" type="image/png" href="css/favicon_big.png">
 
 	<!-- css -->
 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css?v=<?php print implode(".", $version); ?>">

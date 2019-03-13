@@ -31,7 +31,7 @@ $User	= new User ($Database);
 	<title>Snmptraps</title>
 
 	<!-- icon -->
-    <link rel="icon" type="image/png" href="<?php print BASE; ?>css/favicon_big.png">
+    <link rel="icon" type="image/png" href="css/favicon_big.png">
 
 	<!-- css -->
 	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">
