@@ -49,7 +49,8 @@ class Trap {
                                 "warning"       => "warning",
                                 "notice"        => "notice",
                                 "informational" => "informational",
-                                "debug"         => "debug"
+                                "debug"         => "debug",
+                                "audit"         => "audit"
                             );
 
     /**

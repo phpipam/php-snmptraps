@@ -23,7 +23,7 @@ if(isset($User->user->dash_layout_parsed[1])) {
 }
 if(isset($User->user->dash_layout_parsed[2])) {
 	$Trap->reset_print_limit ($User->user->dash_layout_parsed[2]['elements']);
-	$all_info_traps     = $Trap->fetch_traps (array("notice", "informational", "debug"));
+	$all_info_traps     = $Trap->fetch_traps (array("notice", "informational", "debug", "audit"));
 }
 if(isset($User->user->dash_layout_parsed[3])) {
 	$Trap->reset_print_limit ($User->user->dash_layout_parsed[3]['elements']);

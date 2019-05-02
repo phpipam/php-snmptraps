@@ -528,7 +528,7 @@ class mail {
         # save details
         $this->message_details = (object) $message_details;
         # set subject
-        $subject = "[".$message_details->hostname."] - ".$message_details->msg;
+        $subject = "[".$message_details->hostname."] - ".$message_details->severity;
 
         # set mail body content
         $body = array();
@@ -548,7 +548,7 @@ class mail {
 
         # get content
         $mail_content_html  = $this->generate_message (implode("\r\n", $body));
-        $mail_content_plain = $this->generate_message_plain (implode("\r\n", strip_tags(str_replace("<br>","\n",$body))));
+        $mail_content_plain = $this->generate_message_plain (strip_tags(implode("\r\n", str_replace("<br>","\n",$body))));
 
         # try to send
         try {
@@ -787,6 +787,7 @@ class pushover {
         elseif ($severity=="critical")       { $this->p_priority =  1; }
         elseif ($severity=="error")          { $this->p_priority =  0; }
         elseif ($severity=="warning")        { $this->p_priority =  0; }
+        elseif ($severity=="audit")          { $this->p_priority = -1; }
         elseif ($severity=="notice")         { $this->p_priority = -1; }
         elseif ($severity=="informational")  { $this->p_priority = -2; }
         elseif ($severity=="debug")          { $this->p_priority = -2; }
