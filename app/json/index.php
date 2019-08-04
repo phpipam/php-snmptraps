@@ -51,7 +51,7 @@ if($_GET['app']=="severity") {
 	if($_GET['type']=="all")                { $result = $Trap->fetch_traps ("all"); }
 	elseif($_GET['type']=="major")          { $result = $Trap->fetch_traps (array("emergency", "alert", "critical")); }
 	elseif($_GET['type']=="minor")          { $result = $Trap->fetch_traps (array("error", "warning")); }
-	elseif($_GET['type']=="informational")  { $result = $Trap->fetch_traps (array("notice", "informational", "debug")); }
+	elseif($_GET['type']=="informational")  { $result = $Trap->fetch_traps (array("notice", "informational", "debug", "audit")); }
 	elseif($_GET['type']=="unknown")        { $result = $Trap->fetch_traps (array("unknown")); }
 }
 /**
