@@ -186,7 +186,7 @@ $notification_params['slack'] = array (
  * @var string
  * @access public
  */
-$url = "http:/127.0.0.1/";
+$url = "http://127.0.0.1/";
 
 /**
  * Site title
