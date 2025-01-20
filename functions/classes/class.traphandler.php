@@ -143,6 +143,13 @@ class Trap {
         $this->message_details->ip = str_replace(array("UDP:","[","]"), "", $this->message[1]);
         // get ip
         $this->message_details->ip = trim(strstr($this->message_details->ip, ":", true));
+
+        // hostname not found, make NS lookup
+        if (strlen($this->message_details->hostname)==0) {
+            $hostname = gethostbyaddr($this->message_details->ip);
+            // save
+            $this->message_details->hostname = $hostname!==false ? $hostname : $this->message_details->ip;
+        }
     }
 
     /**

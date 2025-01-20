@@ -207,3 +207,9 @@ $title = "Snmptraps server";
  * @access public
  */
 $footer = "php-snmptrap management";
+
+/**
+ * Strip domain from hostname
+ * @var bool
+ */
+$strip_hostname_domain = true;

@@ -100,6 +100,12 @@ class Snmp_read_MIB {
      */
     public $trap_description = "";
 
+    /**
+     * Found items
+     * @var bool
+     */
+    public $found_rows = false;
+
 
 
 
@@ -152,7 +158,8 @@ class Snmp_read_MIB {
      * @return void
      */
     public function set_mib_directory ($dir = false) {
-        if ($dir!==false && strlen($dir)>0)     { $this->mib_directory = $dir; }
+        if($dir===null)                         { $this->mib_directory = "/usr/share/snmp/mibs/"; }
+        elseif ($dir!==false && strlen($dir)>0) { $this->mib_directory = $dir; }
         elseif ($this->mib_directory===false)   { $this->mib_directory = "/usr/share/snmp/mibs/"; }
     }
 
@@ -509,6 +516,7 @@ class Trap_read extends Snmp_read_MIB {
      * @param  string $filter
      */
     public function set_print_filter ($filter = "") {
+        if(is_null($filter)) { return true; }
         if (strlen($filter)>0) {
             $this->filter_query       = " message like ? or content like ? or severity = ? or hostname = ? ";
             $this->filter_query_value = ["%".$filter."%", "%".$filter."%", $filter, $filter];
@@ -570,7 +578,7 @@ class Trap_read extends Snmp_read_MIB {
 			return false;
 		}
 		# return
-		return sizeof($res)==0 ? false : $res;
+		return is_object($res) ? $res : false;
     }
 
 
@@ -614,7 +622,7 @@ class Trap_read extends Snmp_read_MIB {
     			return false;
     		}
     		# return
-    		return sizeof($trap)>0 ? $trap : false;
+    		return is_object($trap) ? $trap : false;
     	}
 	}
 

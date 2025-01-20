@@ -31,12 +31,13 @@ if(isset($User->user->dash_layout_parsed[3])) {
 }
 
 # set fields
-$tfields = array(   "id"=>"",
+$tfields = array(
+                    "severity"=>"Severity",
+                    "id"=>"",
                     "hostname"=>"Hostname",
-                    "ip"=>"IP address",
+                    // "ip"=>"IP address",
                     "date"=>"Date",
                     "message"=>"Message",
-                    "severity"=>"Severity"
                     );
 $Table_print->set_snmp_table_fields ($tfields);
 

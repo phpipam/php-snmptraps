@@ -596,7 +596,7 @@ class User extends Common_functions {
      */
     public function update_login_time () {
         # fix for older versions
-        if($this->settings->version!="1.1") {
+        if(@$this->settings->version!="1.1") {
             # update
             try { $this->Database->updateObject("users", array("last_login"=>date("Y-m-d H:i:s"), "id"=>$this->user->id)); }
             catch (Exception $e) {

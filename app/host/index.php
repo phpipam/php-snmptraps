@@ -58,7 +58,7 @@ if (isset($_GET['page'])) {
 
     // table
     print "<div class='container-fluid row' style='margin-bottom:20px;'>";
-    print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=host&type={$_GET[page]}'>";
+    print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=host&type={$_GET['page']}'>";
     // headers only
     $Table_print->print_snmp_table ($traps, true, false, false, true);
     // data
@@ -78,9 +78,9 @@ else {
         // ignore unknown
         if ($h->hostname!="<UNKNOWN>") {
             // active
-            $active = $h->hostname==$_GET['page'] ? "badge-active" : "";
+            $active = $h->hostname==@$_GET['page'] ? "badge-active" : "";
             // print
-            print "<span class='badge badge1 badge5 marged $active'><a href='host/$h->hostname/'>$h->hostname</a></span>";
+            print "<span class='badge badge1 badge5 marged $active'><a href='host/$h->hostname/'>$h->hostname</a></span><br>";
         }
     }
     print "</div>";
