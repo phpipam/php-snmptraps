@@ -147,7 +147,7 @@ class Snmp_read_MIB {
 	 * @return void
 	 */
 	public function define_severities () {
-    	return array('emergency','alert','critical','error','warning','notice','informational','debug');
+    	return array('emergency','alert','critical','error','warning','notice','informational','debug', 'audit');
 	}
 
     /**
@@ -544,7 +544,7 @@ class Trap_read extends Snmp_read_MIB {
 	 * @return void
 	 */
 	public function define_severities () {
-    	$this->severities = array('emergency','alert','critical','error','warning','notice','informational','debug');
+    	$this->severities = array('emergency','alert','critical','error','warning','notice','informational','debug','audit');
 	}
 
 
