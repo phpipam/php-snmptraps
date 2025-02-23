@@ -38,7 +38,7 @@ DROP TABLE IF EXISTS `severity_definitions`;
 CREATE TABLE `severity_definitions` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `oid` varchar(128) NOT NULL DEFAULT '',
-  `severity` set('emergency','alert','critical','error','warning','notice','informational','debug') NOT NULL DEFAULT '',
+  `severity` set('emergency','alert','critical','error','warning','notice','informational','debug','audit') NOT NULL DEFAULT '',
   `content` varchar(128) DEFAULT '',
   `comment` text,
   PRIMARY KEY (`id`),
