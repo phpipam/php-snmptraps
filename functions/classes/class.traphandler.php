@@ -750,6 +750,7 @@ class Trap_file {
         // set what to write
         $content = $content===false ? $this->trap_object : $content;
 
+        fwrite($this->file_handler, "".date("Y-m-d H:i:s").":\n");
         //write
         foreach ($content as $k=>$d) {
             // if array
@@ -780,5 +781,3 @@ class Trap_file {
     }
 
 }
-
-?>

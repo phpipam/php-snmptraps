@@ -26,7 +26,7 @@ class Trap_notify {
      * @var mixed
      * @access private
      */
-    private $params = object;
+    private $params = "";
 
     /**
      * Trap details
@@ -54,9 +54,6 @@ class Trap_notify {
 
 
 
-
-
-
     /**
      * __construct function.
      *
@@ -66,7 +63,7 @@ class Trap_notify {
      * @param string $filename (default: "/tmp/trap.txt")
      * @return void
      */
-    public function __construct ($trap_details, $params, $filename = "/tmp/trap.txt") {
+    public function __construct ($trap_details = [], $params = [], $filename = "/tmp/trap.txt") {
         // save filename for errors
         $this->filename = $filename;
         // save params
@@ -368,8 +365,7 @@ class sms {
 
 
 
-
-
+use PHPMailer\PHPMailer\Exception;
 
 
 /**
@@ -468,10 +464,15 @@ class mail {
 	 */
 	public function initialize_mailer () {
 		# we need phpmailer
-		require_once( dirname(__FILE__).'/../PHPMailer/PHPMailerAutoload.php');
+		//require_once( dirname(__FILE__).'/../PHPMailer/PHPMailerAutoload.php');
+
+        require(dirname(__FILE__).'/../PHPMailer/src/PHPMailer.php');
+        require(dirname(__FILE__).'/../PHPMailer/src/SMTP.php');
+        require(dirname(__FILE__).'/../PHPMailer/src/Exception.php');
 
 		# initialize object
-		$this->Php_mailer = new PHPMailer(true);			//localhost by default
+		// $this->Php_mailer = new PHPMailer(true);			//localhost by default
+        $this->Php_mailer = new PHPMailer\PHPMailer\PHPMailer;
 		$this->Php_mailer->CharSet="UTF-8";					//set utf8
 		$this->Php_mailer->SMTPDebug = 0;					//default no debugging
 
@@ -525,33 +526,34 @@ class mail {
      * @return void
      */
     public function send ($message_details, $recipients) {
-        # save details
-        $this->message_details = (object) $message_details;
-        # set subject
-        $subject = "[".$message_details->hostname."] - ".$message_details->msg;
-
-        # set mail body content
-        $body = array();
-        $body[] = "<div style='padding:10px;'><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;color:#333;'>";
-        $body[] = "New snmp trap received:";
-        $body[] = "<br><br>";
-        $body[] = "<table>";
-        $body[] = "<tr><td>Hostname:</td><td style='padding-left: 10px;'><strong>".$message_details->hostname."</strong></td></tr>";
-        $body[] = "<tr><td>IP:</td><td style='padding-left: 10px;'>".$message_details->ip."</td></tr>";
-        $body[] = "<tr><td>Message:</td><td style='padding-left: 10px;'><strong>".$message_details->msg."</strong></td></tr>";
-        $body[] = "<tr><td>Date:</td><td style='padding-left: 10px;'>".date("d/m/Y H:i:s")."</td></tr>";
-        $body[] = "<tr><td>Severity:</td><td style='padding-left: 10px;'><strong>".$message_details->severity."</strong></td></tr>";
-        $body[] = "<tr><td>OID:</td><td style='padding-left: 10px;'>".$message_details->oid."</td></tr>";
-        $body[] = "<tr><td><strong>Content</strong>:</td><td style='padding-left: 10px;vertical-align:top;'>".implode("<br>", $message_details->content)."</td></tr>";
-        $body[] = "</table>";
-        $body[] = "</font></div>";
-
-        # get content
-        $mail_content_html  = $this->generate_message (implode("\r\n", $body));
-        $mail_content_plain = $this->generate_message_plain (implode("\r\n", strip_tags(str_replace("<br>","\n",$body))));
-
         # try to send
         try {
+
+            # save details
+            $this->message_details = (object) $message_details;
+            # set subject
+            $subject = "[".$message_details->hostname."] - ".$message_details->msg;
+
+            # set mail body content
+            $body = array();
+            $body[] = "<div style='padding:10px;'><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;color:#333;'>";
+            $body[] = "New snmp trap received:";
+            $body[] = "<br><br>";
+            $body[] = "<table>";
+            $body[] = "<tr><td>Hostname:</td><td style='padding-left: 10px;'><strong>".$message_details->hostname."</strong></td></tr>";
+            $body[] = "<tr><td>IP:</td><td style='padding-left: 10px;'>".$message_details->ip."</td></tr>";
+            $body[] = "<tr><td>Message:</td><td style='padding-left: 10px;'><strong>".$message_details->msg."</strong></td></tr>";
+            $body[] = "<tr><td>Date:</td><td style='padding-left: 10px;'>".date("d/m/Y H:i:s")."</td></tr>";
+            $body[] = "<tr><td>Severity:</td><td style='padding-left: 10px;'><strong>".$message_details->severity."</strong></td></tr>";
+            $body[] = "<tr><td>OID:</td><td style='padding-left: 10px;'>".$message_details->oid."</td></tr>";
+            $body[] = "<tr><td><strong>Content</strong>:</td><td style='padding-left: 10px;vertical-align:top;'>".implode("<br>", $message_details->content)."</td></tr>";
+            $body[] = "</table>";
+            $body[] = "</font></div>";
+
+            # get content
+            $mail_content_html  = $this->generate_message (implode("\r\n", $body));
+            $mail_content_plain = $this->generate_message_plain (strip_tags(str_replace("<br>","\n",implode("\r\n", $body))));
+
         	$this->Php_mailer->setFrom($this->mail_settings->from);
         	foreach($recipients as $r) {
         	$this->Php_mailer->addAddress($r->email, addslashes(trim($r->real_name)));
@@ -953,5 +955,3 @@ class slack {
         else                                                        { $this->color = "#3366CC"; }
     }
 }
-
-?>
