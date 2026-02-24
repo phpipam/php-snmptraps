@@ -51,7 +51,7 @@ try {
 
 
     # --- write trap to database
-    $Trap->write_t1rap ();
+    $Trap->write_trap ();
 
 
     # --- send notification

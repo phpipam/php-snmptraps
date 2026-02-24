@@ -563,7 +563,7 @@ class mail {
         	$this->Php_mailer->AltBody = $mail_content_plain;
         	//send
         	$this->Php_mailer->send();
-        } catch (phpmailerException $e) {
+        } catch (PHPMailer\PHPMailer\Exception $e) {
         	$this->write_error ("Mailer Error: ".$e->errorMessage());
         } catch (Exception $e) {
         	$this->write_error ("Mailer Error: ".$e->errorMessage());
@@ -767,7 +767,6 @@ class pushover {
                 "priority" => $this->p_priority,
                 "message" => implode("\n", $message_details->content)
             ),
-            CURLOPT_SAFE_UPLOAD => true,
             )
         );
         // send
