@@ -5,9 +5,10 @@
  */
 
 if (phpversion() < $version['php']) {
-	# cli
+	# cli - throw error
 	if(php_sapi_name()=="cli") {
-		print "Error: php version $version[php] or later is required, you are using php version ".phpversion().". Please update your installation.\n";
+		throw new Exception (" php version $version[php] or later is required, you are using php version ".phpversion().". Please update your installation.");
+		die();
 	}
 	# gui
 	else {

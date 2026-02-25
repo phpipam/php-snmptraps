@@ -1,10 +1,14 @@
 <?php
 
-
 /**
- * php traphandler for snmp traps
+ * php traphandler for snmptraps
  *
- *  set configuration parameters under functions/config.php
+ *  It receives snmptrap, parses it and enters it to database:
+ *    [root@server /usr/local/share/snmp] more snmptrapd.conf | grep traphan
+ *    # set traphandler
+ *    traphandle default /usr/local/bin/php /usr/local/www/snmptraps/traphandler.php
+ *
+ *  Set configuration parameters for notifications etc under functions/config.php
  *
  * @author: Miha Petkovsek <miha.petkovsek@gmail.com>
  *
@@ -14,7 +18,7 @@
  **/
 
 try {
-    # include config and trap class
+    # --- include config and trap classes
     require( dirname(__FILE__) . '/functions/classes/class.Database.php' );
     require( dirname(__FILE__) . '/functions/classes/class.Result.php' );
     require( dirname(__FILE__) . '/functions/classes/class.Notify.php' );
@@ -25,65 +29,42 @@ try {
     # --- check php version
     require('functions/check_version.php');
 
-
-    # --- process
+    # --- process trap
 
     # get data from stdin to array
     while($f = fgets(STDIN)){
     	$trap_content[] = $f;
     }
 
-
     # --- load traphandler and process provided trap
     $Trap = new Trap ($trap_content);
-
-
-    # --- write file for each received trap
-    if ($filename!==false && $debugging) {
-        $File = new Trap_file ($Trap->get_trap_details ());
-        // set where to write
-        $File->set_file ($filename);
-        // write raw file
-        // $Trap->write_file ();
-        // write parsed file
-        $File->write_file_parsed ();
-    }
-
 
     # --- write trap to database
     $Trap->write_trap ();
 
-
-    # --- send notification
+    # --- send notification if needed
     if ($notification_methods !== false && $Trap->exception === false) {
-
-            // //open file
-            // $fh = fopen('/tmp/out.txt', 'a') or die("can't open file");
-            // // write
-            // fwrite($fh, date("Y-m-d H:i:s")."----- \n");
-            // fwrite($fh, implode("",$trap_content));
-            // fwrite($fh, "\n-----\n");
-            // fclose($fh);
-
-        try {
-            // load object and send trap
-            $Notify = new Trap_notify ($Trap->get_trap_details (), $notification_params, $filename);
-            // send
-            $Notify->send_notification ();
-        }
-        catch (Exception $e) {
-            // open file
-            $fh = fopen('/tmp/out.txt', 'a') or die("can't open file");
-            // write
-            fwrite($fh, date("Y-m-d H:i:s")."----- \n");
-            fwrite($fh, implode("\n",$e->getMessage()));
-            fwrite($fh, "-----\n");
-            fclose($fh);
-        }
+        // load object and send trap
+        $Notify = new Trap_notify ($Trap->get_trap_details (), $notification_params);
+        // send
+        $Notify->send_notification ();
     }
 
-    # --- close connaection and file
-    $File->close_file ();
+    # --- write error to file
+    if ($filename!==false && ( @$write_raw_file===true || @$write_debug_file===true )) {
+        // init file to write
+        $File = new Trap_file ($Trap->get_trap_details (), $trap_content);
+        // set where to write
+        $File->set_file ($filename);
+        // write raw file
+        if(@$write_raw_file===true)
+        $File->write_file ();
+        // write parsed file
+        if(@$write_debug_file===true)
+        $File->write_file_parsed ();
+        //  close connaection and file
+        $File->close_file ();
+    }
 }
 catch (Exception $e) {
     # Write to file
@@ -91,10 +72,9 @@ catch (Exception $e) {
         // open file
         $fh = fopen($filename, 'a') or die("can't open file");
         // write
-        fwrite($fh, date("Y-m-d H:i:s")."----- \n");
-        fwrite($fh, implode("\n",$e->getMessage()));
-        fwrite($fh, "-----\n");
+        fwrite($fh, "\n".date("Y-m-d H:i:s")." :: ".$e->getMessage());
         fclose($fh);
     }
+    # print
     die($e->getMessage());
 }
