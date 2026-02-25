@@ -899,23 +899,21 @@ class Database_PDO extends DB {
         $this->dbname     = $db['name'];
 
         $this->ssl = false;
-        if(isset($db['ssl'])) {
-            if ($db['ssl']===true) {
+        if (isset($db['ssl']) && $db['ssl']===true) {
 
-                $this->pdo_ssl_opts = array (
-                    'ssl_key'    => PDO::MYSQL_ATTR_SSL_KEY,
-                    'ssl_cert'   => PDO::MYSQL_ATTR_SSL_CERT,
-                    'ssl_ca'     => PDO::MYSQL_ATTR_SSL_CA,
-                    'ssl_cipher' => PDO::MYSQL_ATTR_SSL_CIPHER,
-                    'ssl_capath' => PDO::MYSQL_ATTR_SSL_CAPATH
-                );
+            $this->pdo_ssl_opts = array (
+                'ssl_key'    => PDO::MYSQL_ATTR_SSL_KEY,
+                'ssl_cert'   => PDO::MYSQL_ATTR_SSL_CERT,
+                'ssl_ca'     => PDO::MYSQL_ATTR_SSL_CA,
+                'ssl_cipher' => PDO::MYSQL_ATTR_SSL_CIPHER,
+                'ssl_capath' => PDO::MYSQL_ATTR_SSL_CAPATH
+            );
 
-                $this->ssl = array();
+            $this->ssl = array();
 
-                foreach ($this->pdo_ssl_opts as $key => $pdoopt) {
-                    if ($db[$key]) {
-                        $this->ssl[$pdoopt] = $db[$key];
-                    }
+            foreach ($this->pdo_ssl_opts as $key => $pdoopt) {
+                if ($db[$key]) {
+                    $this->ssl[$pdoopt] = $db[$key];
                 }
 
             }
