@@ -222,7 +222,7 @@ class Trap {
             }
         }
         else {
-            $this->message_details->content = "NONE";
+            $this->message_details->content = array("NONE");
         }
     }
 
@@ -237,11 +237,13 @@ class Trap {
         $this->message_details->severity = "unknown";
 
         // loop through message, search for Severity in each content, default null
+        if (is_array($this->message_details->content)) {
         foreach ($this->message_details->content as $c) {
             if (strpos($c, "Severity")!==false || strpos($c, "severity")!==false) {
                 $tmp = explode(" => ", $c);
                 $this->message_details->severity = $tmp[1];
             }
+        }
         }
 
         // search database for exceptions and definitions
@@ -277,6 +279,7 @@ class Trap {
         // changed flag
         $changed = false;
         // loop through message, search for Severity in each content, default null
+        if (is_array($this->message_details->content)) {
         foreach ($search_values as $sv) {
             foreach ($this->message_details->content as $c) {
                 if ( strpos($c, $sv)!==false ) {
@@ -285,6 +288,7 @@ class Trap {
                     $changed = true;
                 }
             }
+        }
         }
         // detect and format special messages
         $this->detect_special_messages ();
@@ -353,7 +357,7 @@ class Trap {
                 // explode
                 $c = explode(" => ", $c);
                 // check - first name, then status
-                if (strpos($c[0], "vtpVlanName")!==false)     { $this->message_details->msg .= " :: ".$c[1]." (vlan ".array_pop(explode(".", $c[0])).")"; }
+                if (strpos($c[0], "vtpVlanName")!==false)     { $tmp_arr = explode(".", $c[0]); $this->message_details->msg .= " :: ".$c[1]." (vlan ".array_pop($tmp_arr).")"; }
            }
         }
     }
@@ -582,6 +586,7 @@ class Trap {
                                  "CISCO-SYSLOG-MIB::clogHistFacility",
                                  "CISCO-SYSLOG-MIB::clogHistTimestamp");
         // check and remove
+        if (is_array($this->message_details->content)) {
         foreach ($unneeded_values as $uv) {
             foreach ($this->message_details->content as $k=>$c) {
                 //content explode
@@ -591,6 +596,7 @@ class Trap {
                     unset($this->message_details->content[$k]);
                 }
             }
+        }
         }
     }
 }
