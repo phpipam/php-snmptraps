@@ -915,10 +915,9 @@ class Database_PDO extends DB {
                 if ($db[$key]) {
                     $this->ssl[$pdoopt] = $db[$key];
                 }
+
             }
-
         }
-
     }
 
     /**
@@ -1049,7 +1048,7 @@ class Database_wrapper extends Database_PDO {
      * @param mixed $value
      * @return void
      */
-    public function fetch_object ($table=null, $method=null, $value) {
+    public function fetch_object ($table=null, $method=null, $value = 0) {
         # null table
         if(is_null($table)||strlen($table)==0) return false;
 
@@ -1068,7 +1067,8 @@ class Database_wrapper extends Database_PDO {
             $this->Result->show("danger", _("Error: ").$e->getMessage());
             return false;
         }
-        return sizeof($res)>0 ? $res : false;
+        return isset($res->id) ? $res : false;
+        // return sizeof($res)>0 ? $res : false;
     }
 
     /**
@@ -1129,7 +1129,7 @@ class Database_wrapper extends Database_PDO {
      * @param mixed $values
      * @return void
      */
-    public function create_object ($table=null, $values) {
+    public function create_object ($table=null, $values = []) {
          # null table
         if(is_null($table)||strlen($table)==0) return false;
         if(is_null($table))        return false;
@@ -1159,7 +1159,7 @@ class Database_wrapper extends Database_PDO {
      * @param mixed $values
      * @return void
      */
-    public function update_object ($table=null, $values) {
+    public function update_object ($table=null, $values = []) {
          # null table
         if(is_null($table)||strlen($table)==0) return false;
         if(is_null($table))     return false;
@@ -1190,7 +1190,7 @@ class Database_wrapper extends Database_PDO {
      * @param mixed $id
      * @return void
      */
-    public function remove_object ($table=null, $id) {
+    public function remove_object ($table=null, $id = null) {
         # null table
         if(is_null($table)||strlen($table)==0) return false;
 

@@ -295,6 +295,13 @@ table.snmp tr.info td.field-message a {
 table.snmp td.field-content {
     font-size: 11px;
 }
+table.snmp th.header-id {
+	width:60px;
+}
+table.snmp td.header-hostname,
+table.snmp td.header-ip{
+	white-space: nowrap;
+}
 
 th#header-actions {
     width: 50px;

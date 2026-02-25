@@ -62,7 +62,7 @@ if ($item!==false) {
         $html[] = " <select name='hostname' class='form-control input-w-auto input-sm'>";
         // loop
         foreach ($unique_hosts as $h) {
-            $selected = $s == $item->hostname ? "selected" : "";
+            $selected = $h == $item->hostname ? "selected" : "";
             // print
             $html[] = "<option value='$h' $selected>$h</option>";
         }

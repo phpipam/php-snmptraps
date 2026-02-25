@@ -58,7 +58,7 @@ $html[] = " <th colspan='4'><hr></th>";
 $html[] = " </tr>";
 
 // content
-foreach ($mib->notification_objects_full as $k=>$o) {
+foreach (is_array($mib->notification_objects_full) ? $mib->notification_objects_full : array() as $k=>$o) {
 
 $Trap_read->process_oid ("$mib->oid::$o");
 

@@ -36,7 +36,7 @@ print "<div class='container-fluid row'>";
 print "<h4>".ucwords($_GET['page'])." severities</h4><hr>";
 // table
 // print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-cookie-id-table='severity' data-url='".BASE."app/json/?app=severity&type={$_GET[page]}'>";
-print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=severity&type={$_GET[page]}'>";
+print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=severity&type={$_GET['page']}'>";
 // headers only
 $Table_print->print_snmp_table ($traps, true, false, false, true);
 // data

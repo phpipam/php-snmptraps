@@ -143,6 +143,13 @@ class Trap {
         $this->message_details->ip = str_replace(array("UDP:","[","]"), "", $this->message[1]);
         // get ip
         $this->message_details->ip = trim(strstr($this->message_details->ip, ":", true));
+
+        // hostname not found, make NS lookup
+        if (strlen($this->message_details->hostname)==0) {
+            $hostname = gethostbyaddr($this->message_details->ip);
+            // save
+            $this->message_details->hostname = $hostname!==false ? $hostname : $this->message_details->ip;
+        }
     }
 
     /**
@@ -215,7 +222,7 @@ class Trap {
             }
         }
         else {
-            $this->message_details->content = "NONE";
+            $this->message_details->content = array("NONE");
         }
     }
 
@@ -230,11 +237,13 @@ class Trap {
         $this->message_details->severity = "unknown";
 
         // loop through message, search for Severity in each content, default null
+        if (is_array($this->message_details->content)) {
         foreach ($this->message_details->content as $c) {
             if (strpos($c, "Severity")!==false || strpos($c, "severity")!==false) {
                 $tmp = explode(" => ", $c);
                 $this->message_details->severity = $tmp[1];
             }
+        }
         }
 
         // search database for exceptions and definitions
@@ -270,6 +279,7 @@ class Trap {
         // changed flag
         $changed = false;
         // loop through message, search for Severity in each content, default null
+        if (is_array($this->message_details->content)) {
         foreach ($search_values as $sv) {
             foreach ($this->message_details->content as $c) {
                 if ( strpos($c, $sv)!==false ) {
@@ -278,6 +288,7 @@ class Trap {
                     $changed = true;
                 }
             }
+        }
         }
         // detect and format special messages
         $this->detect_special_messages ();
@@ -346,7 +357,7 @@ class Trap {
                 // explode
                 $c = explode(" => ", $c);
                 // check - first name, then status
-                if (strpos($c[0], "vtpVlanName")!==false)     { $this->message_details->msg .= " :: ".$c[1]." (vlan ".array_pop(explode(".", $c[0])).")"; }
+                if (strpos($c[0], "vtpVlanName")!==false)     { $tmp_arr = explode(".", $c[0]); $this->message_details->msg .= " :: ".$c[1]." (vlan ".array_pop($tmp_arr).")"; }
            }
         }
     }
@@ -488,15 +499,8 @@ class Trap {
      * @access private
      * @return void
      */
-    private function set_database () {
-        # open DB connection
-        try {
-            # det database
-            $this->Database = new Database_PDO;
-        }
-        catch (Exception $e) {
-            $this->write_error ($e->getMessage());
-        }
+    private function set_database () {# det database
+        $this->Database = new Database_PDO;
     }
 
     /**
@@ -506,12 +510,7 @@ class Trap {
      * @return void
      */
     private function fetch_exceptions () {
-        // try to fetch
-		try { $exceptions = $this->Database->getObjects("exceptions", 'id', true); }
-		catch (Exception $e) {
-			$this->write_error ($e->getMessage());
-			die();
-		}
+        $exceptions = $this->Database->getObjects("exceptions", 'id', true);
 		// if some save it
 		return sizeof($exceptions)>0 ? $exceptions : false;
     }
@@ -524,11 +523,7 @@ class Trap {
      */
     private function fetch_severity_definitions () {
         // try to fetch
-		try { $definitions = $this->Database->getObjects("severity_definitions", "id", true); }
-		catch (Exception $e) {
-			$this->write_error ($e->getMessage());
-			die();
-		}
+		$definitions = $this->Database->getObjects("severity_definitions", "id", true);
 		// if some save it
 		return sizeof($definitions)>0 ? $definitions : false;
     }
@@ -570,30 +565,9 @@ class Trap {
                         "raw"      => implode("", $this->message)
                         );
         // write
-		try { $this->Database->insertObject("traps", $values); }
-		catch (Exception $e) {
-			$this->write_error ($e->getMessage());
-			die();
-		}
+		$this->Database->insertObject("traps", $values);
         // ok
         return true;
-    }
-
-    /**
-     * write_error function.
-     *
-     * @access private
-     * @param string $error (default: "")
-     * @return void
-     */
-    private function write_error ($error = "") {
-        // create object
-        $err_obj = new StdClass ();
-        $err_obj->Error = $error;
-        // init
-        $Trap_file = new Trap_file ($err_obj);
-        // write
-        $Trap_file->write_error ($error);
     }
 
     /**
@@ -612,6 +586,7 @@ class Trap {
                                  "CISCO-SYSLOG-MIB::clogHistFacility",
                                  "CISCO-SYSLOG-MIB::clogHistTimestamp");
         // check and remove
+        if (is_array($this->message_details->content)) {
         foreach ($unneeded_values as $uv) {
             foreach ($this->message_details->content as $k=>$c) {
                 //content explode
@@ -622,6 +597,7 @@ class Trap {
                 }
             }
         }
+        }
     }
 }
 
@@ -630,7 +606,6 @@ class Trap {
  * Write trap file.
  */
 class Trap_file {
-
 
     /**
      * file_handler
@@ -660,6 +635,14 @@ class Trap_file {
      */
     private $trap_object;
 
+    /**
+     * Raw trap object
+     *
+     * @var mixed
+     * @access private
+     */
+    private $raw_trap_object;
+
 
     /**
      * __construct function.
@@ -667,9 +650,11 @@ class Trap_file {
      * @access public
      * @param mixed $trap
      */
-    public function __construct($trap) {
+    public function __construct($trap, $raw = "") {
         // save trap
         $this->trap_object = $trap;
+        // save raw
+        $this->raw_trap_object = $raw;
     }
 
 
@@ -710,24 +695,11 @@ class Trap_file {
      */
     public function write_file () {
         // open file
-        if ($this->file_handler === false)  { $this->open_file (); }
+        if ($this->file_handler === false)
+            $this->open_file ();
         //write
-        fwrite($this->file_handler, implode("", $this->trap_object)."\n");
-    }
-
-    /**
-     * Saves error to file.
-     *
-     * @access public
-     * @return void
-     */
-    public function write_error ($error = "") {
-        // open file
-        if ($this->file_handler === false)  { $this->open_file (); }
-        //write
-        fwrite($this->file_handler, $error."\n");
-        // close
-        $this->close_file ();
+        fwrite($this->file_handler, "---- RAW ----\n");
+        fwrite($this->file_handler, implode("", $this->raw_trap_object)."\n");
     }
 
     /**
@@ -738,11 +710,12 @@ class Trap_file {
      */
     public function write_file_parsed ($content = false) {
         // open file
-        if ($this->file_handler === false)  { $this->open_file (); }
-
+        if ($this->file_handler === false)
+            $this->open_file ();
         // set what to write
         $content = $content===false ? $this->trap_object : $content;
 
+        fwrite($this->file_handler, "\n".date("Y-m-d H:i:s").":\n");
         //write
         foreach ($content as $k=>$d) {
             // if array
@@ -773,5 +746,3 @@ class Trap_file {
     }
 
 }
-
-?>

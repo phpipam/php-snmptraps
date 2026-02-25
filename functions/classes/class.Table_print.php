@@ -161,7 +161,7 @@ class Table_print_snmp {
                 default        : $formatter = "";
             }
             // save
-            $html[] = "<th id='header-$k' class='$hidden' data-field='$k' data-row-attributes='field-$k' $formatter>$f</th>";
+            $html[] = "<th id='header-$k' class='header-$k $hidden' data-field='$k' data-row-attributes='field-$k' $formatter>$f</th>";
         }
         if($fullScreen)
         $html[] = "<th class='header-full_screen disable-sorting' data-field='full_screen'><i class='fa fa-arrows-alt'></i></th>";
@@ -181,12 +181,12 @@ class Table_print_snmp {
      * @param mixed $fullScreen
      * @return void
      */
-    private function print_snmp_table_content ($table, $tbody = true, $newClass = false, $fullScreen) {
+    private function print_snmp_table_content ($table = false, $tbody = true, $newClass = false, $fullScreen = false) {
         // start
         if($tbody)
         $html[] = "<tbody>";
         // if some
-        if (sizeof($table)>0 && $table!==false) {
+        if ($table!==false) {
             // headers
             foreach ($table as $f) {
                 // append actions
@@ -202,7 +202,7 @@ class Table_print_snmp {
                     // set hidden
                     $hidden = in_array($k, array("ip", "content", "header-full_screen")) ? "hidden-xs" : "";
                     // save
-                    $html[] = "<td class='field-$k $hidden'>".$f->$k."</td>";
+                    $html[] = "<td class='field-$k $hidden' style='white-space:nowrap'>".$f->$k."</td>";
                 }
                 // fullscreen
                 if ($fullScreen)
@@ -290,7 +290,11 @@ class Table_print_snmp {
      * @return void
      */
     private function format_snmp_table_hostname ($hostname, $single) {
-        return "<strong><a href='host/$hostname/'>$hostname</a></strong>";
+        global $strip_hostname_domain;
+
+        $hostname_vis = $strip_hostname_domain&&!$single ? end(array_reverse(explode(".", $hostname))) : $hostname;
+
+        return "<strong><a href='host/$hostname/'>$hostname_vis</a></strong>";
     }
 
     /**
@@ -403,7 +407,7 @@ class Table_print extends Table_print_snmp {
      * @param mixed $target     // which script to target via modal
      * @return void
      */
-    public function print_table ($table_content, $headers = true, $script, $target) {
+    public function print_table ($table_content = false, $headers = true, $script = "", $target = "") {
         //headers
         if ($headers)
         $this->print_table_headers ();

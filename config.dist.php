@@ -122,7 +122,8 @@ $notification_params['sms'] = array(
     "server"=>"127.0.0.1:8080",                 // sms server
     "uri"=>"/sms/",                             // sms server uri
     "appid"=>"snmptraps",                       // application id
-    "sender"=>"snmptraps"                       // from
+    "sender"=>"snmptraps",                      // from
+    "length" =>640                              // maximum length. leave 0 for default
 );
 
 /**
@@ -207,3 +208,9 @@ $title = "Snmptraps server";
  * @access public
  */
 $footer = "php-snmptrap management";
+
+/**
+ * Strip domain from hostname
+ * @var bool
+ */
+$strip_hostname_domain = true;

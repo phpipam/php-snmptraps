@@ -40,4 +40,4 @@ $version['patch']  = "1";
  * @var mixed
  * @access public
  */
-$version['php'] = "7.0";
+$version['php'] = "8.0";

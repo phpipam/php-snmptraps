@@ -22,7 +22,7 @@ class Modal {
      * @param mixed $action_script
      * @return void
      */
-    public function modal_print ($header, $content, $footer_text = "Save", $action_script) {
+    public function modal_print ($header = null, $content = "", $footer_text = "Save", $action_script = "") {
         // set html
         $html[] = $this->modal_header ($header);
         $html[] = $this->modal_body ($content);

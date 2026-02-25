@@ -26,7 +26,7 @@ class Trap_notify {
      * @var mixed
      * @access private
      */
-    private $params = object;
+    private $params = "";
 
     /**
      * Trap details
@@ -45,28 +45,14 @@ class Trap_notify {
     protected $Database;
 
     /**
-     * filename to write errors to
-     *
-     * @var mixed
-     * @access public
-     */
-    public $filename;
-
-
-
-
-
-
-    /**
      * __construct function.
      *
      * @access public
      * @param mixed $trap_details
      * @param mixed $params
-     * @param string $filename (default: "/tmp/trap.txt")
      * @return void
      */
-    public function __construct ($trap_details, $params, $filename = "/tmp/trap.txt") {
+    public function __construct ($trap_details = [], $params = []) {
         // save filename for errors
         $this->filename = $filename;
         // save params
@@ -91,25 +77,6 @@ class Trap_notify {
     }
 
     /**
-     * Writes new error to file
-     *
-     * @access private
-     * @param mixed $error
-     * @return void
-     */
-    private function write_error ($error) {
-        // we need object
-        if (is_object($error))       { $out = (array) $error; }
-        elseif (is_string($error))   { $out = array();  $out['error'] = $error; }
-        else                         { $out = (array) $error; }
-
-        // start file object, set file and write error
-        $File = new Trap_file ($this->params);
-        $File->set_file ($this->filename);
-        $File->write_file_parsed ($out);
-    }
-
-    /**
      * Send notification function.
      *
      * @access public
@@ -121,8 +88,7 @@ class Trap_notify {
 
         // check maintaneance
         if ($this->db_check_maintaneance () === true) {
-            $this->write_error ("Notification skipped: Maintaneance mode");
-            return true;
+            throw new Exception ($this->trap_details->hostname ." - Notification skipped: Maintaneance mode");
         }
         // send
         else {
@@ -186,11 +152,10 @@ class Trap_notify {
     private function db_open_connection () {
         # open DB connection
         try {
-            $this->Database = new Database_PDO;
+            $this->Database = new Database_PDO ();
         }
         catch (Exception $e) {
-            $this->write_error ("Database error: ".$e->getMessage());
-            die();
+            throw new Exception ("Database error: ".$e->getMessage());
         }
     }
 
@@ -204,7 +169,7 @@ class Trap_notify {
         // try to fetch
 		try { $users = $this->Database->getObjectsQuery("select * from `users` where `notification_severities` like ? and CURTIME() not between `quiet_time_start` and '00:00:00' and CURTIME() not between '00:00:00' and `quiet_time_start`;", array("%".$this->trap_details->severity."%")); }
 		catch (Exception $e) {
-			$this->write_error ("Database error: ".$e->getMessage());
+            throw new Exception ("Database error: ".$e->getMessage());
 		}
 		// result
 		return sizeof($users)>0 ? $users : false;
@@ -224,7 +189,7 @@ class Trap_notify {
             // try to fetch
     		try { $exceptions = $this->Database->getObjectQuery("select count(*) as `cnt` from `maintaneance` where `hostname` = ? and NOW() between `start` and `stop`;", array($this->trap_details->hostname)); }
     		catch (Exception $e) {
-    			$this->write_error ("Database error: ".$e->getMessage());
+    			throw new Exception ("Database error: ".$e->getMessage());
     		}
     		// check
     		return $exceptions->cnt > 0 ? true : false;
@@ -267,31 +232,11 @@ class sms {
      */
     public function __construct($params = array()) {
         // check
-        if (!isset($params['sms']))  { $this->write_error ("Error: Invalid SMS parameters"); }
+        if (!isset($params['sms']))  {
+            throw new Exception("Error: Invalid SMS parameters");
+        }
 		# save sms settings
 		$this->sms_settings = (object) $params['sms'];
-    }
-
-    /**
-     * Writes new error to file
-     *
-     * @access private
-     * @param mixed $error
-     * @return void
-     */
-    private function write_error ($error) {
-        // we need object
-        if (is_object($error))       { $out = (array) $error; }
-        elseif (is_string($error))   { $out = array();  $out['error'] = $error; }
-        else                         { $out = (array) $error; }
-
-        // set master settings
-        include(dirname(__FILE__)."/../../config.php");
-
-        // start file object, set file and write error
-        $File = new Trap_file ($out);
-        $File->set_file ($filename);
-        $File->write_file_parsed ($out);
     }
 
     /**
@@ -306,11 +251,18 @@ class sms {
         # set content
         $content = "[".$message_details->hostname."] - ".$message_details->msg." (".$message_details->severity.") \n\n".implode("\n", $message_details->content);
 
+        # trim content if too long
+        if (isset($this->sms_settings->length)) {
+            if (is_numeric($this->sms_settings->length) && $this->sms_settings->length!=0) {
+                $content = substr($content, 0, $this->sms_settings->length);
+            }
+        }
+
         # validate and send
         foreach ($recipients as $r) {
             // validate recipient
             if ($this->validate_recipient ($r)===false) {
-                $this->write_error ("Invalid recipient ".$r->real_name." : tel: ".$r->tel);
+                throw new Exception ("Invalid SMS recipient ".$r->real_name." : tel: ".$r->tel);
             }
             else {
                 // remove +
@@ -339,7 +291,7 @@ class sms {
         $resp = json_decode($sms_resp);
         # check for ok
         if ($resp->SendSmsResponse->status!=="OK") {
-            $this->write_error ($resp->SendSmsResponse->status);
+            throw new Exception ("SMS error received [".$resp->SendSmsResponse->status."]");
         }
     }
 
@@ -368,8 +320,7 @@ class sms {
 
 
 
-
-
+use PHPMailer\PHPMailer\Exception;
 
 
 /**
@@ -427,7 +378,9 @@ class mail {
      */
     public function __construct($params = array()) {
         // check
-        if (!isset($params['mail']))  { $this->write_error ("Error: Invalid mail parameters"); die();  }
+        if (!isset($params['mail'])) {
+            throw new Exception ("Error: Invalid mail parameters");
+        }
         # import parameters from config file
         include(dirname(__FILE__)."/../../config.php");
         $this->settings = array();
@@ -438,28 +391,6 @@ class mail {
         $this->initialize_mailer ();
     }
 
-    /**
-     * Writes new error to file
-     *
-     * @access private
-     * @param mixed $error
-     * @return void
-     */
-    private function write_error ($error) {
-        // we need object
-        if (is_object($error))       { $out = (array) $error; }
-        elseif (is_string($error))   { $out = array();  $out['error'] = $error; }
-        else                         { $out = (array) $error; }
-
-        // set master settings
-        include(dirname(__FILE__)."/../../config.php");
-
-        // start file object, set file and write error
-        $File = new Trap_file ($out);
-        $File->set_file ($filename);
-        $File->write_file_parsed ($out);
-    }
-
 	/**
 	 * Initializes mailer object.
 	 *
@@ -468,10 +399,15 @@ class mail {
 	 */
 	public function initialize_mailer () {
 		# we need phpmailer
-		require_once( dirname(__FILE__).'/../PHPMailer/PHPMailerAutoload.php');
+		//require_once( dirname(__FILE__).'/../PHPMailer/PHPMailerAutoload.php');
+
+        require(dirname(__FILE__).'/../PHPMailer/src/PHPMailer.php');
+        require(dirname(__FILE__).'/../PHPMailer/src/SMTP.php');
+        require(dirname(__FILE__).'/../PHPMailer/src/Exception.php');
 
 		# initialize object
-		$this->Php_mailer = new PHPMailer(true);			//localhost by default
+		// $this->Php_mailer = new PHPMailer(true);			//localhost by default
+        $this->Php_mailer = new PHPMailer\PHPMailer\PHPMailer;
 		$this->Php_mailer->CharSet="UTF-8";					//set utf8
 		$this->Php_mailer->SMTPDebug = 0;					//default no debugging
 
@@ -525,33 +461,34 @@ class mail {
      * @return void
      */
     public function send ($message_details, $recipients) {
-        # save details
-        $this->message_details = (object) $message_details;
-        # set subject
-        $subject = "[".$message_details->hostname."] - ".$message_details->msg;
-
-        # set mail body content
-        $body = array();
-        $body[] = "<div style='padding:10px;'><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;color:#333;'>";
-        $body[] = "New snmp trap received:";
-        $body[] = "<br><br>";
-        $body[] = "<table>";
-        $body[] = "<tr><td>Hostname:</td><td style='padding-left: 10px;'><strong>".$message_details->hostname."</strong></td></tr>";
-        $body[] = "<tr><td>IP:</td><td style='padding-left: 10px;'>".$message_details->ip."</td></tr>";
-        $body[] = "<tr><td>Message:</td><td style='padding-left: 10px;'><strong>".$message_details->msg."</strong></td></tr>";
-        $body[] = "<tr><td>Date:</td><td style='padding-left: 10px;'>".date("d/m/Y H:i:s")."</td></tr>";
-        $body[] = "<tr><td>Severity:</td><td style='padding-left: 10px;'><strong>".$message_details->severity."</strong></td></tr>";
-        $body[] = "<tr><td>OID:</td><td style='padding-left: 10px;'>".$message_details->oid."</td></tr>";
-        $body[] = "<tr><td><strong>Content</strong>:</td><td style='padding-left: 10px;vertical-align:top;'>".implode("<br>", $message_details->content)."</td></tr>";
-        $body[] = "</table>";
-        $body[] = "</font></div>";
-
-        # get content
-        $mail_content_html  = $this->generate_message (implode("\r\n", $body));
-        $mail_content_plain = $this->generate_message_plain (implode("\r\n", strip_tags(str_replace("<br>","\n",$body))));
-
         # try to send
         try {
+
+            # save details
+            $this->message_details = (object) $message_details;
+            # set subject
+            $subject = "[".$message_details->hostname."] - ".$message_details->msg;
+
+            # set mail body content
+            $body = array();
+            $body[] = "<div style='padding:10px;'><font face='Helvetica, Verdana, Arial, sans-serif' style='font-size:12px;color:#333;'>";
+            $body[] = "New snmp trap received:";
+            $body[] = "<br><br>";
+            $body[] = "<table>";
+            $body[] = "<tr><td>Hostname:</td><td style='padding-left: 10px;'><strong>".$message_details->hostname."</strong></td></tr>";
+            $body[] = "<tr><td>IP:</td><td style='padding-left: 10px;'>".$message_details->ip."</td></tr>";
+            $body[] = "<tr><td>Message:</td><td style='padding-left: 10px;'><strong>".$message_details->msg."</strong></td></tr>";
+            $body[] = "<tr><td>Date:</td><td style='padding-left: 10px;'>".date("d/m/Y H:i:s")."</td></tr>";
+            $body[] = "<tr><td>Severity:</td><td style='padding-left: 10px;'><strong>".$message_details->severity."</strong></td></tr>";
+            $body[] = "<tr><td>OID:</td><td style='padding-left: 10px;'>".$message_details->oid."</td></tr>";
+            $body[] = "<tr><td><strong>Content</strong>:</td><td style='padding-left: 10px;vertical-align:top;'>".implode("<br>", $message_details->content)."</td></tr>";
+            $body[] = "</table>";
+            $body[] = "</font></div>";
+
+            # get content
+            $mail_content_html  = $this->generate_message (implode("\r\n", $body));
+            $mail_content_plain = $this->generate_message_plain (strip_tags(str_replace("<br>","\n",implode("\r\n", $body))));
+
         	$this->Php_mailer->setFrom($this->mail_settings->from);
         	foreach($recipients as $r) {
         	$this->Php_mailer->addAddress($r->email, addslashes(trim($r->real_name)));
@@ -561,10 +498,10 @@ class mail {
         	$this->Php_mailer->AltBody = $mail_content_plain;
         	//send
         	$this->Php_mailer->send();
-        } catch (phpmailerException $e) {
+        } catch (PHPMailer\PHPMailer\Exception $e) {
         	$this->write_error ("Mailer Error: ".$e->errorMessage());
         } catch (Exception $e) {
-        	$this->write_error ("Mailer Error: ".$e->errorMessage());
+        	throw new Exception ("Mailer Error: ".$e->errorMessage());
         }
     }
 
@@ -734,7 +671,9 @@ class pushover {
      */
     public function __construct($params = array()) {
         // check
-        if (!isset($params['pushover']['token']) && !isset($params['pushover']['key']))  { $this->write_error ("Error: Invalid pushover parameters"); ; }
+        if (!isset($params['pushover']['token']) && !isset($params['pushover']['key']))  {
+            throw new Exception ("Error: Invalid pushover parameters");
+        }
         // save params
         $this->p_token = $params['pushover']['token'];
         $this->p_key =$params['pushover']['key'];
@@ -765,7 +704,6 @@ class pushover {
                 "priority" => $this->p_priority,
                 "message" => implode("\n", $message_details->content)
             ),
-            CURLOPT_SAFE_UPLOAD => true,
             )
         );
         // send
@@ -867,7 +805,9 @@ class slack {
         $this->settings = array("url"=>$url);
 
         // check
-        if (!isset($params['slack']['url']) && !isset($params['slack']['key']))  { $this->write_error ("Error: Invalid slack parameters"); ; }
+        if (!isset($params['slack']['url']) && !isset($params['slack']['key']))  {
+            throw new Exception ("Error: Invalid slack parameters");
+        }
         // save params
         $this->url = $params['slack']['url'];
         $this->key = $params['slack']['key'];
@@ -953,5 +893,3 @@ class slack {
         else                                                        { $this->color = "#3366CC"; }
     }
 }
-
-?>

@@ -14,7 +14,7 @@ Here is a list of MIBS accessible by system to load descriptions etc. You can ch
 
 # SNMP class to read file
 $Snmp_read_MIB = new Snmp_read_MIB;
-$Snmp_read_MIB->set_mib_directory ($mib_directory);
+$Snmp_read_MIB->set_mib_directory (@$mib_directory);
 
 # make sure user is admin
 $User->is_admin ();
