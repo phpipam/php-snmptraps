@@ -566,49 +566,16 @@ class User extends Common_functions {
 
 
     /**
-     *    function to crypt user pass, randomly generates salt. Use sha256 if possible, otherwise Blowfish or md5 as fallback
-     *
-     *        types:
-     *            CRYPT_MD5 == 1           (Salt starting with $1$, 12 characters )
-     *            CRYPT_BLOWFISH == 1        (Salt starting with $2a$. The two digit cost parameter: 09. 22 characters )
-     *            CRYPT_SHA256 == 1        (Salt starting with $5$rounds=5000$, 16 character salt.)
-     *            CRYPT_SHA512 == 1        (Salt starting with $6$rounds=5000$, 16 character salt.)
+     * Hashes a password using bcrypt via password_hash().
+     * Existing crypt() hashes are still accepted by auth_check_local().
      *
      * @access public
      * @param mixed $input
-     * @return void
+     * @return string
      */
     public function crypt_user_pass ($input) {
         # use password_hash with bcrypt (PASSWORD_DEFAULT); backward-compatible via auth_check_local fallback
         return password_hash($input, PASSWORD_BCRYPT, array('cost' => 12));
-    }
-
-    /**
-     *    this function will detect highest crypt type to use for system
-     *
-     * @access public
-     * @return void
-     */
-    private function detect_crypt_type () {
-        if(CRYPT_SHA512 == 1)        { return '$6$rounds=3000$'; }
-        elseif(CRYPT_SHA256 == 1)    { return '$5$rounds=3000$'; }
-        elseif(CRYPT_BLOWFISH == 1)    { return '$2y$'.str_pad(rand(4,31),2,'0', STR_PAD_LEFT).'$'; }
-        elseif(CRYPT_MD5 == 1)        { return '$5$rounds=3000$'; }
-        else                        { $this->Result->show("danger", _("No crypt types supported"), true); }
-    }
-
-    /**
-     * Returns crypt type used to encrypt password
-     *
-     * @access public
-     * @return void
-     */
-    public function return_crypt_type () {
-        if(CRYPT_SHA512 == 1)        { return 'CRYPT_SHA512'; }
-        elseif(CRYPT_SHA256 == 1)    { return 'CRYPT_SHA256'; }
-        elseif(CRYPT_BLOWFISH == 1)    { return 'CRYPT_BLOWFISH'; }
-        elseif(CRYPT_MD5 == 1)        { return 'CRYPT_MD5'; }
-        else                        { return "No crypt types supported"; }
     }
 
     /**
