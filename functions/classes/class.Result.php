@@ -55,44 +55,6 @@ class Result {
 	}
 
 	/**
-	 * Alias for show method for backwards compatibility
-	 *
-	 * @access public
-	 * @param string $text (default: "No value provided")
-	 * @param bool $die (default: false)
-	 * @return void
-	 */
-	public function show_cli ($text="No value provided", $die=false) {
-		$this->show(false, $text, $die, false, false, false);
-	}
-
-	/**
-	 * Shows result for cli functions
-	 *
-	 * @access public
-	 * @param string $text (default: "No value provided")
-	 * @return void
-	 */
-	public function show_cli_message ($text="No value provided") {
-		// array - join
-		if (is_array($text) && sizeof($text)>0) {
-			// 1 element
-			if(sizeof( $text )==1) {
-				$text = $text[0];
-			}
-			// multiple - format
-			else {
-    			$out = array();
-				foreach( $text as $l ) { $out[] = "\t* $l"; }
-				// join
-				$text = implode("\n", $out);
-			}
-		}
-		# print
-		return $text."\n";
-	}
-
-	/**
 	 * Show GUI result
 	 *
 	 * @access public
