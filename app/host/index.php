@@ -23,7 +23,7 @@ $unique_hosts = $Trap->fetch_unique_hosts ();
 # print badges if page set
 if (isset($_GET['page'])) {
     # print title
-    print "<h4>Traps for host $_GET[page]</h4>";
+    print "<h4>Traps for host ".htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8')."</h4>";
 
     # badges
     print "<div class='container-fluid text-left row'>";
@@ -58,7 +58,8 @@ if (isset($_GET['page'])) {
 
     // table
     print "<div class='container-fluid row' style='margin-bottom:20px;'>";
-    print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=host&type={$_GET['page']}'>";
+    $host_escaped = htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8');
+    print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=host&type={$host_escaped}'>";
     // headers only
     $Table_print->print_snmp_table ($traps, true, false, false, true);
     // data

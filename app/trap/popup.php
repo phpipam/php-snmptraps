@@ -69,5 +69,5 @@ else {
 
 
 # print modal
-$Modal->modal_print ("Details for message id $_GET[id]", $content, "", "");
+$Modal->modal_print ("Details for message id ".htmlspecialchars($_GET['id'], ENT_QUOTES, 'UTF-8'), $content, "", "");
 ?>

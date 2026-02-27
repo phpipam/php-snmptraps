@@ -184,6 +184,34 @@ class User extends Common_functions {
 	}
 
 	/**
+	 * Generates a CSRF token and stores it in the session.
+	 * Returns the token so it can be embedded in a form.
+	 *
+	 * @access public
+	 * @return string
+	 */
+	public function generate_csrf_token () {
+		if (empty($_SESSION['csrf_token'])) {
+			$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+		}
+		return $_SESSION['csrf_token'];
+	}
+
+	/**
+	 * Verifies the CSRF token submitted with a POST request.
+	 * Calls Result->show and exits on failure.
+	 *
+	 * @access public
+	 * @param string $token
+	 * @return void
+	 */
+	public function verify_csrf_token ($token) {
+		if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (string)$token)) {
+			$this->Result->show("danger", _("Invalid CSRF token"), true);
+		}
+	}
+
+	/**
 	 * sets session name if specified in config file
 	 *
 	 * @access private
@@ -420,8 +448,11 @@ class User extends Common_functions {
      * @return void
      */
     private function auth_check_local ($username, $password) {
-        # auth ok
-        if($this->user->password == crypt($password, $this->user->password)) {
+        # auth ok — support both password_hash() and legacy crypt() hashes
+        $hash = $this->user->password;
+        $verified = password_verify($password, $hash) ||
+                    ($hash == crypt($password, $hash));
+        if($verified) {
             # save to session
             $this->write_session_parameters ();
             # print success
@@ -548,16 +579,8 @@ class User extends Common_functions {
      * @return void
      */
     public function crypt_user_pass ($input) {
-        # initialize salt
-        $salt = "";
-        # set possible salt characters in array
-        $salt_chars = array_merge(range('A','Z'), range('a','z'), range(0,9));
-        # loop to create salt
-        for($i=0; $i < 22; $i++) { $salt .= $salt_chars[array_rand($salt_chars)]; }
-        # get prefix
-        $prefix = $this->detect_crypt_type ();
-        # return crypted variable
-        return crypt($input, $prefix.$salt);
+        # use password_hash with bcrypt (PASSWORD_DEFAULT); backward-compatible via auth_check_local fallback
+        return password_hash($input, PASSWORD_BCRYPT, array('cost' => 12));
     }
 
     /**

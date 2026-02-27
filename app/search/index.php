@@ -31,6 +31,7 @@ $_POST = $User->strip_input_tags ($_POST);
 
 <div class="container-fluid search-wrapper" style="padding: 10px;">
 <form name="search" id="search" method="post">
+<input type="hidden" name="csrf_token" value="<?php print $User->generate_csrf_token(); ?>">
 <table class="table table-condensed table-noborder table-auto">
 
 <tr>
@@ -77,7 +78,7 @@ $_POST = $User->strip_input_tags ($_POST);
 <tr>
     <td>From time</td>
     <td>
-        <input type="text" class="form-control input-sm datetimepicker" data-format="yyyy-MM-dd" style='width:150px;' name="start_date" placeholder="<?php print date("Y-m-d H:i:s"); ?>" value='<?php if(isset($_POST['start_date'])) { print $_POST['start_date']; } ?>'>
+        <input type="text" class="form-control input-sm datetimepicker" data-format="yyyy-MM-dd" style='width:150px;' name="start_date" placeholder="<?php print date("Y-m-d H:i:s"); ?>" value='<?php if(isset($_POST['start_date'])) { print htmlspecialchars($_POST['start_date'], ENT_QUOTES, 'UTF-8'); } ?>'>
     </td>
     <td><span class='muted'>Select Start date</span></td>
 </tr>
@@ -85,7 +86,7 @@ $_POST = $User->strip_input_tags ($_POST);
 <tr>
     <td>To time</td>
     <td>
-        <input type="text" class="form-control input-sm datetimepicker" data-format="yyyy-MM-dd" style='width:150px;' name="stop_date" placeholder="<?php print date("Y-m-d H:i:s", strtotime("1 day ago")); ?>" value='<?php if(isset($_POST['stop_date'])) { print $_POST['stop_date']; } ?>'>
+        <input type="text" class="form-control input-sm datetimepicker" data-format="yyyy-MM-dd" style='width:150px;' name="stop_date" placeholder="<?php print date("Y-m-d H:i:s", strtotime("1 day ago")); ?>" value='<?php if(isset($_POST['stop_date'])) { print htmlspecialchars($_POST['stop_date'], ENT_QUOTES, 'UTF-8'); } ?>'>
     </td>
     <td><span class='muted'>Select Start date</span></td>
 </tr>
@@ -93,7 +94,7 @@ $_POST = $User->strip_input_tags ($_POST);
 <tr>
     <td>Message</td>
     <td>
-        <input type="text" name="message" class="form-control input-sm" style='width:250px;' placeholder="Enter messages to search for" value="<?php if(isset($_POST['message'])) { print $_POST['message']; } ?>">
+        <input type="text" name="message" class="form-control input-sm" style='width:250px;' placeholder="Enter messages to search for" value="<?php if(isset($_POST['message'])) { print htmlspecialchars($_POST['message'], ENT_QUOTES, 'UTF-8'); } ?>">
     </td>
     <td><span class='muted'>Enter message for search</span></td>
 </tr>
