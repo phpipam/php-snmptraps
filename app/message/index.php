@@ -46,7 +46,7 @@ if(isset($_GET['page'])) {
             $Table_print->set_snmp_table_fields ($tfields);
 
             # structure
-            print "<h4>Details for message <strong>$_GET[page]</strong></h4><hr>";
+            print "<h4>Details for message <strong>".htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8')."</strong></h4><hr>";
             print "<div class='container-fluid message-wrapper' style='padding:10px;'>";
 
             // print
@@ -60,7 +60,7 @@ if(isset($_GET['page'])) {
 }
 
 # print title
-print "<h4>Traps for message <strong>$_GET[page]</strong></h4><hr>";
+print "<h4>Traps for message <strong>".htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8')."</strong></h4><hr>";
 
 // if queried
 if (isset($_GET['page'])) {

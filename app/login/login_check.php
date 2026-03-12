@@ -20,6 +20,9 @@ $Result 	= new Result ();
 # strip input tags
 $_POST = $User->strip_input_tags ($_POST);
 
+# verify CSRF token
+$User->verify_csrf_token (@$_POST['csrf_token']);
+
 # Authenticate
 if( !empty($_POST['trapusername']) && !empty($_POST['trappassword']) )  {
 	# all good, try to authentucate user

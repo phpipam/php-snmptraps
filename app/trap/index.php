@@ -45,7 +45,7 @@ if ($item!==false) {
     # print
     else {
         // print
-        print "<h4>Details for message id $_GET[page]</h4><hr>";
+        print "<h4>Details for message id ".htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8')."</h4><hr>";
         print "<table class='table snmp table-noborder table-condensed table-hover'>";
         $Table_print->print_snmp_item ($item);
         print "</table>";

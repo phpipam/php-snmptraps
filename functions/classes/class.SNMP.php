@@ -239,26 +239,6 @@ class Snmp_read_MIB {
         }
     }
 
-    public function read_mib_file_oid ($filename=false) {
-        if($filename!==false)   { $this->mib_file_name = $filename; }
-        // we only allow .txt and .my
-        if (strpos($filename, ".txt")!==false || strpos($filename, ".my")!==false || strpos($filename, ".mib")!==false) {
-            // read file and put it to array
-            $file_h = fopen($this->mib_file_name,"r");
-            if (filesize($this->mib_file_name)>0) {
-                $this->file = fread($file_h,filesize($this->mib_file_name));
-                fclose($file_h);
-            }
-            else {
-                fclose($file_h);
-                return false;
-            }
-        }
-        else {
-            return false;
-        }
-    }
-
     /**
      * Gets object part form MIB file
      *

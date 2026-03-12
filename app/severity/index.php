@@ -33,10 +33,10 @@ $Table_print->set_snmp_table_fields ($tfields);
 // structure
 print "<div class='container-fluid row'>";
 // title
-print "<h4>".ucwords($_GET['page'])." severities</h4><hr>";
+print "<h4>".ucwords(htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8'))." severities</h4><hr>";
 // table
-// print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-cookie-id-table='severity' data-url='".BASE."app/json/?app=severity&type={$_GET[page]}'>";
-print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=severity&type={$_GET['page']}'>";
+$page_escaped = htmlspecialchars($_GET['page'], ENT_QUOTES, 'UTF-8');
+print "<table class='table snmp sorted sorted-ajax table-noborder table-condensed table-hover' data-url='".BASE."app/json/?app=severity&type={$page_escaped}'>";
 // headers only
 $Table_print->print_snmp_table ($traps, true, false, false, true);
 // data

@@ -1,4 +1,5 @@
 <form name="login" id="login" method="post">
+<input type="hidden" name="csrf_token" value="<?php print $User->generate_csrf_token(); ?>">
 <div class="row">
 
 	<!-- username -->

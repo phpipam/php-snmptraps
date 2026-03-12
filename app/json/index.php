@@ -31,9 +31,9 @@ $Trap->set_permitted_hostnames ($User->hostnames);
 // strip tags
 $_GET = $User->strip_input_tags ($_GET);
 
-// set print parameters
-$Trap->reset_print_limit  ($_GET['limit']);
-$Trap->reset_print_offset ($_GET['offset']);
+// set print parameters (cast limit/offset to int to prevent injection)
+$Trap->reset_print_limit  ((int)$_GET['limit']);
+$Trap->reset_print_offset ((int)$_GET['offset']);
 $Trap->reset_print_order  ($_GET['order']);
 $Trap->set_print_filter   (@$_GET['search']);
 

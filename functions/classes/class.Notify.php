@@ -289,8 +289,11 @@ class sms {
         $sms_resp = file_get_contents($url);
         # parse response
         $resp = json_decode($sms_resp);
-        # check for ok
-        if ($resp->SendSmsResponse->status!=="OK") {
+        # check for ok — guard against null/invalid response
+        if ($resp === null || !isset($resp->SendSmsResponse->status)) {
+            throw new Exception ("SMS error: invalid or empty response from server");
+        }
+        if ($resp->SendSmsResponse->status !== "OK") {
             throw new Exception ("SMS error received [".$resp->SendSmsResponse->status."]");
         }
     }
@@ -532,6 +535,8 @@ class mail {
 	public function generate_message_plain ($body) {
 		$html[] = $body;						//set body
 		$html[] = $this->set_footer_plain ();	//set footer
+		# return
+		return implode("\n", $html);
 	}
 
 	/**

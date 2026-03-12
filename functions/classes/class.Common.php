@@ -102,43 +102,6 @@ class Common_functions  {
 
 
 	/**
-	 * fetches settings from database
-	 *
-	 * @access private
-	 * @return none
-	 */
-	public function get_settings () {
-		# constant defined
-		if (defined('SETTINGS')) {
-			if ($this->settings === null || $this->settings === false) {
-				$this->settings = json_decode(SETTINGS);
-			}
-		}
-		else {
-			# cache check
-			if($this->settings === null) {
-				try { $settings = $this->Database->getObject("settings", 1); }
-				catch (Exception $e) { $this->Result->show("danger", _("Database error: ").$e->getMessage()); }
-				# save
-				if ($settings!==false)	 {
-					$this->settings = $settings;
-				}
-			}
-		}
-	}
-
-	/**
-	 * get_settings alias
-	 *
-	 * @access public
-	 * @return void
-	 */
-	public function settings () {
-		return $this->get_settings();
-	}
-
-
-
 
 
 	/**
@@ -292,26 +255,13 @@ class Common_functions  {
      * @return void
      */
     public function create_link ($l0 = null, $l1 = null, $l2 = null) {
-    	# get settings
-    	global $User;
-
-    	# set normal link array
+    	# set link params
     	$el = array("app", "page", "id");
 
-    	# set rewrite
-    	if($User->settings->prettyLinks=="Yes") {
-    		if(!is_null($l2))	    { $link = "$l0/$l1/$l2/"; }
-    		elseif(!is_null($l1))	{ $link = "$l0/$l1/"; }
-    		elseif(!is_null($l0))	{ $link = "$l0/"; }
-    		else					{ $link = ""; }
-    	}
-    	# normal
-    	else {
-    		if(!is_null($l2))	    { $link = "?$el[0]=$l0&$el[1]=$l1&$el[2]=$l2"; }
-    		elseif(!is_null($l1))	{ $link = "?$el[0]=$l0&$el[1]=$l1"; }
-    		elseif(!is_null($l0))	{ $link = "?$el[0]=$l0"; }
-    		else					{ $link = ""; }
-    	}
+    	if(!is_null($l2))	    { $link = "?$el[0]=$l0&$el[1]=$l1&$el[2]=$l2"; }
+    	elseif(!is_null($l1))	{ $link = "?$el[0]=$l0&$el[1]=$l1"; }
+    	elseif(!is_null($l0))	{ $link = "?$el[0]=$l0"; }
+    	else					{ $link = ""; }
     	# prepend base
     	$link = BASE.$link;
 
