@@ -58,7 +58,9 @@ $ad = array (
     'base_dn'=>"DC=domain,DC=local",
     'ad_port'=>389,
     'account_suffix'=>"domain.local",
-    'domain_controllers'=>array("127.0.0.1")
+    'domain_controllers'=>array("127.0.0.1"),
+    // 'use_ssl'=>false,  // ldaps://
+    // 'use_tls'=>false,  // StartTLS
 );
 
 /**
