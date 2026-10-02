@@ -493,9 +493,7 @@ class User extends Common_functions {
 	/**
 	 *	Authenticate against a directory
 	 *
-	 *	Authenticates users against a directory - AD or LDAP
-	 *	Using library > adLDAP - LDAP Authentication with PHP for Active Directory
-	 *	http://adldap.sourceforge.net
+	 *	Authenticates users against AD / LDAP by binding as the user (see class.Ldap.php)
 	 *
 	 * @access private
   	 * @param mixed $username
@@ -503,12 +501,10 @@ class User extends Common_functions {
 	 * @return void
 	 */
 	private function auth_check_ad ($username, $password) {
-		// connect
-		$adldap = $this->directory_connect();
-
-		# authenticate
 		try {
-			if ($adldap->authenticate($username, $password)) {
+			$ldap = $this->directory_connect();
+
+			if ($ldap->authenticate($username, $password)) {
 				# save to session
 				$this->write_session_parameters();
 
@@ -518,46 +514,25 @@ class User extends Common_functions {
 				$this->update_login_time();
 			} # wrong user/pass by default
 			else {
-				$this->Result->show("danger", _("Invalid username or password for " . $username ), true);
-
+				$this->Result->show("danger", _("Invalid username or password"), true);
 			}
-		} catch (adLDAPException $e) {
+		} catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ") . $e->getMessage(), true);
 		}
-
 	}
 
 	/**
-	 *	Connect to a directory given our auth method settings
-	 *
-	 *	Connect using adLDAP
+	 *	Create directory authenticator from $ad config
 	 *
 	 * @access private
-	 * @param mixed $ad
-	 * @return adLDAP object
+	 * @return Ldap_auth
 	 */
 	private function directory_connect () {
-		# adLDAP script
 		require(dirname(__FILE__) . "/../../config.php");
-		require(dirname(__FILE__) . "/../adLDAP/src/adLDAP.php");
+		require_once(dirname(__FILE__) . "/class.Ldap.php");
 
-		# open connection
-		try {
-			$dirconn = new adLDAP($ad);
-		} catch (adLDAPException $e) {
-			$this->Result->show("danger", _("Error: ") . $e->getMessage(), true);
-		}
-
-		return $dirconn;
+		return new Ldap_auth($ad);
 	}
-
-
-
-
-
-
-
-
 
     /**
      *    @crypt functions

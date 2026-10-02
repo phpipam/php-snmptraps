@@ -51,7 +51,7 @@ php-snmptraps/
 │   │   └── class.User.php          # User authentication and session management
 │   ├── PHPMailer/          # PHPMailer v6+ (current, namespaced)
 │   ├── PHPMailer_old/      # PHPMailer legacy (not used by default)
-│   └── adLDAP/             # adLDAP library for Active Directory auth
+│   (LDAP/AD auth handled by classes/class.Ldap.php, needs php-ldap)
 ├── db/
 │   ├── SCHEMA.sql          # Full database schema with default seed data
 │   └── UPDATE.SQL          # Incremental ALTER statements by version
@@ -216,7 +216,7 @@ Trap_notify   (standalone)
 
 **`Trap_notify`** — Dispatches notifications. Checks maintenance windows and user quiet hours. Instantiates notification class by method name (e.g. `new mail(...)`, `new slack(...)`).
 
-**`User`** — Session management and authentication. Supports `local` (crypt), `ad` (adLDAP), and `krb` (Kerberos/Apache `REMOTE_USER`). Roles: `user`, `operator`, `administrator`.
+**`User`** — Session management and authentication. Supports `local` (crypt), `ad` (class.Ldap.php), and `krb` (Kerberos/Apache `REMOTE_USER`). Roles: `user`, `operator`, `administrator`.
 
 ---
 
@@ -242,7 +242,7 @@ The `Trap_notify::send_notification()` method dynamically instantiates: `new $me
 Three methods configured per-user via `auth_method` field:
 
 - **`local`**: Password stored as `crypt()` hash (SHA-512 preferred)
-- **`ad`**: Active Directory via adLDAP library (configured in `$ad` array)
+- **`ad`**: Active Directory/LDAP bind via class.Ldap.php (requires php ldap extension) (configured in `$ad` array)
 - **`krb`**: Kerberos via Apache `REMOTE_USER` variable
 
 Session is stored in PHP `$_SESSION['trapusername']`.
@@ -295,7 +295,6 @@ MIB files can be uploaded/managed via Settings → MIB files in the web UI.
 ### No Build System
 There is no Composer autoloader, no npm, no build step. All dependencies are vendored in `functions/`:
 - PHPMailer (v6, PSR-4 style but manually included via `require`)
-- adLDAP (manually included)
 
 ### Adding a New App Page
 1. Create `app/{newpage}/index.php`
