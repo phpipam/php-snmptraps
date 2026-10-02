@@ -9,6 +9,20 @@
 class Trap_notify {
 
     /**
+     * Debug filename (from config)
+     *
+     * @var string|false
+     */
+    public $filename = false;
+
+    /**
+     * Enabled notification methods (from config)
+     *
+     * @var array|false
+     */
+    public $notification_methods = false;
+
+    /**
      * List of allowed methods (classes) for sending notifications
      *
      * (default value: array())

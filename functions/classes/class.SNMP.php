@@ -369,6 +369,20 @@ class Snmp_read_MIB {
 class Trap_read extends Snmp_read_MIB {
 
     /**
+     * Search filter query (set by search filter)
+     *
+     * @var string
+     */
+    public $filter_query;
+
+    /**
+     * Search filter query values
+     *
+     * @var array
+     */
+    public $filter_query_value;
+
+    /**
      * How many traps to fetch
      *
      * (default value: 50)
