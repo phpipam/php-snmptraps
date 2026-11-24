@@ -31,17 +31,28 @@ arsort($hosts);
 <div class="col-12">
 <div class="card">
     <div class="card-body">
-        <div class="datagrid">
-            <div class="datagrid-item"><div class="datagrid-title">OID</div><div class="datagrid-content"><code><?= e($first['oid']) ?></code></div></div>
-            <div class="datagrid-item"><div class="datagrid-title">Severity</div><div class="datagrid-content"><?= $p->severity((string) $first['severity']) ?></div></div>
-            <div class="datagrid-item"><div class="datagrid-title">Latest</div><div class="datagrid-content"><?= e($first['date']) ?></div></div>
-            <div class="datagrid-item"><div class="datagrid-title">Traps shown</div><div class="datagrid-content"><?= count($traps) ?><?= count($traps) >= 200 ? ' (latest 200)' : '' ?></div></div>
-            <div class="datagrid-item"><div class="datagrid-title">Hosts</div><div class="datagrid-content">
-                <?php foreach (array_slice($hosts, 0, 10, true) as $h => $n): ?><span class="badge badge-outline text-secondary me-1 mb-1"><?= e($h) ?> &middot; <?= $n ?></span><?php endforeach; ?>
-                <?= count($hosts) > 10 ? '<span class="text-secondary small">+' . (count($hosts) - 10) . ' more</span>' : '' ?>
-            </div></div>
-            <div class="datagrid-item"><div class="datagrid-title">MIB file</div><div class="datagrid-content"><?= $mib ? e($mib['file']) : '<span class="text-secondary">not found</span>' ?></div></div>
+        <?php
+        $hostsHtml = '';
+        foreach (array_slice($hosts, 0, 10, true) as $h => $n) {
+            $hostsHtml .= '<span class="badge badge-outline text-secondary me-1 mb-1">' . e($h) . ' &middot; ' . $n . '</span>';
+        }
+        if (count($hosts) > 10) {
+            $hostsHtml .= '<span class="text-secondary small">+' . (count($hosts) - 10) . ' more</span>';
+        }
+        $items = [
+            'OID'         => '<code>' . e($first['oid']) . '</code>',
+            'Severity'    => '<span class="d-inline-block" style="width:110px">' . $p->severity((string) $first['severity']) . '</span>',
+            'Latest'      => e($first['date']),
+            'Traps shown' => count($traps) . (count($traps) >= 200 ? ' (latest 200)' : ''),
+            'Hosts'       => $hostsHtml,
+            'MIB file'    => $mib ? e($mib['file']) : '<span class="text-secondary">not found</span>',
+        ]; ?>
+        <?php foreach ($items as $label => $html): ?>
+        <div class="row py-1">
+            <div class="col-12 col-sm-3 col-lg-2 text-secondary"><?= e($label) ?></div>
+            <div class="col"><?= $html ?></div>
         </div>
+        <?php endforeach; ?>
         <?php if ($mib && $mib['description'] !== ''): ?>
         <div class="mt-3 text-secondary"><?= e_text($mib['description']) ?></div>
         <?php endif; ?>

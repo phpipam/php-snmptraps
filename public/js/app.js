@@ -78,12 +78,17 @@ $(function () {
 
     /* ---- modals: links with .load-modal load their href into #modal1 ---- */
     var modalEl = document.getElementById('modal1');
-    var modal = modalEl ? bootstrap.Modal.getOrCreateInstance(modalEl) : null;
+    // Tabler >= 1.x exports Bootstrap as tabler.bootstrap (older builds set window.bootstrap)
+    var bs = window.bootstrap || (window.tabler && window.tabler.bootstrap);
+    var modal = modalEl && bs ? bs.Modal.getOrCreateInstance(modalEl) : null;
+    var modalRedirect = null;
     var placeholder = '<div class="modal-body"><div class="placeholder-glow"><span class="placeholder col-9 mb-2"></span>'
         + '<span class="placeholder col-7 mb-2"></span><span class="placeholder col-10"></span></div></div>';
 
     $(document).on('click', '.load-modal', function () {
         if (!modal) { return true; }
+        // optional data-redirect: where to go after a successful submit (default: reload)
+        modalRedirect = $(this).data('redirect') || null;
         var $content = $('#modal1 .modal-content').html(placeholder);
         $.get($(this).attr('href'))
             .done(function (html) { $content.html(html); initTooltips($content[0]); })
@@ -106,7 +111,9 @@ $(function () {
             .done(function (data) {
                 $result.html(data).fadeIn('fast');
                 if (data.indexOf('alert-danger') === -1 && data.indexOf('alert-warning') === -1) {
-                    setTimeout(function () { window.location.reload(); }, 1200);
+                    setTimeout(function () {
+                        if (modalRedirect) { window.location.href = modalRedirect; } else { window.location.reload(); }
+                    }, 1200);
                 } else {
                     $btn.prop('disabled', false);
                     hideSpinner();

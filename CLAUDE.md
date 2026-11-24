@@ -57,9 +57,11 @@ MariaDB in STRICT mode - truncate to column length before insert (see `TrapProce
 
 ## UI
 
-Tabler 1.0 (dark, Bootstrap 5 bundled in `public/js/tabler.min.js`) + Tabler Icons webfont + jQuery 3.7 + tippy.js/Popper, all vendored in `public/` (no CDN), styled to match the sibling project `pw.ugbb.net/nalarms-dev.ugbb.net`.
+Tabler 1.7.5 (dark, Bootstrap 5 bundled in `public/js/tabler.min.js` and exposed as `tabler.bootstrap`, not `window.bootstrap`) + Tabler Icons 3.52 webfont (split per-category font files in `public/css/tabler/fonts/`) + jQuery 3.7 + tippy.js/Popper, all vendored in `public/` (no CDN), styled to match the sibling project `pw.ugbb.net/nalarms-dev.ugbb.net`. To upgrade, copy `dist/css/tabler.min.css`, `dist/js/tabler.min.js` (@tabler/core) and `dist/tabler-icons.min.css` + the woff2 files it references (@tabler/icons-webfont) over the vendored files. Asset URLs carry `App::assetVersion()` (file mtimes), so replaced files bypass the 7-day nginx cache.
 
 - `views/layout.php`: navbar, reload timer (`users.reload_page`, paused via cookie `stop-refresh`), single `#modal1`.
+- Trap tables are one line per trap (`table-layout: fixed`, cells clipped with an ellipsis in `public/css/app.css`); the full content is in the message tooltip / quick view. Dashboard widgets show at most `Auth::DASH_MAX_ROWS` (20) traps.
+- Settings: left menu + one card whose header holds the page title. Users have a list (`partials/user-list.php`, two-line rows) and a details page `settings/users/{id}/` (`partials/user-details.php`, helpers in `Web\UserPresenter`). `.load-modal[data-redirect]` sends the browser there after a successful modal submit instead of reloading.
 - Trap lists are server-side paginated (`Pages::listing()`: `?page`, `?limit`, `?q`), rendered by `views/list.php` + `partials/trap-table.php` + `partials/pagination.php`; row HTML comes from `Web\TrapPresenter` (Tabler colour per severity group via `Severity::tablerColor()`).
 - `public/js/app.js`: `.load-modal` links load their href into `#modal1`; `.modal-execute[data-action]` posts `#modal-form` and reloads unless the response contains `alert-danger`/`alert-warning`; live view polls `ajax/live/`.
 - Tooltips: `data-toggle="tooltip"` + `tippy-title` (tippy `allowHTML`) - the attribute holds HTML, so trap-derived text is escaped twice (`TrapPresenter::tip()`). Call `initTooltips(el)` after inserting HTML.

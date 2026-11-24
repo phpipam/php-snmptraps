@@ -83,7 +83,7 @@ final class Settings
                 'quiet_time_start'        => ['label' => 'Quiet time start', 'list' => false, 'type' => 'time', 'help' => 'No notifications between start and stop. Same value = no quiet time.'],
                 'quiet_time_stop'         => ['label' => 'Quiet time stop', 'list' => false, 'type' => 'time'],
                 'reload_page'             => ['label' => 'Page reload (s)', 'list' => false, 'type' => 'int', 'min' => 0, 'max' => 86400, 'help' => '0 = disabled'],
-                'dash_layout'             => ['label' => 'Dashboard layout', 'list' => false, 'type' => 'text', 'max' => 128, 'pattern' => '/^\d{1,2}:\d{1,3}(;\d{1,2}:\d{1,3}){3}$/', 'help' => 'width:rows for major;medium;minor;unknown widgets, e.g. 6:30;6:30;12:15;12:15 (rows 0 hides a widget)'],
+                'dash_layout'             => ['label' => 'Dashboard layout', 'list' => false, 'type' => 'text', 'max' => 128, 'pattern' => '/^\d{1,2}:\d{1,2}(;\d{1,2}:\d{1,2}){3}$/', 'help' => 'width:rows for major;minor;informational;unknown widgets, e.g. 6:20;6:20;12:15;12:15 (width 1-12, max ' . Auth::DASH_MAX_ROWS . ' rows, 0 rows hides a widget)'],
                 'hostnames'               => ['label' => 'Permitted hosts', 'type' => 'checkboxes', 'options' => $hostOptions, 'empty' => 'all', 'keep_existing' => true, 'help' => 'None selected = all hosts. Ignored for administrators.'],
             ],
         ];
@@ -92,13 +92,26 @@ final class Settings
     /** Fields a user may change on their own profile */
     private const PROFILE_FIELDS = ['real_name', 'password', 'email', 'tel', 'notification_types', 'notification_severities', 'quiet_time_start', 'quiet_time_stop', 'reload_page', 'dash_layout'];
 
-    public function page(string $page): string
+    public function page(string $page, ?string $sub = null): string
     {
         $this->app->requireAdmin();
         if (!isset(self::PAGES[$page])) {
             throw new HttpException(404, 'Invalid settings page');
         }
         $vars = ['page' => $page, 'pages' => self::PAGES];
+
+        if ($sub !== null && $sub !== '') {
+            if ($page !== 'users' || !ctype_digit($sub)) {
+                throw new HttpException(404, 'Page not found');
+            }
+            $user = $this->app->db->find('users', (int) $sub) ?? throw new HttpException(404, 'User not found');
+            unset($user['password']);
+            return $this->app->view->render('settings', $vars + [
+                'user'      => $user,
+                'methods'   => Notifier::enabledMethods($this->app->config),
+                'dashboard' => Auth::parseDashLayout($user['dash_layout'] ?? null),
+            ]);
+        }
 
         switch ($page) {
             case 'mibs':
@@ -109,7 +122,7 @@ final class Settings
                 $vars['config'] = $this->app->config;
                 break;
             default:
-                $order = ['severity_definitions' => '`oid`', 'exceptions' => '`id` DESC', 'maintenance' => '`start` DESC', 'users' => '`username`'][$page];
+                $order = ['severity_definitions' => '`oid`', 'exceptions' => '`id` DESC', 'maintenance' => '`stop` DESC', 'users' => '`username`'][$page];
                 $vars['fields'] = $this->tables()[$page];
                 $vars['rows'] = $this->app->db->all("SELECT * FROM `$page` ORDER BY $order");
         }
@@ -237,7 +250,7 @@ final class Settings
             $values['hostnames'] = 'all';
         }
         if ($isAdd) {
-            $values += ['reload_page' => 900, 'dash_layout' => '6:30;6:30;12:15;12:15', 'hostnames' => 'all', 'notification_types' => 'none', 'notification_severities' => 'none'];
+            $values += ['reload_page' => 900, 'dash_layout' => Auth::DASH_LAYOUT, 'hostnames' => 'all', 'notification_types' => 'none', 'notification_severities' => 'none'];
         }
         // never lock yourself out
         if ($existing !== null && (int) $existing['id'] === $this->app->auth->userId() && ($values['role'] ?? 'administrator') !== 'administrator') {

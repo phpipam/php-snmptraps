@@ -140,7 +140,7 @@ CREATE TABLE `users` (
   `quiet_time_stop` time DEFAULT '00:00:00',
   `last_login` timestamp NULL DEFAULT NULL,
   `reload_page` int(11) DEFAULT 900,
-  `dash_layout` varchar(128) DEFAULT '6:30;6:30;12:15;12:15',
+  `dash_layout` varchar(128) DEFAULT '6:20;6:20;12:15;12:15',
   `hostnames` text NOT NULL DEFAULT 'all',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)

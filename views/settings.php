@@ -4,6 +4,8 @@
 /** @var array<string,string> $pages */
 /** @var array<string,array>|null $fields */
 /** @var list<array>|null $rows */
+/** @var array|null $user  user details sub page (settings/users/{id}/) */
+$user ??= null;
 
 $icons = [
     'severity_definitions' => 'ti-adjustments',
@@ -31,14 +33,9 @@ $listValue = static function (mixed $v): string {
     return $out;
 };
 ?>
-<div class="page-header mb-3">
-    <div class="page-pretitle">Settings</div>
-    <h2 class="page-title"><?= e($pages[$page]) ?></h2>
-</div>
-
 <div class="row row-cards">
     <div class="col-12 col-md-3 col-xl-2">
-        <div class="list-group list-group-transparent">
+        <div class="list-group">
             <?php foreach ($pages as $k => $label): ?>
             <a href="settings/<?= e($k) ?>/" class="list-group-item list-group-item-action d-flex align-items-center<?= $k === $page ? ' active' : '' ?>">
                 <i class="ti <?= e($icons[$k]) ?> me-2"></i><?= e($label) ?>
@@ -51,17 +48,23 @@ $listValue = static function (mixed $v): string {
     <div class="card">
         <div class="card-header">
             <div>
-                <h3 class="card-title"><?= e($pages[$page]) ?></h3>
-                <p class="card-subtitle text-secondary mb-0"><?= e($intro) ?></p>
+                <div class="page-pretitle">Settings<?= $user !== null ? ' &middot; <a href="settings/users/" class="text-reset">' . e($pages[$page]) . '</a>' : '' ?></div>
+                <h2 class="page-title"><?= $user !== null ? e($user['real_name'] ?: $user['username']) : e($pages[$page]) ?></h2>
+                <?php if ($user === null): ?><p class="card-subtitle text-secondary mb-0 mt-1"><?= e($intro) ?></p><?php endif; ?>
             </div>
             <div class="card-actions d-flex gap-2">
-                <?php if (in_array($page, ['mibs', 'severity_definitions', 'exceptions', 'users', 'maintenance'], true)): ?>
+                <?php if ($user !== null): ?>
+                <a class="btn btn-sm load-modal" href="ajax/item/?table=users&amp;action=edit&amp;id=<?= (int) $user['id'] ?>"><i class="ti ti-pencil me-1"></i>Edit</a>
+                <?php if ((int) $user['id'] !== $app->auth->userId()): ?>
+                <a class="btn btn-sm btn-outline-danger load-modal" data-redirect="settings/users/" href="ajax/item/?table=users&amp;action=delete&amp;id=<?= (int) $user['id'] ?>"><i class="ti ti-trash me-1"></i>Delete</a>
+                <?php endif; ?>
+                <?php elseif (in_array($page, ['mibs', 'severity_definitions', 'exceptions', 'users', 'maintenance'], true)): ?>
                 <div class="input-icon">
                     <span class="input-icon-addon"><i class="ti ti-filter"></i></span>
                     <input type="text" class="form-control form-control-sm table-filter" data-target=".table-settings" placeholder="Filter">
                 </div>
                 <?php endif; ?>
-                <?php if (isset($fields)): ?>
+                <?php if (isset($fields) && $user === null): ?>
                 <a class="btn btn-primary btn-sm load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=add"><i class="ti ti-plus me-1"></i>Create new</a>
                 <?php endif; ?>
             </div>
@@ -112,6 +115,12 @@ $listValue = static function (mixed $v): string {
         </table>
         </div>
 
+<?php elseif ($user !== null):
+    echo $app->view->render('partials/user-details', ['user' => $user, 'methods' => $methods, 'dashboard' => $dashboard]); ?>
+
+<?php elseif ($page === 'users'):
+    echo $app->view->render('partials/user-list', ['rows' => $rows]); ?>
+
 <?php else: ?>
         <?php if ($rows === []): ?>
         <div class="card-body text-secondary">No records found.</div>
@@ -123,8 +132,6 @@ $listValue = static function (mixed $v): string {
                 <th><?= e($f['label']) ?></th>
                 <?php endforeach; ?>
                 <?php if ($page === 'maintenance'): ?><th>State</th><?php endif; ?>
-                <?php if ($page === 'users'): ?><th>Quiet time</th><?php endif; ?>
-                <?php if ($page === 'users'): ?><th>Last login</th><?php endif; ?>
                 <th style="width:80px"></th>
             </tr></thead>
             <tbody>
@@ -137,11 +144,6 @@ $listValue = static function (mixed $v): string {
                     $now = date('Y-m-d H:i:s');
                     [$c, $t] = $r['stop'] < $now ? ['secondary', 'Expired'] : ($r['start'] > $now ? ['azure', 'Scheduled'] : ['green', 'Active']); ?>
                 <td><span class="badge bg-<?= $c ?>-lt"><?= $t ?></span></td>
-                <?php endif; ?>
-                <?php if ($page === 'users'):
-                    $qs = substr((string) $r['quiet_time_start'], 0, 5); $qe = substr((string) $r['quiet_time_stop'], 0, 5); ?>
-                <td class="text-nowrap"><?= $qs === $qe ? '<span class="text-secondary">-</span>' : '<span class="badge bg-yellow-lt">' . e("$qs - $qe") . '</span>' ?></td>
-                <td class="text-secondary text-nowrap"><?= e($r['last_login'] ?? '') ?></td>
                 <?php endif; ?>
                 <td class="text-end text-nowrap">
                     <a class="btn btn-sm btn-ghost-secondary btn-icon load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=edit&amp;id=<?= (int) $r['id'] ?>" data-toggle="tooltip-nofollow" tippy-title="Edit"><i class="ti ti-pencil"></i></a>

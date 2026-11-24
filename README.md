@@ -77,7 +77,7 @@ config.php     configuration (copy of config.dist.php, not in git)
 
 1. Back up the database.
 2. Replace the code (keep your `config.php`; its format is unchanged).
-3. Apply `db/migrations/1.0.0.sql` (renames `maintaneance` to `maintenance`, adds indexes, etc.).
+3. Apply `db/migrations/1.0.0.sql` (renames `maintaneance` to `maintenance`, adds indexes, etc.), then `db/migrations/1.0.1.sql`.
 4. Point the web server at `public/` (see above) and snmptrapd at `bin/traphandler.php`.
 
 

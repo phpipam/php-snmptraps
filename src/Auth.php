@@ -13,6 +13,9 @@ final class Auth
 {
     public const ROLES = ['user', 'operator', 'administrator'];
     public const AUTH_METHODS = ['local', 'ad'];
+    /** dashboard: max traps per severity widget, default layout (width:rows per group) */
+    public const DASH_MAX_ROWS = 20;
+    public const DASH_LAYOUT = '6:20;6:20;12:15;12:15';
 
     /** @var array<string,mixed>|null */
     private ?array $user = null;
@@ -182,19 +185,29 @@ final class Auth
      */
     public function dashLayout(): array
     {
+        return self::parseDashLayout($this->user['dash_layout'] ?? null);
+    }
+
+    /**
+     * "width:rows;..." for major;minor;informational;unknown -> enabled widgets
+     *
+     * @return array<string, array{width:int, rows:int}>
+     */
+    public static function parseDashLayout(?string $value): array
+    {
         $groups = array_keys(Severity::GROUPS);
         $layout = [
-            'major'         => ['width' => 6,  'rows' => 30],
-            'minor'         => ['width' => 6,  'rows' => 30],
+            'major'         => ['width' => 6,  'rows' => self::DASH_MAX_ROWS],
+            'minor'         => ['width' => 6,  'rows' => self::DASH_MAX_ROWS],
             'informational' => ['width' => 12, 'rows' => 15],
             'unknown'       => ['width' => 12, 'rows' => 15],
         ];
-        $parts = explode(';', (string) ($this->user['dash_layout'] ?? ''));
+        $parts = explode(';', (string) $value);
         if (count($parts) === 4) {
             foreach ($parts as $i => $part) {
                 $e = explode(':', $part);
                 if (count($e) === 2 && ctype_digit($e[0]) && ctype_digit($e[1])) {
-                    $layout[$groups[$i]] = ['width' => max(1, min(12, (int) $e[0])), 'rows' => min(500, (int) $e[1])];
+                    $layout[$groups[$i]] = ['width' => max(1, min(12, (int) $e[0])), 'rows' => min(self::DASH_MAX_ROWS, (int) $e[1])];
                 }
             }
         }

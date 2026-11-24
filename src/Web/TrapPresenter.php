@@ -20,11 +20,11 @@ final class TrapPresenter
     public const COMPACT = ['severity', 'hostname', 'date', 'message'];
 
     private const HEADERS = [
-        'severity' => ['Severity', 'width:95px'],
+        'severity' => ['Severity', 'width:110px'],
         'hostname' => ['Host', 'width:180px'],
         'ip'       => ['IP', 'width:120px'],
         'date'     => ['Date', 'width:150px'],
-        'message'  => ['Message', ''],
+        'message'  => ['Message', 'width:35%'],
         'content'  => ['Content', ''],
     ];
 
@@ -38,6 +38,9 @@ final class TrapPresenter
         $html = '<thead><tr>';
         foreach ($columns as $c) {
             [$label, $style] = self::HEADERS[$c];
+            if ($c === 'message' && !in_array('content', $columns, true)) {
+                $style = '';   // message takes the remaining width
+            }
             $cls = in_array($c, ['ip', 'content'], true) ? ' class="d-none d-lg-table-cell"' : '';
             $html .= '<th' . $cls . ($style ? " style='$style'" : '') . '>' . e($label) . '</th>';
         }
@@ -70,15 +73,22 @@ final class TrapPresenter
             'ip'       => '<span class="text-secondary">' . e($r['ip']) . '</span>',
             'date'     => '<span class="text-secondary">' . e(date('d.m.Y H:i:s', (int) strtotime((string) $r['date']))) . '</span>',
             'message'  => $this->message($r),
-            'content'  => '<span class="text-secondary trap-content"><small>' . e_nl((string) $r['content']) . '</small></span>',
+            'content'  => '<span class="text-secondary">' . $this->oneLine((string) $r['content']) . '</span>',
             default    => e($r[$c] ?? ''),
         };
+    }
+
+    /** content lines joined on one line (cells are clipped with an ellipsis) */
+    private function oneLine(string $text): string
+    {
+        $lines = array_filter(preg_split('/\r\n|\r|\n/', $text) ?: [], static fn ($l) => trim($l) !== '');
+        return implode('<span class="text-muted mx-1">&middot;</span>', array_map('e', $lines));
     }
 
     public function severity(string $s): string
     {
         $color = Severity::tablerColor($s);
-        return "<span class='badge bg-$color text-$color-fg w-100'>" . e($s) . '</span>';
+        return "<span class='badge badge-outline text-$color w-100'>" . e($s) . '</span>';
     }
 
     public function hostname(string $host, bool $full = false): string
@@ -106,7 +116,7 @@ final class TrapPresenter
     {
         $id = (int) $r['id'];
         $html = '<span class="dropdown">'
-            . '<a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-expanded="false"></a>'
+            . '<a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" data-bs-popper-config=\'{"strategy":"fixed"}\' aria-expanded="false"></a>'
             . '<div class="dropdown-menu dropdown-menu-end">'
             . '<h6 class="dropdown-header">Trap</h6>'
             . "<a class='dropdown-item load-modal' href='ajax/trap/?id=$id'><i class='ti ti-eye me-2'></i>Quick view</a>"

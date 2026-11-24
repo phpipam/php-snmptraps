@@ -42,30 +42,22 @@ hr {
     font-size: 8px;
 }
 
-/* trap tables */
+/* trap tables: one line per trap, overflowing text is clipped */
+table.table-traps {
+    table-layout: fixed;
+    min-width: 720px;
+}
 table.table-traps th {
     padding: .3rem .5rem !important;
 }
 table.table-traps td {
     padding: .35rem .5rem !important;
-    vertical-align: top;
-}
-table.table-traps td.td-hostname,
-table.table-traps td.td-date,
-table.table-traps td.td-ip {
     white-space: nowrap;
-}
-table.table-traps td.td-message {
-    min-width: 260px;
-}
-table.table-traps .trap-content {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
     overflow: hidden;
-    word-break: break-all;
-    max-width: 60vw;
+    text-overflow: ellipsis;
+}
+table.table-traps td:last-child {
+    overflow: visible;
 }
 table.table-traps tr.trap-new td {
     animation: trap-new 4s ease-out;

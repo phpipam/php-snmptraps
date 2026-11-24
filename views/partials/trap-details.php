@@ -11,7 +11,7 @@ $items = [
     'Host'     => $p->hostname((string) $trap['hostname'], true),
     'IP'       => e($trap['ip']),
     'Date'     => e($trap['date']),
-    'Severity' => $p->severity((string) $trap['severity']),
+    'Severity' => '<span class="d-inline-block" style="width:110px">' . $p->severity((string) $trap['severity']) . '</span>',
     'Message'  => $p->message($trap),
     'OID'      => '<code>' . e($trap['oid']) . '</code>',
 ];

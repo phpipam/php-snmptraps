@@ -26,6 +26,7 @@ use Throwable;
  *   /trap/{id}/
  *   /message/{base64url}/
  *   /settings/[{page}/]     administrators
+ *   /settings/users/{id}/   user details
  *   /login/  /logout/
  *   /ajax/{action}/         XHR endpoints (HTML fragments / JSON)
  */
@@ -120,7 +121,7 @@ final class App
             'trap'      => $pages->trap((int) ($s[1] ?? 0)),
             // legacy links used standard base64, which may contain "/"
             'message'   => $pages->message(implode('/', array_slice($s, 1))),
-            'settings'  => (new Settings($this))->page($s[1] ?? 'severity_definitions'),
+            'settings'  => (new Settings($this))->page($s[1] ?? 'severity_definitions', $s[2] ?? null),
             'ajax'      => (new Ajax($this))->handle($s[1] ?? ''),
             default     => throw new HttpException(404, 'Page not found'),
         };
@@ -199,6 +200,14 @@ final class App
 
     public function assetVersion(): string
     {
-        return $this->config->debugging ? (string) time() : APP_VERSION;
+        if ($this->config->debugging) {
+            return (string) time();
+        }
+        // changes whenever a vendored or app asset is replaced (assets are cached for 7 days)
+        $mtime = 0;
+        foreach (['css/app.css', 'js/app.js', 'css/tabler/tabler.min.css', 'js/tabler.min.js'] as $f) {
+            $mtime = max($mtime, (int) @filemtime(APP_ROOT . '/public/' . $f));
+        }
+        return APP_VERSION . '.' . base_convert((string) $mtime, 10, 36);
     }
 }
