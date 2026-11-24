@@ -1,0 +1,120 @@
+/* php-snmptraps - Tabler customisations (aligned with nalarms) */
+
+:root {
+    font-size: 0.9rem;
+}
+
+hr {
+    margin: 1rem 0;
+}
+
+.brand-icon {
+    font-size: 22px;
+}
+.brand-title {
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+/* indeterminate loader */
+.loading {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: none;
+    z-index: 9999;
+}
+
+/* auto reload bar */
+.progress-reload {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1100;
+    background: transparent;
+    --tblr-progress-height: 2px;
+    margin: 0;
+}
+.badge-timer {
+    font-size: 8px;
+}
+
+/* trap tables */
+table.table-traps th {
+    padding: .3rem .5rem !important;
+}
+table.table-traps td {
+    padding: .35rem .5rem !important;
+    vertical-align: top;
+}
+table.table-traps td.td-hostname,
+table.table-traps td.td-date,
+table.table-traps td.td-ip {
+    white-space: nowrap;
+}
+table.table-traps td.td-message {
+    min-width: 260px;
+}
+table.table-traps .trap-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-all;
+    max-width: 60vw;
+}
+table.table-traps tr.trap-new td {
+    animation: trap-new 4s ease-out;
+}
+@keyframes trap-new {
+    from { background: rgba(var(--tblr-green-rgb), .25); }
+    to   { background: transparent; }
+}
+table.table-traps .dropdown-toggle:after {
+    margin-left: 0;
+}
+
+pre.trap-pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: .8rem;
+    max-height: 360px;
+    overflow: auto;
+}
+
+.checkbox-scroll {
+    max-height: 220px;
+    overflow-y: auto;
+    padding: .25rem .5rem;
+    border: var(--tblr-border-width) var(--tblr-border-style) var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+}
+
+/* modals */
+.modal-backdrop.show {
+    opacity: 85%;
+}
+
+/* tooltips */
+.tippy-box {
+    font-size: 11px;
+    background: rgb(17, 24, 39);
+    border: 1px solid rgba(255, 255, 255, .7);
+    max-width: 900px !important;
+    word-break: break-all;
+}
+.tippy-box hr {
+    margin: .4rem 0 !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 60px rgb(21, 31, 44) inset !important;
+    -webkit-text-fill-color: var(--tblr-body-color) !important;
+}

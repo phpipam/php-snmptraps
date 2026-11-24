@@ -25,7 +25,6 @@ final class Ajax
     {
         $post = $this->app->isPost();
         return match ($action) {
-            'traps'        => $this->traps(),
             'live'         => $this->live(),
             'trap'         => $this->trap(),
             'message-edit' => $post ? $this->messageEditSubmit() : $this->messageEditForm(),
@@ -34,50 +33,6 @@ final class Ajax
             'mib'          => $post ? $this->mibSubmit() : $this->mibForm(),
             default        => throw new HttpException(404, 'Unknown action'),
         };
-    }
-
-    /**
-     * bootstrap-table server side data: ?scope=severity|host&type=..&limit&offset&order&search
-     */
-    private function traps(): ?string
-    {
-        $scope = $this->app->input('scope');
-        $type  = $this->app->input('type');
-        $filter = ['search' => mb_substr($this->app->input('search'), 0, 200)];
-
-        if ($scope === 'severity') {
-            if ($type !== 'all') {
-                if (!isset(Severity::GROUPS[$type])) {
-                    throw new HttpException(400, 'Invalid severity group');
-                }
-                $filter['severities'] = Severity::GROUPS[$type]['levels'];
-            }
-        } elseif ($scope === 'host') {
-            if (!$this->app->auth->canSeeHost($type)) {
-                throw new HttpException(403, 'Not allowed to view this host');
-            }
-            $filter['hostname'] = $type;
-        } else {
-            throw new HttpException(400, 'Invalid scope');
-        }
-
-        $repo = $this->app->traps();
-        $rows = $repo->find($filter, (int) $this->app->input('limit', '50'), (int) $this->app->input('offset', '0'), $this->app->input('order', 'desc'));
-        $out = ['total' => $repo->count($filter), 'rows' => []];
-        $columns = array_keys(TrapPresenter::LIST_COLUMNS);
-        foreach ($rows as $r) {
-            $out['rows'][] = $this->app->presenter->cells($r, $columns) + [
-                'full_screen' => '',
-                'classes'     => Severity::cssClass((string) $r['severity']) . ' tooltip2',
-                // bootstrap-table HTML-escapes attributes itself; tooltip.js renders the decoded title as HTML
-                'tip_id'      => (int) $r['id'],
-                'tip'         => e_nl((string) $r['content']),
-            ];
-        }
-
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-        return null;
     }
 
     /** New rows for the live view since ?id= */
@@ -91,7 +46,7 @@ final class Ajax
         if ($rows === []) {
             return 'False';
         }
-        return $this->app->presenter->rows(array_reverse($rows), TrapPresenter::LIST_COLUMNS, true, true);
+        return $this->app->presenter()->rows(array_reverse($rows), TrapPresenter::LIST, true);
     }
 
     private function trap(): string
@@ -104,7 +59,7 @@ final class Ajax
             'trap' => $trap,
             'mib'  => $this->app->mib()->lookup((string) $trap['oid']),
         ]);
-        return $this->modal('Details for trap ' . (int) $trap['id'], $body);
+        return $this->modal('Trap ' . (int) $trap['id'], $body, '', '', Severity::tablerColor((string) $trap['severity']));
     }
 
     private function messageEditForm(): string
@@ -124,7 +79,7 @@ final class Ajax
             'trap'   => $trap,
             'hosts'  => $this->app->traps()->hosts(),
         ]);
-        return $this->modal($titles[$action], $body, ucfirst($action), 'ajax/message-edit/');
+        return $this->modal($titles[$action], $body, ucfirst($action), 'ajax/message-edit/', $action === 'delete' ? 'red' : 'azure');
     }
 
     private function messageEditSubmit(): string
@@ -215,8 +170,8 @@ final class Ajax
         return View::alert('success', "$saved definitions saved");
     }
 
-    public function modal(string $title, string $body, string $button = '', string $action = ''): string
+    public function modal(string $title, string $body, string $button = '', string $action = '', string $color = 'azure'): string
     {
-        return $this->app->view->render('partials/modal', compact('title', 'body', 'button', 'action'));
+        return $this->app->view->render('partials/modal', compact('title', 'body', 'button', 'action', 'color'));
     }
 }

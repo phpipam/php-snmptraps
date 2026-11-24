@@ -5,36 +5,67 @@
 /** @var array<string,array>|null $fields */
 /** @var list<array>|null $rows */
 
+$icons = [
+    'severity_definitions' => 'ti-adjustments',
+    'exceptions'           => 'ti-volume-off',
+    'maintenance'          => 'ti-tool',
+    'mibs'                 => 'ti-file-code',
+    'users'                => 'ti-users',
+    'general'              => 'ti-info-circle',
+];
 $intro = [
-    'severity_definitions' => 'User-defined severities. The first definition (lowest id) whose OID is contained in a received trap OID sets its severity.',
-    'exceptions'           => 'Traps matching these rules are not written to the database and no notifications are sent. Hostname "all" matches every host; empty content matches every trap with the OID.',
-    'maintenance'          => 'Notifications are disabled for a host during its maintenance window. Traps are still received and stored.',
-    'mibs'                 => 'MIB files available to the system. Notification definitions found in a MIB can be imported as severity definitions.',
-    'users'                => "'Administrator' can manage settings and users, 'Operator' can define/ignore/delete traps, 'User' can only view traps and edit own notification options.",
+    'severity_definitions' => 'The first definition (lowest id) whose OID is contained in a received trap OID sets its severity.',
+    'exceptions'           => 'Matching traps are not stored and no notifications are sent. Hostname "all" matches every host; empty content matches every trap with the OID.',
+    'maintenance'          => 'No notifications are sent for a host during its maintenance window. Traps are still stored.',
+    'mibs'                 => 'MIB files available to the system. Notifications found in a MIB can be imported as severity definitions.',
+    'users'                => 'Administrator: settings and users. Operator: define / ignore / delete traps. User: view traps and edit own notification options.',
     'general'              => 'General settings are configured in config.php on the server.',
 ][$page];
 
 $listValue = static function (mixed $v): string {
     $parts = array_filter(explode(';', (string) $v), static fn ($x) => $x !== '');
-    return $parts === [] ? '' : '&middot; ' . implode('<br>&middot; ', array_map('e', $parts));
+    $out = '';
+    foreach ($parts as $x) {
+        $out .= '<span class="badge badge-outline text-secondary me-1 mb-1">' . e($x) . '</span>';
+    }
+    return $out;
 };
 ?>
-<h4>Settings</h4>
-<hr style="margin-bottom:0;">
-<div class="container-fluid">
-<div class="row">
-    <div class="col-xs-12 col-sm-3 col-md-2" style="padding-left:0;">
-        <ul class="settings-nav">
+<div class="page-header mb-3">
+    <div class="page-pretitle">Settings</div>
+    <h2 class="page-title"><?= e($pages[$page]) ?></h2>
+</div>
+
+<div class="row row-cards">
+    <div class="col-12 col-md-3 col-xl-2">
+        <div class="list-group list-group-transparent">
             <?php foreach ($pages as $k => $label): ?>
-            <li class="<?= $k === $page ? 'active' : '' ?>"><a href="settings/<?= e($k) ?>/"><?= e($label) ?></a></li>
+            <a href="settings/<?= e($k) ?>/" class="list-group-item list-group-item-action d-flex align-items-center<?= $k === $page ? ' active' : '' ?>">
+                <i class="ti <?= e($icons[$k]) ?> me-2"></i><?= e($label) ?>
+            </a>
             <?php endforeach; ?>
-        </ul>
+        </div>
     </div>
 
-    <div class="col-xs-12 col-sm-9 col-md-10">
-    <div class="container-fluid" style="padding:10px;">
-        <h4 class="red"><?= e($pages[$page]) ?></h4>
-        <p><?= e($intro) ?></p>
+    <div class="col-12 col-md-9 col-xl-10">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title"><?= e($pages[$page]) ?></h3>
+                <p class="card-subtitle text-secondary mb-0"><?= e($intro) ?></p>
+            </div>
+            <div class="card-actions d-flex gap-2">
+                <?php if (in_array($page, ['mibs', 'severity_definitions', 'exceptions', 'users', 'maintenance'], true)): ?>
+                <div class="input-icon">
+                    <span class="input-icon-addon"><i class="ti ti-filter"></i></span>
+                    <input type="text" class="form-control form-control-sm table-filter" data-target=".table-settings" placeholder="Filter">
+                </div>
+                <?php endif; ?>
+                <?php if (isset($fields)): ?>
+                <a class="btn btn-primary btn-sm load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=add"><i class="ti ti-plus me-1"></i>Create new</a>
+                <?php endif; ?>
+            </div>
+        </div>
 
 <?php if ($page === 'general'):
     /** @var Snmptraps\Config $config */
@@ -51,70 +82,78 @@ $listValue = static function (mixed $v): string {
         'Debug / raw trap log'  => ($config->writeDebugFile ? 'on' : 'off') . ' / ' . ($config->writeRawFile ? 'on' : 'off'),
         'PHP debugging'         => $config->debugging ? 'on' : 'off',
         'Strip hostname domain' => $config->stripHostnameDomain ? 'yes' : 'no',
-        'AD controllers'        => implode(', ', (array) ($config->ad['domain_controllers'] ?? [])),
+        'AD controllers'        => implode(', ', (array) ($config->ad['domain_controllers'] ?? [])) ?: '-',
     ]; ?>
-        <table class="table table-condensed table-noborder table-auto">
-            <?php foreach ($items as $k => $v): ?>
-            <tr><td><?= e($k) ?></td><td><strong><?= e($v) ?></strong></td></tr>
-            <?php endforeach; ?>
-        </table>
-        <p class="text-muted">Passwords and API tokens are not shown.</p>
+        <div class="card-body">
+            <div class="datagrid">
+                <?php foreach ($items as $k => $v): ?>
+                <div class="datagrid-item"><div class="datagrid-title"><?= e($k) ?></div><div class="datagrid-content"><?= e($v) ?></div></div>
+                <?php endforeach; ?>
+            </div>
+            <p class="text-secondary small mt-3 mb-0">Passwords and API tokens are not shown.</p>
+        </div>
 
 <?php elseif ($page === 'mibs'):
     /** @var Snmptraps\Mib $mib */
     /** @var list<array{file:string,size:int}> $files */ ?>
-        <div class="alert alert-info">MIB directory: <?= e($mib->directory()) ?> (<?= count($files) ?> files)</div>
-        <table class="table snmp sorted table-noborder table-condensed table-hover" data-cookie-id-table="settings_mib">
-            <thead><tr><th data-field="file">File</th><th data-field="size">Size</th><th data-field="actions" class="disable-sorting"></th></tr></thead>
+        <div class="card-body py-2 text-secondary small">Directory <code><?= e($mib->directory()) ?></code> &middot; <?= count($files) ?> files</div>
+        <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover table-sm table-settings">
+            <thead><tr><th>File</th><th style="width:120px">Size</th><th style="width:60px"></th></tr></thead>
             <tbody>
             <?php foreach ($files as $f): ?>
             <tr>
                 <td><?= e($f['file']) ?></td>
-                <td><?= e(number_format($f['size'] / 1024, 1)) ?> kB</td>
-                <td><a class="btn btn-success btn-xs pull-right load-modal-big" title="Create severity definitions" href="ajax/mib/?file=<?= e(rawurlencode($f['file'])) ?>"><i class="fa fa-plus"></i></a></td>
+                <td class="text-secondary"><?= e(number_format($f['size'] / 1024, 1)) ?> kB</td>
+                <td class="text-end"><a class="btn btn-sm btn-ghost-primary load-modal" data-toggle="tooltip-nofollow" tippy-title="Create severity definitions" href="ajax/mib/?file=<?= e(rawurlencode($f['file'])) ?>"><i class="ti ti-file-import"></i></a></td>
             </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
 
 <?php else: ?>
-        <a class="btn btn-success btn-sm load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=add"><i class="fa fa-plus"></i> Create new</a>
-        <table class="table snmp sorted table-noborder table-condensed table-hover" data-cookie-id-table="settings_<?= e($page) ?>">
+        <?php if ($rows === []): ?>
+        <div class="card-body text-secondary">No records found.</div>
+        <?php else: ?>
+        <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover table-sm table-settings">
             <thead><tr>
-                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password') continue; ?>
-                <th data-field="<?= e($name) ?>"><?= e($f['label']) ?></th>
+                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password' || ($f['list'] ?? true) === false) continue; ?>
+                <th><?= e($f['label']) ?></th>
                 <?php endforeach; ?>
-                <?php if ($page === 'maintenance'): ?><th data-field="active">Active</th><?php endif; ?>
-                <?php if ($page === 'users'): ?><th data-field="last_login">Last login</th><?php endif; ?>
-                <th data-field="actions" class="disable-sorting"></th>
+                <?php if ($page === 'maintenance'): ?><th>State</th><?php endif; ?>
+                <?php if ($page === 'users'): ?><th>Quiet time</th><?php endif; ?>
+                <?php if ($page === 'users'): ?><th>Last login</th><?php endif; ?>
+                <th style="width:80px"></th>
             </tr></thead>
             <tbody>
-            <?php if ($rows === []): ?>
-            <tr><td colspan="<?= count($fields) + 2 ?>"><div class="alert alert-info">No records found</div></td></tr>
-            <?php endif; ?>
             <?php foreach ($rows as $r): ?>
             <tr>
-                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password') continue; ?>
-                <td class="field-<?= e($name) ?>"><?= $f['type'] === 'checkboxes' ? $listValue($r[$name] ?? '') : e_nl((string) ($r[$name] ?? '')) ?></td>
+                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password' || ($f['list'] ?? true) === false) continue; ?>
+                <td class="<?= $f['type'] === 'textarea' ? 'text-secondary' : '' ?>"><?= $f['type'] === 'checkboxes' ? $listValue($r[$name] ?? '') : e_nl((string) ($r[$name] ?? '')) ?></td>
                 <?php endforeach; ?>
                 <?php if ($page === 'maintenance'):
                     $now = date('Y-m-d H:i:s');
-                    $state = $r['stop'] < $now ? ['danger', 'Expired'] : ($r['start'] > $now ? ['info', 'Scheduled'] : ['success', 'Active']); ?>
-                <td><span class="badge alert alert-<?= $state[0] ?>" style="padding:0 5px;"><?= $state[1] ?></span></td>
+                    [$c, $t] = $r['stop'] < $now ? ['secondary', 'Expired'] : ($r['start'] > $now ? ['azure', 'Scheduled'] : ['green', 'Active']); ?>
+                <td><span class="badge bg-<?= $c ?>-lt"><?= $t ?></span></td>
                 <?php endif; ?>
-                <?php if ($page === 'users'): ?><td><?= e($r['last_login'] ?? '') ?></td><?php endif; ?>
-                <td>
-                    <div class="btn-group">
-                        <a class="btn btn-default btn-xs load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=edit&amp;id=<?= (int) $r['id'] ?>"><i class="fa fa-pencil"></i></a>
-                        <a class="btn btn-default btn-xs load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=delete&amp;id=<?= (int) $r['id'] ?>"><i class="fa fa-remove"></i></a>
-                    </div>
+                <?php if ($page === 'users'):
+                    $qs = substr((string) $r['quiet_time_start'], 0, 5); $qe = substr((string) $r['quiet_time_stop'], 0, 5); ?>
+                <td class="text-nowrap"><?= $qs === $qe ? '<span class="text-secondary">-</span>' : '<span class="badge bg-yellow-lt">' . e("$qs - $qe") . '</span>' ?></td>
+                <td class="text-secondary text-nowrap"><?= e($r['last_login'] ?? '') ?></td>
+                <?php endif; ?>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-ghost-secondary btn-icon load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=edit&amp;id=<?= (int) $r['id'] ?>" data-toggle="tooltip-nofollow" tippy-title="Edit"><i class="ti ti-pencil"></i></a>
+                    <a class="btn btn-sm btn-ghost-danger btn-icon load-modal" href="ajax/item/?table=<?= e($page) ?>&amp;action=delete&amp;id=<?= (int) $r['id'] ?>" data-toggle="tooltip-nofollow" tippy-title="Delete"><i class="ti ti-trash"></i></a>
                 </td>
             </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
+        <?php endif; ?>
 <?php endif; ?>
     </div>
     </div>
-</div>
 </div>

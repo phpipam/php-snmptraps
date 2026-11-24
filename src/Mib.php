@@ -90,7 +90,7 @@ final class Mib
         }
         $description = '';
         if (preg_match('/DESCRIPTION\s*"(.*?)"/s', $body, $d)) {
-            $description = trim(preg_replace('/[ \t]+/', ' ', preg_replace('/\s*\n\s*/', "\n", $d[1]) ?? '') ?? '');
+            $description = trim(preg_replace('/[ \t]+/', ' ', preg_replace('/[ \t]*\n[ \t]*/', "\n", $d[1]) ?? '') ?? '');
         }
         return ['objects' => $objects, 'description' => $description];
     }

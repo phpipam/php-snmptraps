@@ -2,111 +2,156 @@
 /** @var Snmptraps\Web\App $app */
 /** @var string $content */
 /** @var string $title */
+use Snmptraps\Severity;
+
 $cfg   = $app->config;
 $user  = $app->auth->user();
 $route = $app->segments[0] ?? 'dashboard';
 $sub   = $app->segments[1] ?? null;
 $v     = e($app->assetVersion());
 
-$menu = [
-    ['dashboard', null, 'fa-dashboard', 'Dashboard'],
-    ['severity', 'all', 'fa-globe', 'All'],
-    ['live', null, 'fa-bolt', 'Live'],
-    ['severity', 'major', 'fa-exclamation-triangle', 'Major'],
-    ['severity', 'minor', 'fa-exclamation', 'Medium'],
-    ['severity', 'informational', 'fa-info', 'Minor'],
-    ['severity', 'unknown', 'fa-question-circle', 'Unknown'],
-    ['host', null, 'fa-sitemap', 'Hosts'],
-    ['search', null, 'fa-search', 'Search'],
-];
+// auto reload (seconds) - not on pages where it would interrupt work
 $reload = (int) ($user['reload_page'] ?? 0);
+if (in_array($route, ['settings', 'live', 'search', 'trap', 'message'], true)) {
+    $reload = 0;
+}
+$paused = ($_COOKIE['stop-refresh'] ?? '') === '1';
+
+$nav = static function (string $label, string $icon, string $href, bool $active): string {
+    return '<li class="nav-item' . ($active ? ' active' : '') . '"><a class="nav-link" href="' . e($href) . '">'
+        . '<span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ' . e($icon) . '"></i></span>'
+        . '<span class="nav-link-title">' . e($label) . '</span></a></li>';
+};
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <base href="<?= e($cfg->base) ?>">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="viewport" content="width=device-width, initial-scale=0.6, maximum-scale=0.8, user-scalable=yes">
     <meta name="csrf-token" content="<?= e($app->auth->csrfToken()) ?>">
     <title><?= e($title) ?></title>
-    <link rel="icon" type="image/png" href="css/favicon_big.png">
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css?v=<?= $v ?>">
-    <link rel="stylesheet" href="css/bootstrap/bootstrap-custom-black.css?v=<?= $v ?>">
-    <link rel="stylesheet" href="css/bootstrap-table/bootstrap-table.min.css?v=<?= $v ?>">
-    <link rel="stylesheet" href="css/font-awesome/font-awesome.min.css?v=<?= $v ?>">
-    <script src="js/jquery-2.1.3.min.js"></script>
-    <script src="js/bootstrap.min.js?v=<?= $v ?>"></script>
-    <script src="js/tooltip.js?v=<?= $v ?>"></script>
-    <script src="js/bootstrap-table/bootstrap-table.min.js?v=<?= $v ?>"></script>
-    <script src="js/bootstrap-table/bootstrap-table-cookie.js?v=<?= $v ?>"></script>
-    <script src="js/stickytableheaders/jquery.stickytableheaders.min.js?v=<?= $v ?>"></script>
-    <script src="js/magic.js?v=<?= $v ?>"></script>
+    <link rel="icon" type="image/png" href="css/favicon.png">
+    <link rel="stylesheet" href="css/tabler/tabler.min.css?v=<?= $v ?>">
+    <link rel="stylesheet" href="css/tabler/tabler-icons.css?v=<?= $v ?>">
+    <link rel="stylesheet" href="css/app.css?v=<?= $v ?>">
 </head>
 <body>
-<div class="wrapper">
-<div class="loading">Loading...<br><i class="fa fa-spinner fa-spin"></i></div>
+<div class="loading"><div class="progress progress-sm"><div class="progress-bar progress-bar-indeterminate"></div></div></div>
 
-<div class="container-fluid" style="margin:0;padding:0;">
-<nav class="navbar navbar-default navbar-inverse" style="width:100%;">
-    <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+<?php if ($reload > 0): ?>
+<div class="progress progress-reload"<?= $paused ? ' style="display:none"' : '' ?>>
+    <div class="progress-bar progress-bar-reload" style="width:100%" role="progressbar" data-seconds="<?= $reload ?>"></div>
+</div>
+<?php endif; ?>
+
+<div class="page">
+<header class="navbar navbar-expand-md sticky-top d-print-none">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
-    </div>
-    <div id="navbar" class="collapse navbar-collapse" style="padding-left:0;padding-right:0;">
-        <ul class="nav navbar-nav">
-            <?php foreach ($menu as [$r, $p, $icon, $label]):
-                $active = $route === $r && ($p === null || $p === $sub) ? 'active' : ''; ?>
-            <li class="<?= $active ?>"><a href="<?= e($r . '/' . ($p !== null ? $p . '/' : '')) ?>"><i class="fa <?= e($icon) ?>"></i> <?= e($label) ?></a></li>
-            <?php endforeach; ?>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-            <?php if ($app->auth->isAdmin()): ?>
-            <li class="<?= $route === 'settings' ? 'active' : '' ?>"><a href="settings/" class="settings"><i class="fa fa-cogs fa-red"></i> Settings</a></li>
-            <?php endif; ?>
-            <li class="dropdown" id="dropdown" style="margin-right:0;">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user"></i> <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li class="dropdown-header"><?= e($user['real_name']) ?><hr></li>
-                    <li class="role"><a><?= e(ucwords((string) $user['role'])) ?></a></li>
-                    <li><a href="ajax/profile/" class="load-modal"><i class="fa fa-pencil"></i> Profile</a></li>
-                    <li><a href="logout/" class="settings"><i class="fa fa-sign-out"></i> Logout</a></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-</nav>
-</div>
 
-<div class="content_overlay">
-<div class="container-fluid" id="mainContainer">
-<?= $content ?>
-</div>
-</div>
-
-<div class="modal fade" id="modal1" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content"></div></div></div>
-<div class="modal fade" id="modal2" tabindex="-2" role="dialog" style="z-index:1042"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"></div></div></div>
-
-<div class="pusher"></div>
-</div>
-
-<div class="footer">
-<div class="row">
-    <div class="col-xs-12 col-sm-6 col-lg-4"></div>
-    <div class="col-xs-12 col-sm-6 col-lg-4">
-        <?= e($cfg->footer) ?> :: version <?= e(APP_VERSION) ?> :: <a href="ajax/profile/" class="load-modal"><?= e($user['real_name']) ?></a>
-    </div>
-    <div class="col-xs-12 col-sm-12 col-lg-4">
-        <?php if ($reload > 0 && $route !== 'settings' && $route !== 'live'): ?>
-        <div class="pbar">
-            <span class="pbar_text">Page will reload in <span class="pbar_percentage"><?= $reload ?></span> s <i class="fa fa-pause tooltip2 fa-toggle-timer" title="Click to toggle timer"></i></span>
-            <div class="progress-bar progress-bar-gray" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%;">0%</div>
-            <div class="hidden progress-bar-reload"><?= $reload ?></div>
+        <div class="navbar-brand navbar-brand-autodark pe-0 pe-md-3">
+            <a href="./" class="text-reset text-decoration-none d-flex align-items-center">
+                <i class="ti ti-broadcast text-primary me-2 brand-icon"></i>
+                <span class="brand-title"><?= e($cfg->title) ?></span>
+            </a>
         </div>
-        <?php endif; ?>
+
+        <!-- right items -->
+        <div class="navbar-nav flex-row order-md-last align-items-center">
+            <div class="nav-item d-none d-sm-flex<?= $route === 'search' ? ' active' : '' ?>">
+                <a href="search/" class="nav-link px-2" data-toggle="tooltip-nofollow" tippy-title="Search traps"><i class="ti ti-search icon"></i></a>
+            </div>
+            <?php if ($reload > 0): ?>
+            <div class="nav-item d-none d-sm-flex">
+                <a href="#" class="nav-link px-2 toggle-timer" data-toggle="tooltip-nofollow" tippy-title="Toggle auto reload">
+                    <i class="ti <?= $paused ? 'ti-player-play' : 'ti-player-pause' ?> icon"></i>
+                    <span class="badge bg-blue text-blue-fg badge-notification badge-timer"<?= $paused ? ' style="display:none"' : '' ?>><?= $reload ?>s</span>
+                </a>
+            </div>
+            <?php endif; ?>
+            <?php if ($app->auth->isAdmin()): ?>
+            <div class="nav-item d-none d-sm-flex<?= $route === 'settings' ? ' active' : '' ?>">
+                <a href="settings/" class="nav-link px-2" data-toggle="tooltip-nofollow" tippy-title="Settings"><i class="ti ti-settings icon"></i></a>
+            </div>
+            <?php endif; ?>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
+                    <div class="d-none d-xl-block ps-2 text-end">
+                        <div><?= e($user['real_name'] ?: $user['username']) ?></div>
+                        <div class="mt-1 small text-secondary"><?= e(ucfirst((string) $user['role'])) ?></div>
+                    </div>
+                    <span class="avatar avatar-sm ms-2 bg-transparent"><i class="ti ti-user-circle" style="font-size:30px"></i></span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <span class="dropdown-header"><?= e($user['username']) ?></span>
+                    <a href="ajax/profile/" class="dropdown-item load-modal"><i class="ti ti-user-edit me-2"></i>Profile</a>
+                    <?php if ($app->auth->isAdmin()): ?>
+                    <a href="settings/" class="dropdown-item"><i class="ti ti-settings me-2"></i>Settings</a>
+                    <?php endif; ?>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout/" class="dropdown-item"><i class="ti ti-logout me-2"></i>Logout</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- menu -->
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
+                <ul class="navbar-nav">
+                    <?= $nav('Dashboard', 'ti-layout-dashboard', 'dashboard/', $route === 'dashboard') ?>
+                    <?= $nav('All traps', 'ti-list', 'severity/all/', $route === 'severity' && $sub === 'all') ?>
+                    <li class="nav-item dropdown<?= $route === 'severity' && $sub !== 'all' ? ' active' : '' ?>">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-alert-triangle"></i></span>
+                            <span class="nav-link-title">Severities</span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <?php foreach (Severity::GROUPS as $slug => $g): ?>
+                            <a class="dropdown-item<?= $sub === $slug ? ' active' : '' ?>" href="severity/<?= e($slug) ?>/">
+                                <span class="status-dot bg-<?= Severity::groupColor($slug) ?> d-block me-2"></span>
+                                <?= e($g['label']) ?> <span class="text-secondary ms-2 small"><?= e(implode(', ', $g['levels'])) ?></span>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </li>
+                    <?= $nav('Live', 'ti-bolt', 'live/', $route === 'live') ?>
+                    <?= $nav('Hosts', 'ti-server', 'host/', $route === 'host') ?>
+                    <?= $nav('Search', 'ti-search', 'search/', $route === 'search') ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="page-wrapper">
+    <div class="page-body">
+        <div class="container-fluid">
+<?= $content ?>
+        </div>
+    </div>
+    <footer class="footer footer-transparent d-print-none py-3">
+        <div class="container-fluid text-secondary small d-flex">
+            <span><?= e($cfg->footer) ?></span>
+            <span class="ms-auto">php-snmptraps <?= e(APP_VERSION) ?></span>
+        </div>
+    </footer>
+</div>
+</div>
+
+<div class="modal fade" id="modal1" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content"></div>
     </div>
 </div>
-</div>
+
+<script src="js/jquery-3.7.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/tippy-bundle.umd.min.js"></script>
+<script src="js/tabler.min.js?v=<?= $v ?>"></script>
+<script src="js/app.js?v=<?= $v ?>"></script>
 </body>
 </html>

@@ -47,3 +47,16 @@ function b64url_decode(string $value): string|false
     }
     return base64_decode($value, true);
 }
+
+/**
+ * Escape text that was hard-wrapped (e.g. MIB DESCRIPTION): single newlines become
+ * spaces, blank lines become paragraph breaks.
+ */
+function e_text(?string $value): string
+{
+    if ($value === null || trim($value) === '') {
+        return '';
+    }
+    $paras = preg_split('/\n\s*\n/', trim($value)) ?: [];
+    return implode('<br><br>', array_map(static fn ($p) => e(preg_replace('/\s+/', ' ', $p)), $paras));
+}

@@ -9,7 +9,7 @@ php-snmptraps: `snmptrapd` traphandle script that parses SNMP traps, stores them
 ## Deployment (production)
 
 - Server: `root@10.12.50.51` (FreeBSD 14, **nginx** + php-fpm, **PHP 8.3**, MariaDB 10.11). App at `/usr/local/www/snmptraps`, UI at `http://10.12.50.51/snmptraps/`.
-- The local dir is synced to `/usr/local/www/snmptraps` (Sublime SFTP config in the parent dir: `../sftp-config.json`, remote_path `/usr/local/www/`). There is **no local git**; upload manually, e.g.
+- The local dir is synced to `/usr/local/www/snmptraps` (Sublime SFTP config in the parent dir: `../sftp-config.json`, remote_path `/usr/local/www/`). There is **no local git** - the git repo (origin `phpipam/php-snmptraps`, working branch `rewrite-1.0`) lives on the server in `/usr/local/www/snmptraps`; commit there after uploading (`.git` is not web-reachable). Upload manually, e.g.
   `tar czf - --exclude config.php --exclude .DS_Store src views public bin vendor db *.md config.dist.php | ssh root@10.12.50.51 'tar xzf - -C /usr/local/www/snmptraps'`
 - nginx (`/usr/local/etc/nginx/nginx.conf`) exposes only `public/`: `^~ /snmptraps/css|js/` are aliased, everything else under `/snmptraps/` goes to `public/index.php`. `.htaccess` is irrelevant. Other apps (cacti, ranip, sap, cp-radius) share that nginx server block - don't touch them.
 - snmptrapd (`/usr/local/share/snmp/snmptrapd.conf`, runs as user `snmpd`): `traphandle default /usr/local/bin/php /usr/local/www/snmptraps/bin/traphandler.php`. Reload config with `kill -HUP $(cat /var/run/snmptrapd.pid)`.
@@ -57,4 +57,9 @@ MariaDB in STRICT mode - truncate to column length before insert (see `TrapProce
 
 ## UI
 
-Bootstrap 3 + bootstrap-table 1.11 + jQuery 2 (`public/js/magic.js`: modals via `.load-modal`/`.load-modal-big`, `.modal-execute[data-action]` posts `#modal-form` and reloads unless the response contains `alert-danger`/`alert-warning`). `tooltip.js` renders `title` attributes as HTML, so row titles are escaped twice. A move to the Tabler UI used by the sibling project `pw.ugbb.net/nalarms-dev.ugbb.net` is planned - keep markup in `views/` so that only views/assets change.
+Tabler 1.0 (dark, Bootstrap 5 bundled in `public/js/tabler.min.js`) + Tabler Icons webfont + jQuery 3.7 + tippy.js/Popper, all vendored in `public/` (no CDN), styled to match the sibling project `pw.ugbb.net/nalarms-dev.ugbb.net`.
+
+- `views/layout.php`: navbar, reload timer (`users.reload_page`, paused via cookie `stop-refresh`), single `#modal1`.
+- Trap lists are server-side paginated (`Pages::listing()`: `?page`, `?limit`, `?q`), rendered by `views/list.php` + `partials/trap-table.php` + `partials/pagination.php`; row HTML comes from `Web\TrapPresenter` (Tabler colour per severity group via `Severity::tablerColor()`).
+- `public/js/app.js`: `.load-modal` links load their href into `#modal1`; `.modal-execute[data-action]` posts `#modal-form` and reloads unless the response contains `alert-danger`/`alert-warning`; live view polls `ajax/live/`.
+- Tooltips: `data-toggle="tooltip"` + `tippy-title` (tippy `allowHTML`) - the attribute holds HTML, so trap-derived text is escaped twice (`TrapPresenter::tip()`). Call `initTooltips(el)` after inserting HTML.

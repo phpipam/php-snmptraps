@@ -3,21 +3,23 @@
 /** @var string $content */
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <base href="<?= e($app->config->base) ?>">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title><?= e($app->config->title) ?></title>
-    <link rel="icon" type="image/png" href="css/favicon_big.png">
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap/bootstrap-custom-black.css">
-    <link rel="stylesheet" href="css/font-awesome/font-awesome.min.css">
+    <link rel="icon" type="image/png" href="css/favicon.png">
+    <link rel="stylesheet" href="css/tabler/tabler.min.css">
+    <link rel="stylesheet" href="css/app.css?v=<?= e($app->assetVersion()) ?>">
 </head>
-<body>
-<div class="container" style="margin-top:40px;max-width:600px;">
-    <?= $content ?>
-    <a class="btn btn-sm btn-default" href="<?= e($app->config->base) ?>">Back</a>
+<body class="d-flex flex-column">
+<div class="page page-center">
+    <div class="container container-tight py-4">
+        <?= $content ?>
+        <a class="btn w-100" href="<?= e($app->config->base) ?>">Back</a>
+    </div>
 </div>
 </body>
 </html>

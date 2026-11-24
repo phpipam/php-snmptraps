@@ -63,6 +63,23 @@ final class Severity
         };
     }
 
+    /** Tabler colour name (red, orange, green, azure) */
+    public static function tablerColor(string $s): string
+    {
+        return match (self::cssClass($s)) {
+            'danger'  => 'red',
+            'warning' => 'orange',
+            'success' => 'green',
+            default   => 'azure',
+        };
+    }
+
+    /** Tabler colour of a severity group slug */
+    public static function groupColor(string $group): string
+    {
+        return $group === 'all' ? 'secondary' : self::tablerColor(self::GROUPS[$group]['levels'][0] ?? self::UNKNOWN);
+    }
+
     public static function pushoverPriority(string $s): int
     {
         return match ($s) {

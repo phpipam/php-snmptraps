@@ -34,7 +34,7 @@ final class App
     public readonly Database $db;
     public readonly Auth $auth;
     public readonly View $view;
-    public readonly TrapPresenter $presenter;
+    private ?TrapPresenter $presenter = null;
     private ?TrapRepository $traps = null;
 
     /** current route segments */
@@ -46,7 +46,12 @@ final class App
         $this->db        = Database::fromConfig($config);
         $this->auth      = new Auth($config, $this->db);
         $this->view      = new View(APP_ROOT . '/views', $this);
-        $this->presenter = new TrapPresenter($config->stripHostnameDomain);
+    }
+
+    /** Trap HTML renderer; created after login so it knows the user's role */
+    public function presenter(): TrapPresenter
+    {
+        return $this->presenter ??= new TrapPresenter($this->config->stripHostnameDomain, $this->auth->isOperator());
     }
 
     public function traps(): TrapRepository

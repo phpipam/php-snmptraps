@@ -68,24 +68,61 @@ final class Pages
         if ($group !== 'all' && !isset(Severity::GROUPS[$group])) {
             throw new HttpException(404, 'Invalid severity group');
         }
-        return $this->app->view->render('severity', [
-            'group' => $group,
-            'title' => $group === 'all' ? 'All' : Severity::GROUPS[$group]['label'] . ' (' . implode(', ', Severity::GROUPS[$group]['levels']) . ')',
+        $filter = $group === 'all' ? [] : ['severities' => Severity::GROUPS[$group]['levels']];
+        $title  = $group === 'all' ? 'All traps' : Severity::GROUPS[$group]['title'];
+        return $this->app->view->render('list', $this->listing($filter) + [
+            'title' => $title,
+            'color' => Severity::groupColor($group),
+            'base'  => "severity/$group/",
         ]);
     }
 
     public function host(?string $hostname): string
     {
-        $hosts = $this->app->traps()->hosts();
-        if ($hostname !== null && !$this->app->auth->canSeeHost($hostname)) {
+        if ($hostname === null) {
+            return $this->app->view->render('hosts', ['hosts' => $this->app->traps()->hosts()]);
+        }
+        if (!$this->app->auth->canSeeHost($hostname)) {
             throw new HttpException(403, 'Not allowed to view this host');
         }
-        return $this->app->view->render('host', ['hosts' => $hosts, 'hostname' => $hostname]);
+        return $this->app->view->render('list', $this->listing(['hostname' => $hostname]) + [
+            'title' => 'Traps for ' . $hostname,
+            'color' => 'secondary',
+            'base'  => 'host/' . rawurlencode($hostname) . '/',
+        ]);
     }
+
+    /**
+     * Paginated trap list: ?page=N&limit=50|100|250|500&q=quick-filter
+     */
+    private function listing(array $filter): array
+    {
+        $limit = (int) $this->app->input('limit', '50');
+        $limit = in_array($limit, self::LIMITS, true) ? $limit : 50;
+        $q = mb_substr($this->app->input('q'), 0, 200);
+        if ($q !== '') {
+            $filter['search'] = $q;
+        }
+        $repo  = $this->app->traps();
+        $total = $repo->count($filter);
+        $pages = max(1, (int) ceil($total / $limit));
+        $page  = max(1, min($pages, (int) $this->app->input('page', '1')));
+
+        return [
+            'traps' => $repo->find($filter, $limit, ($page - 1) * $limit),
+            'total' => $total,
+            'page'  => $page,
+            'pages' => $pages,
+            'limit' => $limit,
+            'q'     => $q,
+        ];
+    }
+
+    public const LIMITS = [50, 100, 250, 500];
 
     public function live(): string
     {
-        return $this->app->view->render('live', ['traps' => $this->app->traps()->find([], 50)]);
+        return $this->app->view->render('live', ['traps' => $this->app->traps()->find([], 100)]);
     }
 
     public function search(): string

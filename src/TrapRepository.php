@@ -19,7 +19,7 @@ final class TrapRepository
 
     /**
      * @param array{severities?:list<string>, hostname?:string, search?:string, text?:string, from?:string, to?:string, after_id?:int} $filter
-     *   search   - bootstrap-table quick search: message/content LIKE, severity/hostname exact
+     *   search   - list quick filter: message/content LIKE, severity/hostname exact
      *   text     - message/content LIKE
      * @return list<array<string,mixed>>
      */

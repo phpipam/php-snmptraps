@@ -5,28 +5,58 @@
 /** @var array|null $mib */
 use Snmptraps\Web\TrapPresenter;
 
-$p = $app->presenter;
+$p = $app->presenter();
 $first = $traps[0] ?? null;
+$hosts = array_count_values(array_map(static fn ($t) => (string) $t['hostname'], $traps));
+arsort($hosts);
 ?>
+<div class="page-header mb-3">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Message</div>
+            <h2 class="page-title"><?= e($message) ?></h2>
+        </div>
+        <?php if ($first !== null && $app->auth->isOperator()): ?>
+        <div class="col-auto ms-auto d-print-none btn-list">
+            <a href="ajax/message-edit/?action=define&amp;id=<?= (int) $first['id'] ?>" class="btn load-modal"><i class="ti ti-adjustments me-1"></i>Define severity</a>
+            <a href="ajax/message-edit/?action=ignore&amp;id=<?= (int) $first['id'] ?>" class="btn load-modal"><i class="ti ti-volume-off me-1"></i>Ignore</a>
+            <a href="ajax/message-edit/?action=delete&amp;id=<?= (int) $first['id'] ?>" class="btn btn-outline-danger load-modal"><i class="ti ti-trash me-1"></i>Delete</a>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="row row-cards">
 <?php if ($first !== null): ?>
-<h4>Details for message <strong><?= e($message) ?></strong></h4><hr>
-<div class="container-fluid message-wrapper" style="padding:10px;">
-<table class="table snmp table-noborder table-auto table-hover table-striped">
-    <tr><td>Message</td><td><?= e($message) ?></td></tr>
-    <tr><td>OID</td><td><?= e($first['oid']) ?></td></tr>
-    <tr><td>Severity</td><td><?= $p->severity((string) $first['severity']) ?></td></tr>
-    <tr><td>Trap objects</td><td><?= $mib && $mib['objects'] ? ' - ' . implode('<br> - ', array_map('e', $mib['objects'])) : '/' ?></td></tr>
-    <tr><td>Trap description</td><td><?= $mib && $mib['description'] !== '' ? e_nl($mib['description']) : '/' ?></td></tr>
-    <tr><td>MIB file</td><td><?= $mib ? e($mib['file']) : '/' ?></td></tr>
-    <?php if ($app->auth->isOperator()): ?>
-    <tr><td>Actions</td><td><?= $p->actions((int) $first['id']) ?></td></tr>
-    <?php endif; ?>
-</table>
+<div class="col-12">
+<div class="card">
+    <div class="card-body">
+        <div class="datagrid">
+            <div class="datagrid-item"><div class="datagrid-title">OID</div><div class="datagrid-content"><code><?= e($first['oid']) ?></code></div></div>
+            <div class="datagrid-item"><div class="datagrid-title">Severity</div><div class="datagrid-content"><?= $p->severity((string) $first['severity']) ?></div></div>
+            <div class="datagrid-item"><div class="datagrid-title">Latest</div><div class="datagrid-content"><?= e($first['date']) ?></div></div>
+            <div class="datagrid-item"><div class="datagrid-title">Traps shown</div><div class="datagrid-content"><?= count($traps) ?><?= count($traps) >= 200 ? ' (latest 200)' : '' ?></div></div>
+            <div class="datagrid-item"><div class="datagrid-title">Hosts</div><div class="datagrid-content">
+                <?php foreach (array_slice($hosts, 0, 10, true) as $h => $n): ?><span class="badge badge-outline text-secondary me-1 mb-1"><?= e($h) ?> &middot; <?= $n ?></span><?php endforeach; ?>
+                <?= count($hosts) > 10 ? '<span class="text-secondary small">+' . (count($hosts) - 10) . ' more</span>' : '' ?>
+            </div></div>
+            <div class="datagrid-item"><div class="datagrid-title">MIB file</div><div class="datagrid-content"><?= $mib ? e($mib['file']) : '<span class="text-secondary">not found</span>' ?></div></div>
+        </div>
+        <?php if ($mib && $mib['description'] !== ''): ?>
+        <div class="mt-3 text-secondary"><?= e_text($mib['description']) ?></div>
+        <?php endif; ?>
+        <?php if ($mib && $mib['objects'] !== []): ?>
+        <div class="mt-2"><?php foreach ($mib['objects'] as $o): ?><span class="badge badge-outline text-secondary me-1 mb-1"><?= e($o) ?></span><?php endforeach; ?></div>
+        <?php endif; ?>
+    </div>
+</div>
 </div>
 <?php endif; ?>
 
-<h4>Traps for message <strong><?= e($message) ?></strong></h4><hr>
-<table class="table snmp sorted table-noborder table-condensed table-hover" data-cookie-id-table="message">
-    <?= $p->headers(TrapPresenter::LIST_COLUMNS, true) ?>
-    <tbody><?= $p->rows($traps, TrapPresenter::LIST_COLUMNS, true) ?></tbody>
-</table>
+<div class="col-12">
+<div class="card">
+    <div class="card-header"><h3 class="card-title">Traps</h3></div>
+    <?= $app->view->render('partials/trap-table', ['traps' => $traps, 'columns' => TrapPresenter::LIST, 'empty' => 'No traps with this message.']) ?>
+</div>
+</div>
+</div>

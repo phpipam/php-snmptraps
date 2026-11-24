@@ -7,121 +7,117 @@ namespace Snmptraps\Web;
 use Snmptraps\Severity;
 
 /**
- * Renders trap rows / cells as (escaped) HTML for tables, live updates and the JSON feed.
+ * Renders trap rows / cells as escaped HTML (Tabler markup).
+ *
+ * Tooltips use tippy.js with allowHTML: the tippy-title attribute holds HTML, so the
+ * (escaped) content is escaped once more for the attribute.
  */
 final class TrapPresenter
 {
-    public const LIST_COLUMNS = [
-        'id'       => '',
-        'hostname' => 'Hostname',
-        'ip'       => 'IP address',
-        'date'     => 'Date',
-        'message'  => 'Message',
-        'severity' => 'Severity',
-        'content'  => 'Content',
+    /** full list: severity, host, ip, date, message + content */
+    public const LIST = ['severity', 'hostname', 'ip', 'date', 'message', 'content'];
+    /** compact (dashboard): no ip/content column */
+    public const COMPACT = ['severity', 'hostname', 'date', 'message'];
+
+    private const HEADERS = [
+        'severity' => ['Severity', 'width:95px'],
+        'hostname' => ['Host', 'width:180px'],
+        'ip'       => ['IP', 'width:120px'],
+        'date'     => ['Date', 'width:150px'],
+        'message'  => ['Message', ''],
+        'content'  => ['Content', ''],
     ];
 
-    public const DASHBOARD_COLUMNS = [
-        'severity' => 'Severity',
-        'id'       => '',
-        'hostname' => 'Hostname',
-        'date'     => 'Date',
-        'message'  => 'Message',
-    ];
-
-    private const HIDDEN_XS = ['ip', 'content'];
-
-    public function __construct(private readonly bool $stripDomain = false)
+    public function __construct(private readonly bool $stripDomain = false, private readonly bool $operator = false)
     {
     }
 
-    /**
-     * @param array<string,string> $columns
-     */
-    public function headers(array $columns, bool $fullScreen = false): string
+    /** @param list<string> $columns */
+    public function headers(array $columns): string
     {
         $html = '<thead><tr>';
-        foreach ($columns as $k => $label) {
-            $hidden = in_array($k, self::HIDDEN_XS, true) ? ' hidden-xs' : '';
-            $style  = $k === 'message' ? " data-cell-style='cellStyleMessage'" : '';
-            $html  .= "<th class='header-" . e($k) . $hidden . "' data-field='" . e($k) . "'$style>" . e($label) . '</th>';
+        foreach ($columns as $c) {
+            [$label, $style] = self::HEADERS[$c];
+            $cls = in_array($c, ['ip', 'content'], true) ? ' class="d-none d-lg-table-cell"' : '';
+            $html .= '<th' . $cls . ($style ? " style='$style'" : '') . '>' . e($label) . '</th>';
         }
-        if ($fullScreen) {
-            $html .= "<th class='header-full_screen disable-sorting' data-field='full_screen'><i class='fa fa-arrows-alt'></i></th>";
-        }
-        return $html . '</tr></thead>';
+        return $html . '<th style="width:30px"></th></tr></thead>';
     }
 
     /**
      * @param list<array<string,mixed>> $rows
-     * @param array<string,string> $columns
+     * @param list<string> $columns
      */
-    public function rows(array $rows, array $columns, bool $fullScreen = false, bool $new = false): string
+    public function rows(array $rows, array $columns, bool $new = false): string
     {
-        if ($rows === []) {
-            $span = count($columns) + ($fullScreen ? 1 : 0);
-            return "<tr><td colspan='$span'>" . View::alert('info', 'No records found') . '</td></tr>';
-        }
         $html = '';
         foreach ($rows as $r) {
-            $cls = Severity::cssClass((string) $r['severity']) . ($new ? ' new' : '');
-            // tooltip.js inserts the title as HTML -> escape the (already escaped) HTML once more
-            $html .= "<tr class='$cls tooltip2' data-id='" . (int) $r['id'] . "' title='" . e(e_nl((string) $r['content'])) . "'>";
-            foreach ($this->cells($r, array_keys($columns)) as $k => $cell) {
-                $hidden = in_array($k, self::HIDDEN_XS, true) ? ' hidden-xs' : '';
-                $html  .= "<td class='field-$k$hidden' style='white-space:nowrap'>$cell</td>";
+            $html .= "<tr data-id='" . (int) $r['id'] . "'" . ($new ? " class='trap-new'" : '') . '>';
+            foreach ($columns as $c) {
+                $cls = in_array($c, ['ip', 'content'], true) ? ' d-none d-lg-table-cell' : '';
+                $html .= "<td class='td-$c$cls'>" . $this->cell($r, $c) . '</td>';
             }
-            $html .= ($fullScreen ? '<td></td>' : '') . '</tr>';
+            $html .= '<td class="text-end">' . $this->actions($r) . '</td></tr>';
         }
         return $html;
     }
 
-    /**
-     * @param list<string> $columns
-     * @return array<string,string> column => html
-     */
-    public function cells(array $r, array $columns, bool $single = false): array
+    public function cell(array $r, string $c): string
     {
-        $out = [];
-        foreach ($columns as $c) {
-            $out[$c] = match ($c) {
-                'id'       => $single ? (string) (int) $r['id'] : $this->idButtons((int) $r['id']),
-                'hostname' => $this->hostname((string) $r['hostname'], $single),
-                'date'     => e($single ? (string) $r['date'] : date('d/m H:i:s', (int) strtotime((string) $r['date']))),
-                'message'  => "<strong><a href='message/" . e(b64url_encode((string) $r['message'])) . "/'>" . e($r['message']) . '</a></strong>',
-                'severity' => $this->severity((string) $r['severity'], $single),
-                'content', 'raw' => e_nl((string) ($r[$c] ?? '')),
-                default    => e($r[$c] ?? ''),
-            };
-        }
-        return $out;
+        return match ($c) {
+            'severity' => $this->severity((string) $r['severity']),
+            'hostname' => $this->hostname((string) $r['hostname']),
+            'ip'       => '<span class="text-secondary">' . e($r['ip']) . '</span>',
+            'date'     => '<span class="text-secondary">' . e(date('d.m.Y H:i:s', (int) strtotime((string) $r['date']))) . '</span>',
+            'message'  => $this->message($r),
+            'content'  => '<span class="text-secondary trap-content"><small>' . e_nl((string) $r['content']) . '</small></span>',
+            default    => e($r[$c] ?? ''),
+        };
     }
 
-    public function severity(string $s, bool $colored = true): string
+    public function severity(string $s): string
     {
-        return $colored
-            ? "<span class='badge badge1 severity alert-" . Severity::cssClass($s) . "'>" . e($s) . '</span>'
-            : "<span class='severity badge badge1'>" . e($s) . '</span>';
+        $color = Severity::tablerColor($s);
+        return "<span class='badge bg-$color text-$color-fg w-100'>" . e($s) . '</span>';
     }
 
     public function hostname(string $host, bool $full = false): string
     {
         $label = (!$full && $this->stripDomain && !filter_var($host, FILTER_VALIDATE_IP)) ? explode('.', $host)[0] : $host;
-        return "<strong><a href='host/" . e(rawurlencode($host)) . "/'>" . e($label) . '</a></strong>';
+        $tip = $label !== $host ? $this->tip(e($host)) : '';
+        return "<a href='host/" . e(rawurlencode($host)) . "/' class='text-reset text-nowrap'$tip>" . e($label) . '</a>';
     }
 
-    private function idButtons(int $id): string
+    public function message(array $r): string
     {
-        return "<div class='btn-group'><a class='btn btn-default btn-xs load-modal-big' href='ajax/trap/?id=$id'><i class='fa fa-eye'></i></a>"
-            . "<a class='btn btn-default btn-xs' href='trap/$id/'><i class='fa fa-angle-right' style='width:12px;'></i></a></div>";
+        $color = Severity::tablerColor((string) $r['severity']);
+        $tip = $this->tip('<strong>' . e($r['oid']) . '</strong><hr>' . e_nl((string) $r['content']));
+        return "<a href='message/" . e(b64url_encode((string) $r['message'])) . "/' class='text-$color fw-bold'$tip>" . e($r['message']) . '</a>';
     }
 
-    public function actions(int $id): string
+    /** tippy tooltip attributes for trusted (already escaped) HTML */
+    public function tip(string $html): string
     {
-        return "<div class='btn-group'>"
-            . "<a class='btn btn-default btn-xs load-modal' title='Define severity' href='ajax/message-edit/?action=define&amp;id=$id'><i class='fa fa-cogs'></i></a> "
-            . "<a class='btn btn-default btn-xs load-modal' title='Ignore' href='ajax/message-edit/?action=ignore&amp;id=$id'><i class='fa fa-volume-off'></i></a> "
-            . "<a class='btn btn-default btn-xs load-modal' title='Delete' href='ajax/message-edit/?action=delete&amp;id=$id'><i class='fa fa-remove'></i></a>"
-            . '</div>';
+        return " data-toggle='tooltip' tippy-title='" . e($html) . "'";
+    }
+
+    /** Row actions dropdown */
+    public function actions(array $r): string
+    {
+        $id = (int) $r['id'];
+        $html = '<span class="dropdown">'
+            . '<a class="dropdown-toggle text-secondary" href="#" data-bs-toggle="dropdown" aria-expanded="false"></a>'
+            . '<div class="dropdown-menu dropdown-menu-end">'
+            . '<h6 class="dropdown-header">Trap</h6>'
+            . "<a class='dropdown-item load-modal' href='ajax/trap/?id=$id'><i class='ti ti-eye me-2'></i>Quick view</a>"
+            . "<a class='dropdown-item' href='trap/$id/'><i class='ti ti-file-description me-2'></i>Details</a>"
+            . "<a class='dropdown-item' href='message/" . e(b64url_encode((string) $r['message'])) . "/'><i class='ti ti-list-search me-2'></i>All traps with this message</a>";
+        if ($this->operator) {
+            $html .= '<div class="dropdown-divider"></div><h6 class="dropdown-header">Manage</h6>'
+                . "<a class='dropdown-item load-modal' href='ajax/message-edit/?action=define&amp;id=$id'><i class='ti ti-adjustments me-2'></i>Define severity</a>"
+                . "<a class='dropdown-item load-modal' href='ajax/message-edit/?action=ignore&amp;id=$id'><i class='ti ti-volume-off me-2'></i>Ignore</a>"
+                . "<a class='dropdown-item text-red load-modal' href='ajax/message-edit/?action=delete&amp;id=$id'><i class='ti ti-trash me-2'></i>Delete traps</a>";
+        }
+        return $html . '</div></span>';
     }
 }

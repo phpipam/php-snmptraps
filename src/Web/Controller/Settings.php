@@ -27,6 +27,13 @@ final class Settings
         'general'              => 'General settings',
     ];
 
+    private const ITEM_NAMES = [
+        'severity_definitions' => 'severity definition',
+        'exceptions'           => 'ignore rule',
+        'maintenance'          => 'maintenance window',
+        'users'                => 'user',
+    ];
+
     public function __construct(private readonly App $app)
     {
     }
@@ -73,10 +80,10 @@ final class Settings
                 'tel'                     => ['label' => 'Phone', 'type' => 'text', 'max' => 32, 'pattern' => '/^\+?[0-9 \-\/]+$/'],
                 'notification_types'      => ['label' => 'Notification types', 'type' => 'checkboxes', 'options' => array_combine($methods, $methods), 'empty' => 'none'],
                 'notification_severities' => ['label' => 'Notify on severities', 'type' => 'checkboxes', 'options' => array_combine(Severity::all(), Severity::all()), 'empty' => 'none'],
-                'quiet_time_start'        => ['label' => 'Quiet time start', 'type' => 'time', 'help' => 'No notifications between start and stop. Same value = no quiet time.'],
-                'quiet_time_stop'         => ['label' => 'Quiet time stop', 'type' => 'time'],
-                'reload_page'             => ['label' => 'Page reload (s)', 'type' => 'int', 'min' => 0, 'max' => 86400, 'help' => '0 = disabled'],
-                'dash_layout'             => ['label' => 'Dashboard layout', 'type' => 'text', 'max' => 128, 'pattern' => '/^\d{1,2}:\d{1,3}(;\d{1,2}:\d{1,3}){3}$/', 'help' => 'width:rows for major;medium;minor;unknown widgets, e.g. 6:30;6:30;12:15;12:15 (rows 0 hides a widget)'],
+                'quiet_time_start'        => ['label' => 'Quiet time start', 'list' => false, 'type' => 'time', 'help' => 'No notifications between start and stop. Same value = no quiet time.'],
+                'quiet_time_stop'         => ['label' => 'Quiet time stop', 'list' => false, 'type' => 'time'],
+                'reload_page'             => ['label' => 'Page reload (s)', 'list' => false, 'type' => 'int', 'min' => 0, 'max' => 86400, 'help' => '0 = disabled'],
+                'dash_layout'             => ['label' => 'Dashboard layout', 'list' => false, 'type' => 'text', 'max' => 128, 'pattern' => '/^\d{1,2}:\d{1,3}(;\d{1,2}:\d{1,3}){3}$/', 'help' => 'width:rows for major;medium;minor;unknown widgets, e.g. 6:30;6:30;12:15;12:15 (rows 0 hides a widget)'],
                 'hostnames'               => ['label' => 'Permitted hosts', 'type' => 'checkboxes', 'options' => $hostOptions, 'empty' => 'all', 'keep_existing' => true, 'help' => 'None selected = all hosts. Ignored for administrators.'],
             ],
         ];
@@ -130,8 +137,9 @@ final class Settings
             'fields' => $tables[$table],
             'row'    => $row,
         ]);
-        $title = ucfirst($action) . ' ' . (self::PAGES[$table] ?? $table) . ' item';
-        return (new Ajax($this->app))->modal($title, $body, ucfirst($action), 'ajax/item/');
+        $title = ['add' => 'Create', 'edit' => 'Edit', 'delete' => 'Delete'][$action] . ' ' . self::ITEM_NAMES[$table];
+        $button = ['add' => 'Create', 'edit' => 'Save', 'delete' => 'Delete'][$action];
+        return (new Ajax($this->app))->modal($title, $body, $button, 'ajax/item/', $action === 'delete' ? 'red' : 'azure');
     }
 
     public function itemSubmit(): string
