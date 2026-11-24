@@ -90,3 +90,17 @@ JOIN (
 ) r ON r.`id` = t.`id`
 SET t.`repeats` = r.`rep`
 WHERE r.`rep` > 0;
+
+/* @version 1.0.3 - see db/migrations/1.0.3.sql, then run: php bin/rebuild-repeats.php */
+ALTER TABLE `traps`
+  ADD COLUMN `fingerprint` char(32) DEFAULT NULL,
+  ADD COLUMN `first_date` timestamp NULL DEFAULT NULL,
+  ADD COLUMN `superseded` tinyint(1) NOT NULL DEFAULT 0,
+  ALGORITHM=INSTANT;
+
+-- repeat lookup by fingerprint; host_oid_date (1.0.2) is replaced by the plain hostname index
+ALTER TABLE `traps`
+  ADD KEY `fingerprint` (`fingerprint`,`date`),
+  ADD KEY `hostname` (`hostname`),
+  DROP KEY `host_oid_date`,
+  ALGORITHM=INPLACE, LOCK=NONE;

@@ -7,6 +7,7 @@ namespace Snmptraps\Web;
 use Snmptraps\Auth;
 use Snmptraps\Config;
 use Snmptraps\Database;
+use Snmptraps\Schema;
 use Snmptraps\Mib;
 use Snmptraps\TrapRepository;
 use Snmptraps\Web\Controller\Ajax;
@@ -37,6 +38,7 @@ final class App
     public readonly View $view;
     private ?TrapPresenter $presenter = null;
     private ?TrapRepository $traps = null;
+    private ?Schema $schema = null;
 
     /** current route segments */
     public array $segments = [];
@@ -57,7 +59,14 @@ final class App
 
     public function traps(): TrapRepository
     {
-        return $this->traps ??= new TrapRepository($this->db, $this->auth->permittedHosts());
+        // repeated traps are collapsed to the latest one once migration 1.0.3 is applied
+        return $this->traps ??= new TrapRepository($this->db, $this->auth->permittedHosts(), $this->schema()->has('1.0.3'));
+    }
+
+    /** pending database migrations (cached for a minute) */
+    public function schema(): Schema
+    {
+        return $this->schema ??= new Schema($this->db, $this->config->db['name']);
     }
 
     public function mib(): Mib

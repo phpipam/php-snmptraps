@@ -153,7 +153,12 @@ $(function () {
             $.get($live.data('live-url'), { id: id }).done(function (html) {
                 $('.live-last').text(new Date().toLocaleTimeString());
                 if (html !== 'False') {
-                    $tbody.prepend(html);
+                    var $new = $(html);
+                    // a repeat replaces the older row of the same chain
+                    $new.filter('tr[data-fp]').each(function () {
+                        $tbody.find('tr[data-fp="' + $(this).attr('data-fp') + '"]').remove();
+                    });
+                    $tbody.prepend($new);
                     $tbody.find('tr').slice(500).remove();
                     initTooltips($tbody[0]);
                 }

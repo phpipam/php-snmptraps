@@ -59,7 +59,9 @@ final class TrapPresenter
     {
         $html = '';
         foreach ($rows as $r) {
-            $html .= "<tr data-id='" . (int) $r['id'] . "'" . ($new ? " class='trap-new'" : '') . '>';
+            // data-fp: live view drops older rows of the same repeat chain
+            $fp = isset($r['fingerprint']) ? " data-fp='" . e($r['fingerprint']) . "'" : '';
+            $html .= "<tr data-id='" . (int) $r['id'] . "'$fp" . ($new ? " class='trap-new'" : '') . '>';
             foreach ($columns as $c) {
                 $cls = in_array($c, ['ip', 'content'], true) ? ' d-none d-lg-table-cell' : '';
                 $html .= "<td class='td-$c$cls'>" . $this->cell($r, $c) . '</td>';
@@ -110,15 +112,21 @@ final class TrapPresenter
         return "<span class='status-dot status-dot-animated bg-$color d-block flex-shrink-0 me-2' data-toggle='tooltip-nofollow' tippy-title='Received in the last 5 minutes'></span>";
     }
 
-    /** badge with the number of repeats (identical traps, each within repeat_window_minutes of the previous) */
+    /**
+     * Repeat badge: number of repeats (identical traps, each within repeat_window_minutes of the
+     * previous one); the tooltip shows the first and the last occurrence.
+     */
     public function repeatBadge(array $r): string
     {
         $n = (int) ($r['repeats'] ?? 0);
         if ($n < 1) {
             return '';
         }
-        $tip = 'Repeated ' . $n . ' time' . ($n === 1 ? '' : 's') . ': same host, OID and content,<br>each less than ' . $this->repeatWindowMinutes . ' min after the previous one';
-        return "<span class='badge bg-secondary-lt text-secondary flex-shrink-0 ms-2' data-toggle='tooltip-nofollow' tippy-title='" . e($tip) . "'>"
+        $fmt = static fn (?string $d): string => $d ? date('d.m.Y H:i:s', (int) strtotime($d)) : '?';
+        $tip = '<strong>Repeated ' . $n . ' time' . ($n === 1 ? '' : 's') . '</strong> (' . ($n + 1) . ' identical traps)<hr>'
+            . 'First: ' . $fmt($r['first_date'] ?? null) . '<br>Last: ' . $fmt((string) $r['date'])
+            . '<hr><span class="text-secondary">same host, OID and content, each less than ' . $this->repeatWindowMinutes . ' min after the previous one</span>';
+        return "<span class='badge bg-secondary-lt text-secondary flex-shrink-0 ms-2' data-toggle='tooltip' tippy-title='" . e($tip) . "'>"
             . "<i class='ti ti-repeat me-1'></i>" . $n . '</span>';
     }
 

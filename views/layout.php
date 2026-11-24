@@ -136,6 +136,18 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
 <div class="page-wrapper">
     <div class="page-body">
         <div class="container-fluid">
+<?php $pending = $app->auth->isAdmin() ? $app->schema()->pending() : []; if ($pending !== []): ?>
+            <div class="alert alert-warning d-flex align-items-start mb-3" role="alert">
+                <i class="ti ti-database-exclamation me-2 fs-2"></i>
+                <div>
+                    <strong>Database migrations not applied:</strong>
+                    <?php foreach ($pending as $ver): ?>
+                    <div><code>db/migrations/<?= e($ver) ?>.sql</code> &ndash; <?= e(Snmptraps\Schema::MIGRATIONS[$ver]) ?></div>
+                    <?php endforeach; ?>
+                    <div class="small mt-1">Apply them in this order (<code>mysql &lt;db&gt; &lt; db/migrations/&lt;version&gt;.sql</code>), see README. Some features are disabled until then.</div>
+                </div>
+            </div>
+<?php endif; ?>
 <?= $content ?>
         </div>
     </div>

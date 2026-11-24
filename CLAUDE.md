@@ -49,12 +49,12 @@ There is no test suite in the repo. When changing the parser, compare old vs new
 - **Severity detection**: content "Severity" varbind first, then the first `severity_definitions` row (by id) whose `oid` is a substring of the trap OID; `content` of definitions is only used when re-classifying stored traps. Changing this changes who gets paged.
 - **Exceptions**: hostname equal or `all`, OID substring, empty content matches all.
 - Notification recipients: severity in `notification_severities`, host permitted, outside quiet hours (`start == stop` = none), host not in an active `maintenance` window.
-- Repeats (`TrapProcessor::previousIdentical()`): before insert, the latest trap with the same hostname + OID + content (index `host_oid_date`) decides `traps.repeats` (previous + 1 if it is younger than `$repeat_window_minutes`, else 0) and whether notifications are skipped (younger than `$notification_dedup_minutes`; all channels). The trap is always stored. The counter is fixed at insert time - changing the config does not recompute history.
+- Repeats (`Trap\Repeats`, used by `TrapProcessor` and `bin/rebuild-repeats.php`): traps are compared by `fingerprint` = md5(hostname, OID, content with timestamp values blanked - TimeTicks values and `*Timestamp`/`*LastChanged` varbinds). Before insert, the latest trap with the same fingerprint decides `repeats` (previous + 1 if younger than `$repeat_window_minutes`, else 0), `first_date` (chain start) and whether notifications are skipped (younger than `$notification_dedup_minutes`, all channels). The previous trap of a chain gets `superseded = 1`; `TrapRepository` lists only `superseded = 0` (filter `repeats => true` to include all). The trap is always stored. After changing the window run `php bin/rebuild-repeats.php`.
 - Message URLs use base64url (`b64url_encode`); `/message/` also accepts legacy standard base64 links (may contain `/`) from old e-mails.
 
 ## Database
 
-MariaDB in STRICT mode - truncate to column length before insert (see `TrapProcessor::MAX_LEN`). `db/SCHEMA.sql` is the full current schema (fresh installs); every schema change also needs a `db/migrations/<version>.sql` and an entry in `db/UPDATE.SQL`. Keep `SCHEMA.sql` updated whenever the schema changes.
+MariaDB in STRICT mode - truncate to column length before insert (see `TrapProcessor::MAX_LEN`). `db/SCHEMA.sql` is the full current schema (fresh installs); every schema change also needs a `db/migrations/<version>.sql`, an entry in `db/UPDATE.SQL` and a detection check in `Schema::MIGRATIONS` / `Schema::detect()` (admins see a warning banner while a migration is missing; code that needs new columns must check `Schema::has()` so the app keeps working before the migration). Keep `SCHEMA.sql` updated whenever the schema changes.
 
 ## UI
 

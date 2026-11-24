@@ -75,6 +75,7 @@ $listValue = static function (mixed $v): string {
     $nm = $config->notificationMethods;
     $items = [
         'Version'               => APP_VERSION,
+        'Database schema'       => ($pendingMig = $app->schema()->pending()) === [] ? 'up to date (' . array_key_last(Snmptraps\Schema::MIGRATIONS) . ')' : 'migrations missing: ' . implode(", ", $pendingMig),
         'PHP version'           => PHP_VERSION,
         'Database'              => $config->db['user'] . '@' . $config->db['host'] . ':' . $config->db['port'] . '/' . $config->db['name'],
         'Web base path'         => $config->base,

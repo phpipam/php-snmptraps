@@ -8,6 +8,7 @@ use Snmptraps\Config;
 use Snmptraps\Database;
 use Snmptraps\Logger;
 use Snmptraps\Notify\Notifier;
+use Snmptraps\Schema;
 
 /**
  * Receives one trap from snmptrapd: parse -> exception check -> repeat check -> store -> notify
@@ -46,44 +47,35 @@ final class TrapProcessor
         }
 
         $row = $this->row($trap);
-        [$repeats, $duplicate] = $this->previousIdentical($row);
-        $row['repeats'] = $repeats;
+        $repeats = Repeats::fromConfig($this->config);
+        $state = null;
+        // repeat tracking needs migration 1.0.3; without it traps are stored and notified as before
+        if ($repeats->enabled() && (new Schema($this->db, $this->config->db['name']))->has('1.0.3')) {
+            $row['fingerprint'] = Repeats::fingerprint($row['hostname'], $row['oid'], $row['content']);
+            $prev = $this->db->one(
+                'SELECT `id`, `repeats`, `first_date`, `date`, TIMESTAMPDIFF(SECOND, `date`, NOW()) AS `age` FROM `traps`
+                 WHERE `fingerprint` = ? AND `date` >= NOW() - INTERVAL ? MINUTE
+                 ORDER BY `date` DESC, `id` DESC LIMIT 1',
+                [$row['fingerprint'], $repeats->lookbackMinutes()],
+            );
+            $state = $repeats->evaluate($prev, (int) ($prev['age'] ?? 0));
+            $row['repeats'] = $state['repeats'];
+            $row['first_date'] = $state['first_date'];
+        }
+
         $id = $this->db->insert('traps', $row);
 
-        if ($duplicate) {
+        if ($state !== null && $state['supersedes'] !== null) {
+            // only the latest trap of a repeat chain is listed
+            $this->db->run('UPDATE `traps` SET `superseded` = 1 WHERE `id` = ?', [$state['supersedes']]);
+        }
+        if ($state !== null && $state['duplicate']) {
             if ($this->config->writeDebugFile) {
                 $this->log->info("{$trap->hostname} {$trap->oid} - notification skipped: identical trap within {$this->config->notificationDedupMinutes} min");
             }
             return;
         }
         (new Notifier($this->config, $this->db, $this->log))->notify($trap, $id);
-    }
-
-    /**
-     * Looks up the latest stored trap with the same hostname, OID and content.
-     *
-     * @return array{0:int, 1:bool} [repeat counter for the new trap, suppress notifications]
-     */
-    private function previousIdentical(array $row): array
-    {
-        $dedup = $this->config->notificationDedupMinutes;
-        $window = $this->config->repeatWindowMinutes;
-        $lookback = max($dedup, $window);
-        if ($lookback === 0) {
-            return [0, false];
-        }
-        $prev = $this->db->one(
-            'SELECT `repeats`, TIMESTAMPDIFF(SECOND, `date`, NOW()) AS `age` FROM `traps`
-             WHERE `hostname` = ? AND `oid` = ? AND `content` = ? AND `date` >= NOW() - INTERVAL ? MINUTE
-             ORDER BY `date` DESC, `id` DESC LIMIT 1',
-            [$row['hostname'], $row['oid'], $row['content'], $lookback],
-        );
-        if ($prev === null) {
-            return [0, false];
-        }
-        $age = (int) $prev['age'];
-        $repeats = ($window > 0 && $age < $window * 60) ? (int) $prev['repeats'] + 1 : 0;
-        return [$repeats, $dedup > 0 && $age < $dedup * 60];
     }
 
     /**

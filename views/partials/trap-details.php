@@ -17,6 +17,8 @@ $items = [
 ];
 if ((int) ($trap['repeats'] ?? 0) > 0) {
     $items['Repeats'] = (int) $trap['repeats'] . ' <span class="text-secondary small">identical traps before this one, each within ' . (int) $app->config->repeatWindowMinutes . ' min</span>';
+    $items['First / last'] = e(($trap['first_date'] ?? null) ?: '?') . ' <span class="text-secondary">&rarr;</span> ' . e($trap['date'])
+        . (!empty($trap['superseded']) ? ' <span class="badge bg-secondary-lt ms-1">superseded by a later repeat</span>' : '');
 }
 ?>
 <div class="datagrid mb-3">

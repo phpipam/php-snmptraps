@@ -77,7 +77,7 @@ config.php     configuration (copy of config.dist.php, not in git)
 
 1. Back up the database.
 2. Replace the code (keep your `config.php`; its format is unchanged).
-3. Apply `db/migrations/1.0.0.sql` (renames `maintaneance` to `maintenance`, adds indexes, etc.), then `db/migrations/1.0.1.sql` and `db/migrations/1.0.2.sql`.
+3. Apply `db/migrations/1.0.0.sql` (renames `maintaneance` to `maintenance`, adds indexes, etc.), then `db/migrations/1.0.1.sql`, `1.0.2.sql` and `1.0.3.sql` (in this order), then run `php bin/rebuild-repeats.php`. Administrators see a warning in the UI while a migration is missing.
 4. Point the web server at `public/` (see above) and snmptrapd at `bin/traphandler.php`.
 
 

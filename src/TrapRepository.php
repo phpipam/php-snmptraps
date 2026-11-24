@@ -13,12 +13,17 @@ final class TrapRepository
     /**
      * @param list<string>|null $permittedHosts
      */
-    public function __construct(private readonly Database $db, private readonly ?array $permittedHosts = null)
+    public function __construct(
+        private readonly Database $db,
+        private readonly ?array $permittedHosts = null,
+        private readonly bool $collapseRepeats = false,
+    )
     {
     }
 
     /**
-     * @param array{severities?:list<string>, hostname?:string, search?:string, text?:string, from?:string, to?:string, after_id?:int} $filter
+     * @param array{severities?:list<string>, hostname?:string, search?:string, text?:string, from?:string, to?:string, after_id?:int, repeats?:bool} $filter
+     *   repeats  - true: include superseded traps of a repeat chain (default: only the latest one)
      *   search   - list quick filter: message/content LIKE, severity/hostname exact
      *   text     - message/content LIKE
      * @return list<array<string,mixed>>
@@ -109,6 +114,9 @@ final class TrapRepository
         if (!empty($f['to'])) {
             $w[] = '`date` <= ?';
             $p[] = $f['to'];
+        }
+        if ($this->collapseRepeats && empty($f['repeats'])) {
+            $w[] = '`superseded` = 0';
         }
         if (isset($f['after_id'])) {
             $w[] = '`id` > ?';
