@@ -48,7 +48,7 @@ final class TrapPresenter
             $cls = in_array($c, ['ip', 'content'], true) ? ' class="d-none d-lg-table-cell"' : '';
             $html .= '<th' . $cls . ($style ? " style='$style'" : '') . '>' . e($label) . '</th>';
         }
-        return $html . '<th style="width:30px"></th></tr></thead>';
+        return $html . '<th style="width:64px"></th></tr></thead>';
     }
 
     /**
@@ -66,7 +66,7 @@ final class TrapPresenter
                 $cls = in_array($c, ['ip', 'content'], true) ? ' d-none d-lg-table-cell' : '';
                 $html .= "<td class='td-$c$cls'>" . $this->cell($r, $c) . '</td>';
             }
-            $html .= '<td class="text-end">' . $this->actions($r) . '</td></tr>';
+            $html .= '<td class="text-end text-nowrap">' . $this->quickViewBadge($r) . $this->actions($r) . '</td></tr>';
         }
         return $html;
     }
@@ -79,7 +79,7 @@ final class TrapPresenter
             'ip'       => '<span class="text-secondary">' . e($r['ip']) . '</span>',
             'date'     => '<span class="text-secondary">' . e(date('d.m.Y H:i:s', (int) strtotime((string) $r['date']))) . '</span>',
             // "recent" dot before the (clipped) message
-            'message'  => '<div class="d-flex align-items-center">' . $this->recentDot($r) . '<div class="text-truncate">' . $this->message($r) . '</div>' . $this->quickViewBadge($r) . $this->repeatBadge($r) . '</div>',
+            'message'  => '<div class="d-flex align-items-center">' . $this->recentDot($r) . '<div class="text-truncate">' . $this->message($r) . '</div>' . $this->repeatBadge($r) . '</div>',
             'content'  => '<span class="text-secondary">' . $this->oneLine((string) $r['content']) . '</span>',
             default    => e($r[$c] ?? ''),
         };
@@ -112,10 +112,10 @@ final class TrapPresenter
         return "<span class='status-dot status-dot-animated bg-$color d-block flex-shrink-0 me-2' data-toggle='tooltip-nofollow' tippy-title='Received in the last 5 minutes'></span>";
     }
 
-    /** eye badge that opens the quick view modal of the trap */
+    /** eye badge that opens the quick view modal of the trap (actions column, before the dropdown) */
     public function quickViewBadge(array $r): string
     {
-        return "<a href='ajax/trap/?id=" . (int) $r['id'] . "' class='badge bg-secondary-lt text-secondary flex-shrink-0 ms-2 load-modal'"
+        return "<a href='ajax/trap/?id=" . (int) $r['id'] . "' class='badge bg-secondary-lt text-secondary flex-shrink-0 me-2 load-modal'"
             . " data-toggle='tooltip-nofollow' tippy-title='Quick view'><i class='ti ti-eye'></i></a>";
     }
 
