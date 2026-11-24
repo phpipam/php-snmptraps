@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Snmptraps\Web;
 
 /**
- * Screenshot mode: replaces hostnames and IP / MAC addresses in rendered HTML with a mask.
+ * Screenshot mode: replaces hostnames, IP / MAC addresses and users' personal data (names,
+ * usernames, e-mail addresses, phone numbers) in rendered HTML with a mask.
  *
  * Only text nodes and the tooltip / title attributes are changed - href, value etc. stay
  * real, so links and forms keep working. Enabled for all users by $screenshot_mode = true
@@ -30,12 +31,37 @@ final class Anonymizer
     /** attributes whose (HTML) value is shown to the user */
     private const ATTRIBUTES = '/(\s(?:tippy-title|title|placeholder)=)(["\'])(.*?)\2/s';
 
-    /** @var array<string,string> hostname => mask, longest first */
-    private array $hosts = [];
+    /** e-mail addresses */
+    private const EMAIL = '/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/u';
 
-    /** @param list<string> $hostnames */
-    public function __construct(array $hostnames)
+    /** @var array<string,string> hostname / literal => mask (strtr prefers the longest match) */
+    private array $hosts = [];
+    /** regex for people (real names, usernames) - whole words only, so "Admin" keeps "Administrator" */
+    private ?string $people = null;
+
+    /**
+     * @param list<string> $hostnames
+     * @param list<string> $names    users' real names and usernames (masked as whole words)
+     * @param list<string> $literals other values to mask anywhere, e.g. phone numbers
+     */
+    public function __construct(array $hostnames, array $names = [], array $literals = [])
     {
+        foreach ($literals as $l) {
+            if (mb_strlen(trim((string) $l)) >= 4) {
+                $this->hosts[trim((string) $l)] = self::MASK;
+            }
+        }
+        $words = [];
+        foreach ($names as $n) {
+            $n = trim((string) $n);
+            if (mb_strlen($n) >= 3 && strcasecmp($n, 'admin') !== 0) {
+                $words[] = preg_quote(htmlspecialchars($n, ENT_QUOTES, 'UTF-8'), '/');
+            }
+        }
+        if ($words !== []) {
+            usort($words, static fn ($a, $b) => strlen($b) <=> strlen($a));
+            $this->people = '/(?<![\w.@-])(?:' . implode('|', $words) . ')(?![\w@-]|\.\w)/u';
+        }
         foreach ($hostnames as $h) {
             $h = trim($h);
             // short names (before the first dot) are shown when strip_hostname_domain is on
@@ -77,7 +103,11 @@ final class Anonymizer
 
     private function text(string $s): string
     {
+        $s = preg_replace(self::EMAIL, self::MASK, $s) ?? $s;
         $s = strtr($s, $this->hosts);
+        if ($this->people !== null) {
+            $s = preg_replace($this->people, self::MASK, $s) ?? $s;
+        }
         return preg_replace(self::PATTERNS, self::MASK, $s) ?? $s;
     }
 }

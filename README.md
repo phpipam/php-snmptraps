@@ -15,7 +15,10 @@ Web UI:
 Requirements: PHP 8.3 - 8.5 (extensions: pdo_mysql, mbstring, openssl; ldap for AD login), MySQL/MariaDB, net-snmp.
 The curl extension is **not** required.
 
-![Screen1](docs/screenshots/Screen1.png?raw=true "Screen1")
+![Dashboard](docs/screenshots/dashboard.png?raw=true "Dashboard")
+
+*Dashboard: latest traps per severity group. A pulsing dot marks traps from the last 5 minutes, the badge after
+the message counts repeats of the same trap, the eye opens the quick view. More in [Screenshots](#screenshots).*
 
 
 ## Layout
@@ -30,6 +33,37 @@ db/            SCHEMA.sql (fresh install), migrations/ (upgrades)
 config.php     configuration (copy of config.dist.php, not in git)
 ```
 
+
+
+## Screenshots
+
+**All traps** - one line per trap, paginated, with a quick filter. Repeated traps are listed once (latest).
+
+![All traps](docs/screenshots/traps.png?raw=true "All traps")
+
+**Quick view** - trap details, repeats (first / last occurrence), content and raw trap.
+
+![Quick view](docs/screenshots/quickview.png?raw=true "Quick view")
+
+**Message** - all traps with the same message, with the MIB description of the notification.
+
+![Message](docs/screenshots/message.png?raw=true "Message")
+
+**Live view** - new traps are added automatically.
+
+![Live view](docs/screenshots/live.png?raw=true "Live view")
+
+**Search** - by text, host, severity and time range.
+
+![Search](docs/screenshots/search.png?raw=true "Search")
+
+**User management** - role, authentication, contact, notification methods, quiet time and permitted hosts.
+
+![User management](docs/screenshots/users.png?raw=true "User management")
+
+**Maintenance windows** - no notifications for a host while its window is active.
+
+![Maintenance](docs/screenshots/maintenance.png?raw=true "Maintenance")
 
 ## Setup
 

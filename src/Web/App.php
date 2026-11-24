@@ -108,9 +108,16 @@ final class App
 
             if ($this->config->screenshotMode) {
                 // $screenshot_mode (config.php): mask hostnames / addresses in everything sent, for all users
-                $anonymizer = new Anonymizer($this->db->column(
-                    'SELECT DISTINCT `hostname` FROM `traps` UNION SELECT `hostname` FROM `maintenance` UNION SELECT `hostname` FROM `exceptions`',
-                ));
+                $users = $this->db->all('SELECT `username`, `real_name`, `tel`, `hostnames` FROM `users`');
+                $userHosts = [];
+                foreach ($users as $u) {
+                    array_push($userHosts, ...explode(';', (string) $u['hostnames']));
+                }
+                $anonymizer = new Anonymizer(
+                    [...$this->db->column('SELECT DISTINCT `hostname` FROM `traps` UNION SELECT `hostname` FROM `maintenance` UNION SELECT `hostname` FROM `exceptions`'), ...$userHosts],
+                    [...array_column($users, 'real_name'), ...array_column($users, 'username')],
+                    array_column($users, 'tel'),
+                );
                 ob_start($anonymizer->apply(...));
             }
 
