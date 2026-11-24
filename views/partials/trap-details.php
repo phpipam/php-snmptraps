@@ -14,6 +14,7 @@ $items = [
     'Severity' => '<span class="d-inline-block" style="width:110px">' . $p->severity((string) $trap['severity']) . '</span>',
     'Message'  => $p->message($trap),
     'OID'      => '<code>' . e($trap['oid']) . '</code>',
+    'Database ID' => '<code>' . (int) $trap['id'] . '</code> <a href="trap/' . (int) $trap['id'] . '/" class="ms-1 text-secondary" data-toggle="tooltip-nofollow" tippy-title="Open trap page"><i class="ti ti-external-link"></i></a>',
 ];
 if ((int) ($trap['repeats'] ?? 0) > 0) {
     $items['Repeats'] = (int) $trap['repeats'] . ' <span class="text-secondary small">identical traps before this one, each within ' . (int) $app->config->repeatWindowMinutes . ' min</span>';
