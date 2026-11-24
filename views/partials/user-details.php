@@ -10,7 +10,6 @@
 use Snmptraps\Severity;
 use Snmptraps\Web\UserPresenter as U;
 
-$quiet = U::quietTime($user);
 $sev = U::values($user['notification_severities']);
 $hosts = U::values($user['hostnames']);
 
@@ -57,10 +56,7 @@ foreach (Severity::GROUPS as $g => $def) {
             <?= $section('ti-bell', 'Notifications', [
                 'Methods'    => U::methods($user, $methods),
                 'Severities' => $sevHtml,
-                'Quiet time' => $quiet === null
-                    ? '<span class="text-secondary">none</span>'
-                    : '<span class="badge badge-outline text-yellow"><i class="ti ti-moon me-1"></i>' . e($quiet) . '</span>'
-                      . (U::inQuietTime($user) ? ' <span class="small text-yellow ms-1">active now</span>' : ''),
+                'Quiet time' => U::quietBadge($user) . '<div class="small text-secondary mt-1">No notifications are sent between start and stop (also across midnight).</div>',
             ]) ?>
             <?= $section('ti-server', 'Permitted hosts', []) ?>
             <?php if (U::allHosts($user)): ?>

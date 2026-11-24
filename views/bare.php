@@ -3,7 +3,7 @@
 /** @var string $content */
 ?>
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" <?= Snmptraps\Web\View::THEME ?>>
 <head>
     <base href="<?= e($app->config->base) ?>">
     <meta charset="utf-8">
@@ -12,6 +12,7 @@
     <title><?= e($app->config->title) ?></title>
     <link rel="icon" type="image/png" href="css/favicon.png">
     <link rel="stylesheet" href="css/tabler/tabler.min.css">
+    <link rel="stylesheet" href="css/tabler/tabler-themes.min.css">
     <link rel="stylesheet" href="css/app.css?v=<?= e($app->assetVersion()) ?>">
 </head>
 <body class="d-flex flex-column">

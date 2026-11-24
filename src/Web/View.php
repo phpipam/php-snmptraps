@@ -10,6 +10,9 @@ namespace Snmptraps\Web;
  */
 final class View
 {
+    /** Tabler theme defaults (dark, azure accent, gray base) - set on <html> of every page */
+    public const THEME = 'data-bs-theme="dark" data-bs-theme-primary="azure" data-bs-theme-base="gray"';
+
     public function __construct(private readonly string $dir, private readonly App $app)
     {
     }

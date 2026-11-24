@@ -22,6 +22,7 @@ $sevCount = count(Severity::all());
         <th>Access</th>
         <th>Contact</th>
         <th>Notifications</th>
+        <th>Quiet time</th>
         <th>Hosts</th>
         <th>Last login</th>
         <th style="width:110px"></th>
@@ -29,7 +30,6 @@ $sevCount = count(Severity::all());
     <tbody>
     <?php foreach ($rows as $r):
         $id = (int) $r['id'];
-        $quiet = U::quietTime($r);
         $sev = U::values($r['notification_severities']);
         $hosts = U::values($r['hostnames']); ?>
     <tr>
@@ -54,9 +54,9 @@ $sevCount = count(Severity::all());
             <div><?= U::methods($r, $enabled) ?></div>
             <div class="small text-secondary mt-1">
                 <?= $sev === [] ? 'no severities' : (count($sev) === $sevCount ? 'all severities' : e(implode(', ', $sev))) ?>
-                <?php if ($quiet !== null): ?><span class="ms-1 text-yellow text-nowrap"><i class="ti ti-moon"></i> <?= e($quiet) ?></span><?php endif; ?>
             </div>
         </td>
+        <td><?= U::quietBadge($r) ?></td>
         <td>
             <?php if (U::allHosts($r)): ?>
             <span class="text-secondary">All hosts</span>

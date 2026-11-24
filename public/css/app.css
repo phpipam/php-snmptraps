@@ -94,7 +94,7 @@ pre.trap-pre {
 /* tooltips */
 .tippy-box {
     font-size: 11px;
-    background: rgb(17, 24, 39);
+    background: var(--tblr-gray-900);
     border: 1px solid rgba(255, 255, 255, .7);
     max-width: 900px !important;
     word-break: break-all;
@@ -107,6 +107,6 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 60px rgb(21, 31, 44) inset !important;
+    -webkit-box-shadow: 0 0 0 60px var(--tblr-bg-forms, var(--tblr-bg-surface)) inset !important;
     -webkit-text-fill-color: var(--tblr-body-color) !important;
 }

@@ -24,7 +24,7 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
 };
 ?>
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" <?= Snmptraps\Web\View::THEME ?>>
 <head>
     <base href="<?= e($cfg->base) ?>">
     <meta charset="utf-8">
@@ -34,6 +34,7 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
     <title><?= e($title) ?></title>
     <link rel="icon" type="image/png" href="css/favicon.png">
     <link rel="stylesheet" href="css/tabler/tabler.min.css?v=<?= $v ?>">
+    <link rel="stylesheet" href="css/tabler/tabler-themes.min.css?v=<?= $v ?>">
     <link rel="stylesheet" href="css/tabler/tabler-icons.css?v=<?= $v ?>">
     <link rel="stylesheet" href="css/app.css?v=<?= $v ?>">
 </head>
@@ -84,10 +85,15 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
                         <div><?= e($user['real_name'] ?: $user['username']) ?></div>
                         <div class="mt-1 small text-secondary"><?= e(ucfirst((string) $user['role'])) ?></div>
                     </div>
-                    <span class="avatar avatar-sm ms-2 bg-transparent"><i class="ti ti-user-circle" style="font-size:30px"></i></span>
+                    <span class="avatar avatar-sm ms-2 bg-transparent"><i class="ti ti-user-circle" style="font-size:30px"></i><?php if (Snmptraps\Web\UserPresenter::inQuietTime($user)): ?><span class="badge bg-yellow badge-notification badge-blink" title="Quiet time active - no notifications"></span><?php endif; ?></span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                     <span class="dropdown-header"><?= e($user['username']) ?></span>
+                    <div class="px-3 pb-2 small text-secondary">
+                        <div class="mb-1">Quiet time</div>
+                        <?= Snmptraps\Web\UserPresenter::quietBadge($user) ?>
+                    </div>
+                    <div class="dropdown-divider"></div>
                     <a href="ajax/profile/" class="dropdown-item load-modal"><i class="ti ti-user-edit me-2"></i>Profile</a>
                     <?php if ($app->auth->isAdmin()): ?>
                     <a href="settings/" class="dropdown-item"><i class="ti ti-settings me-2"></i>Settings</a>

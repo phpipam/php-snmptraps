@@ -34,6 +34,18 @@ final class UserPresenter
         return $start === $stop ? null : "$start - $stop";
     }
 
+    /** quiet time badge incl. "active now" marker, or a muted "none" */
+    public static function quietBadge(array $u, string $none = 'none'): string
+    {
+        $q = self::quietTime($u);
+        if ($q === null) {
+            return '<span class="text-secondary">' . e($none) . '</span>';
+        }
+        $active = self::inQuietTime($u);
+        return '<span class="badge badge-outline text-yellow text-nowrap"><i class="ti ti-moon me-1"></i>' . e($q) . '</span>'
+            . ($active ? ' <span class="badge bg-yellow-lt text-nowrap ms-1" data-toggle="tooltip-nofollow" tippy-title="No notifications are sent now">active now</span>' : '');
+    }
+
     public static function inQuietTime(array $u): bool
     {
         return Notifier::inQuietTime(date('H:i:s'), (string) ($u['quiet_time_start'] ?? ''), (string) ($u['quiet_time_stop'] ?? ''));
