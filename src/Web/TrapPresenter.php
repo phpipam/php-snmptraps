@@ -72,8 +72,8 @@ final class TrapPresenter
             'hostname' => $this->hostname((string) $r['hostname']),
             'ip'       => '<span class="text-secondary">' . e($r['ip']) . '</span>',
             'date'     => '<span class="text-secondary">' . e(date('d.m.Y H:i:s', (int) strtotime((string) $r['date']))) . '</span>',
-            // the message is clipped, the "recent" dot after it must stay visible
-            'message'  => '<div class="d-flex align-items-center"><div class="text-truncate">' . $this->message($r) . '</div>' . $this->recentDot($r) . '</div>',
+            // "recent" dot before the (clipped) message
+            'message'  => '<div class="d-flex align-items-center">' . $this->recentDot($r) . '<div class="text-truncate">' . $this->message($r) . '</div></div>',
             'content'  => '<span class="text-secondary">' . $this->oneLine((string) $r['content']) . '</span>',
             default    => e($r[$c] ?? ''),
         };
@@ -92,7 +92,7 @@ final class TrapPresenter
         return "<span class='badge bg-info-lt text-$color w-100'>" . e($s) . '</span>';
     }
 
-    /** traps received within this many seconds get a pulsing dot after the message */
+    /** traps received within this many seconds get a pulsing dot before the message */
     public const RECENT_SECONDS = 300;
 
     /** animated status dot for traps from the last RECENT_SECONDS */
@@ -103,7 +103,7 @@ final class TrapPresenter
             return '';
         }
         $color = Severity::tablerColor((string) $r['severity']);
-        return "<span class='status-dot status-dot-animated bg-$color d-block flex-shrink-0 ms-2' data-toggle='tooltip-nofollow' tippy-title='Received in the last 5 minutes'></span>";
+        return "<span class='status-dot status-dot-animated bg-$color d-block flex-shrink-0 me-2' data-toggle='tooltip-nofollow' tippy-title='Received in the last 5 minutes'></span>";
     }
 
     public function hostname(string $host, bool $full = false): string
