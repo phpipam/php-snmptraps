@@ -24,6 +24,10 @@ $intro = [
     'general'              => 'General settings are configured in config.php on the server.',
 ][$page];
 
+// maintenance: start + stop shown as one "Active from / to" column
+[$rangeFrom, $rangeTo] = $page === 'maintenance' ? ['start', 'stop'] : [null, null];
+$fmtDate = static fn (?string $d): string => $d ? substr($d, 0, 16) : '-';
+
 $listValue = static function (mixed $v): string {
     $parts = array_filter(explode(';', (string) $v), static fn ($x) => $x !== '');
     $out = '';
@@ -131,8 +135,8 @@ $listValue = static function (mixed $v): string {
         <div class="table-responsive">
         <table class="table table-vcenter card-table table-hover table-sm table-settings">
             <thead><tr>
-                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password' || ($f['list'] ?? true) === false) continue; ?>
-                <th><?= e($f['label']) ?></th>
+                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password' || ($f['list'] ?? true) === false || $name === $rangeTo) continue; ?>
+                <th><?= e($name === $rangeFrom ? 'Active from / to' : $f['label']) ?></th>
                 <?php endforeach; ?>
                 <?php if ($page === 'maintenance'): ?><th>State</th><?php endif; ?>
                 <th style="width:80px"></th>
@@ -140,8 +144,12 @@ $listValue = static function (mixed $v): string {
             <tbody>
             <?php foreach ($rows as $r): ?>
             <tr>
-                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password' || ($f['list'] ?? true) === false) continue; ?>
-                <td class="<?= $f['type'] === 'textarea' ? 'text-secondary' : '' ?>"><?= $f['type'] === 'checkboxes' ? $listValue($r[$name] ?? '') : e_nl((string) ($r[$name] ?? '')) ?></td>
+                <?php foreach ($fields as $name => $f): if ($f['type'] === 'password' || ($f['list'] ?? true) === false || $name === $rangeTo) continue; ?>
+                <?php if ($name === $rangeFrom): ?>
+                <td class="text-secondary text-nowrap"><?= e($fmtDate($r[$rangeFrom] ?? null)) ?> &ndash; <?= e($fmtDate($r[$rangeTo] ?? null)) ?></td>
+                <?php else: ?>
+                <td class="<?= in_array($f['type'], ['textarea', 'datetime'], true) ? 'text-secondary' : '' ?>"><?= $f['type'] === 'checkboxes' ? $listValue($r[$name] ?? '') : e_nl((string) ($r[$name] ?? '')) ?></td>
+                <?php endif; ?>
                 <?php endforeach; ?>
                 <?php if ($page === 'maintenance'):
                     $now = date('Y-m-d H:i:s');

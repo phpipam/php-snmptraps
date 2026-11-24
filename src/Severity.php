@@ -91,13 +91,19 @@ final class Severity
         };
     }
 
+    /** hex values of the Tabler colours as rendered by the UI (e-mail, Slack) */
+    public const HEX = [
+        'red'       => '#d63939',
+        'orange'    => '#f76707',
+        'green'     => '#2fb344',
+        'azure'     => '#4299e1',
+        'yellow'    => '#f59f00',
+        'secondary' => '#9ca3af',
+    ];
+
+    /** hex colour of a severity, same as its colour in the UI */
     public static function color(string $s): string
     {
-        return match (self::cssClass($s)) {
-            'danger'  => '#A7254E',
-            'warning' => '#D66300',
-            'success' => '#66AA00',
-            default   => '#3366CC',
-        };
+        return self::HEX[self::tablerColor($s)];
     }
 }

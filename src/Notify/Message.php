@@ -18,7 +18,7 @@ final class Message
         public readonly int $trapId,
         private readonly string $baseUrl,
     ) {
-        $this->date = date('d/m/Y H:i:s');
+        $this->date = date('d.m.Y H:i:s');   // same format as the UI
     }
 
     public function subject(): string
