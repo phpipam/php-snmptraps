@@ -72,7 +72,8 @@ final class TrapPresenter
             'hostname' => $this->hostname((string) $r['hostname']),
             'ip'       => '<span class="text-secondary">' . e($r['ip']) . '</span>',
             'date'     => '<span class="text-secondary">' . e(date('d.m.Y H:i:s', (int) strtotime((string) $r['date']))) . '</span>',
-            'message'  => $this->message($r),
+            // the message is clipped, the "recent" dot after it must stay visible
+            'message'  => '<div class="d-flex align-items-center"><div class="text-truncate">' . $this->message($r) . '</div>' . $this->recentDot($r) . '</div>',
             'content'  => '<span class="text-secondary">' . $this->oneLine((string) $r['content']) . '</span>',
             default    => e($r[$c] ?? ''),
         };
@@ -88,7 +89,21 @@ final class TrapPresenter
     public function severity(string $s): string
     {
         $color = Severity::tablerColor($s);
-        return "<span class='badge badge-outline text-$color w-100'>" . e($s) . '</span>';
+        return "<span class='badge bg-info-lt text-$color w-100'>" . e($s) . '</span>';
+    }
+
+    /** traps received within this many seconds get a pulsing dot after the message */
+    public const RECENT_SECONDS = 300;
+
+    /** animated status dot for traps from the last RECENT_SECONDS */
+    public function recentDot(array $r): string
+    {
+        $ts = strtotime((string) ($r['date'] ?? ''));
+        if ($ts === false || $ts < time() - self::RECENT_SECONDS) {
+            return '';
+        }
+        $color = Severity::tablerColor((string) $r['severity']);
+        return "<span class='status-dot status-dot-animated bg-$color d-block flex-shrink-0 ms-2' data-toggle='tooltip-nofollow' tippy-title='Received in the last 5 minutes'></span>";
     }
 
     public function hostname(string $host, bool $full = false): string
