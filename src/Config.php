@@ -33,6 +33,10 @@ final class Config
     public readonly string $title;
     public readonly string $footer;
     public readonly bool $stripHostnameDomain;
+    /** no notifications when an identical trap (host, OID, content) arrived within this many minutes, 0 = off */
+    public readonly int $notificationDedupMinutes;
+    /** identical traps closer than this many minutes to the previous one count as repeats (GUI badge), 0 = off */
+    public readonly int $repeatWindowMinutes;
 
     private function __construct(array $c)
     {
@@ -74,6 +78,8 @@ final class Config
         $this->title               = (string) ($c['title'] ?? 'Snmptraps server');
         $this->footer              = (string) ($c['footer'] ?? 'php-snmptraps');
         $this->stripHostnameDomain = (bool) ($c['strip_hostname_domain'] ?? false);
+        $this->notificationDedupMinutes = max(0, (int) ($c['notification_dedup_minutes'] ?? 15));
+        $this->repeatWindowMinutes      = max(0, (int) ($c['repeat_window_minutes'] ?? 10));
     }
 
     public static function load(string $file): self

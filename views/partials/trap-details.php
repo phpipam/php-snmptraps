@@ -15,6 +15,9 @@ $items = [
     'Message'  => $p->message($trap),
     'OID'      => '<code>' . e($trap['oid']) . '</code>',
 ];
+if ((int) ($trap['repeats'] ?? 0) > 0) {
+    $items['Repeats'] = (int) $trap['repeats'] . ' <span class="text-secondary small">identical traps before this one, each within ' . (int) $app->config->repeatWindowMinutes . ' min</span>';
+}
 ?>
 <div class="datagrid mb-3">
     <?php foreach ($items as $label => $html): ?>

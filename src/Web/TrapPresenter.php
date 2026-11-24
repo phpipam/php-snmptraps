@@ -28,7 +28,11 @@ final class TrapPresenter
         'content'  => ['Content', ''],
     ];
 
-    public function __construct(private readonly bool $stripDomain = false, private readonly bool $operator = false)
+    public function __construct(
+        private readonly bool $stripDomain = false,
+        private readonly bool $operator = false,
+        private readonly int $repeatWindowMinutes = 10,
+    )
     {
     }
 
@@ -73,7 +77,7 @@ final class TrapPresenter
             'ip'       => '<span class="text-secondary">' . e($r['ip']) . '</span>',
             'date'     => '<span class="text-secondary">' . e(date('d.m.Y H:i:s', (int) strtotime((string) $r['date']))) . '</span>',
             // "recent" dot before the (clipped) message
-            'message'  => '<div class="d-flex align-items-center">' . $this->recentDot($r) . '<div class="text-truncate">' . $this->message($r) . '</div></div>',
+            'message'  => '<div class="d-flex align-items-center">' . $this->recentDot($r) . '<div class="text-truncate">' . $this->message($r) . '</div>' . $this->repeatBadge($r) . '</div>',
             'content'  => '<span class="text-secondary">' . $this->oneLine((string) $r['content']) . '</span>',
             default    => e($r[$c] ?? ''),
         };
@@ -104,6 +108,18 @@ final class TrapPresenter
         }
         $color = Severity::tablerColor((string) $r['severity']);
         return "<span class='status-dot status-dot-animated bg-$color d-block flex-shrink-0 me-2' data-toggle='tooltip-nofollow' tippy-title='Received in the last 5 minutes'></span>";
+    }
+
+    /** badge with the number of repeats (identical traps, each within repeat_window_minutes of the previous) */
+    public function repeatBadge(array $r): string
+    {
+        $n = (int) ($r['repeats'] ?? 0);
+        if ($n < 1) {
+            return '';
+        }
+        $tip = 'Repeated ' . $n . ' time' . ($n === 1 ? '' : 's') . ': same host, OID and content,<br>each less than ' . $this->repeatWindowMinutes . ' min after the previous one';
+        return "<span class='badge bg-secondary-lt text-secondary flex-shrink-0 ms-2' data-toggle='tooltip-nofollow' tippy-title='" . e($tip) . "'>"
+            . "<i class='ti ti-repeat me-1'></i>" . $n . '</span>';
     }
 
     public function hostname(string $host, bool $full = false): string

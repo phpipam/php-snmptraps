@@ -85,6 +85,8 @@ $listValue = static function (mixed $v): string {
         'Debug / raw trap log'  => ($config->writeDebugFile ? 'on' : 'off') . ' / ' . ($config->writeRawFile ? 'on' : 'off'),
         'PHP debugging'         => $config->debugging ? 'on' : 'off',
         'Strip hostname domain' => $config->stripHostnameDomain ? 'yes' : 'no',
+        'Skip repeated notifications' => $config->notificationDedupMinutes > 0 ? "identical trap within {$config->notificationDedupMinutes} min" : 'off',
+        'Repeat counter window' => $config->repeatWindowMinutes > 0 ? "{$config->repeatWindowMinutes} min" : 'off',
         'AD controllers'        => implode(', ', (array) ($config->ad['domain_controllers'] ?? [])) ?: '-',
     ]; ?>
         <div class="card-body">

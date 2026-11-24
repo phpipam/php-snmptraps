@@ -10,7 +10,8 @@ use Snmptraps\Logger;
 use Snmptraps\Notify\Notifier;
 
 /**
- * Receives one trap from snmptrapd: parse -> exception check -> store -> notify.
+ * Receives one trap from snmptrapd: parse -> exception check -> repeat check -> store -> notify
+ * (notifications are skipped when an identical trap arrived within notification_dedup_minutes).
  */
 final class TrapProcessor
 {
@@ -44,9 +45,45 @@ final class TrapProcessor
             return;
         }
 
-        $id = $this->store($trap);
+        $row = $this->row($trap);
+        [$repeats, $duplicate] = $this->previousIdentical($row);
+        $row['repeats'] = $repeats;
+        $id = $this->db->insert('traps', $row);
 
+        if ($duplicate) {
+            if ($this->config->writeDebugFile) {
+                $this->log->info("{$trap->hostname} {$trap->oid} - notification skipped: identical trap within {$this->config->notificationDedupMinutes} min");
+            }
+            return;
+        }
         (new Notifier($this->config, $this->db, $this->log))->notify($trap, $id);
+    }
+
+    /**
+     * Looks up the latest stored trap with the same hostname, OID and content.
+     *
+     * @return array{0:int, 1:bool} [repeat counter for the new trap, suppress notifications]
+     */
+    private function previousIdentical(array $row): array
+    {
+        $dedup = $this->config->notificationDedupMinutes;
+        $window = $this->config->repeatWindowMinutes;
+        $lookback = max($dedup, $window);
+        if ($lookback === 0) {
+            return [0, false];
+        }
+        $prev = $this->db->one(
+            'SELECT `repeats`, TIMESTAMPDIFF(SECOND, `date`, NOW()) AS `age` FROM `traps`
+             WHERE `hostname` = ? AND `oid` = ? AND `content` = ? AND `date` >= NOW() - INTERVAL ? MINUTE
+             ORDER BY `date` DESC, `id` DESC LIMIT 1',
+            [$row['hostname'], $row['oid'], $row['content'], $lookback],
+        );
+        if ($prev === null) {
+            return [0, false];
+        }
+        $age = (int) $prev['age'];
+        $repeats = ($window > 0 && $age < $window * 60) ? (int) $prev['repeats'] + 1 : 0;
+        return [$repeats, $dedup > 0 && $age < $dedup * 60];
     }
 
     /**
@@ -71,7 +108,8 @@ final class TrapProcessor
         return null;
     }
 
-    private function store(Trap $trap): int
+    /** @return array<string,string> traps row, truncated to the column lengths (STRICT mode) */
+    private function row(Trap $trap): array
     {
         $row = [
             'hostname' => $trap->hostname,
@@ -85,7 +123,7 @@ final class TrapProcessor
         foreach (self::MAX_LEN as $col => $len) {
             $row[$col] = mb_substr($row[$col], 0, $len);
         }
-        return $this->db->insert('traps', $row);
+        return $row;
     }
 
     private function debugDump(Trap $trap): string

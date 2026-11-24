@@ -52,7 +52,7 @@ final class App
     /** Trap HTML renderer; created after login so it knows the user's role */
     public function presenter(): TrapPresenter
     {
-        return $this->presenter ??= new TrapPresenter($this->config->stripHostnameDomain, $this->auth->isOperator());
+        return $this->presenter ??= new TrapPresenter($this->config->stripHostnameDomain, $this->auth->isOperator(), $this->config->repeatWindowMinutes);
     }
 
     public function traps(): TrapRepository

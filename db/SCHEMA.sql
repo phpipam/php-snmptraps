@@ -26,9 +26,10 @@ CREATE TABLE `traps` (
   `severity` varchar(32) DEFAULT 'unknown',
   `content` text DEFAULT NULL,
   `raw` text DEFAULT NULL,
+  `repeats` int(10) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `severity` (`severity`),
-  KEY `hostname` (`hostname`),
+  KEY `host_oid_date` (`hostname`,`oid`,`date`),
   KEY `date` (`date`),
   KEY `oid` (`oid`(64)),
   KEY `message` (`message`(64))

@@ -56,6 +56,18 @@ $footer = "php-snmptraps";
  */
 $strip_hostname_domain = true;
 
+/**
+ * Repeated traps (same hostname, OID and content)
+ *
+ *  notification_dedup_minutes: do not send notifications for a trap if an identical
+ *                              trap was received within this many minutes (0 = off)
+ *  repeat_window_minutes:      identical traps received less than this many minutes after
+ *                              the previous one are counted as repeats; the count is shown
+ *                              as a badge after the message in the UI (0 = off)
+ ******************************/
+$notification_dedup_minutes = 15;
+$repeat_window_minutes      = 10;
+
 
 # --- trap receiver
 

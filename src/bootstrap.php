@@ -12,7 +12,7 @@ declare(strict_types=1);
 use Snmptraps\Config;
 
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 const APP_MIN_PHP = '8.3.0';
 
 if (version_compare(PHP_VERSION, APP_MIN_PHP, '<')) {

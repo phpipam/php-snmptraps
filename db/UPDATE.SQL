@@ -60,3 +60,33 @@ ALTER TABLE `traps`
 ALTER TABLE `users`
   ALTER `dash_layout` SET DEFAULT '6:20;6:20;12:15;12:15';
 UPDATE `users` SET `dash_layout` = REGEXP_REPLACE(`dash_layout`, ':([2-9][1-9]|[3-9]0|[0-9]{3,})(;|$)', ':20\\2');
+
+/* @version 1.0.2 - see db/migrations/1.0.2.sql (traps.repeats + host_oid_date index) */
+ALTER TABLE `traps`
+  ADD COLUMN `repeats` int(10) unsigned NOT NULL DEFAULT 0,
+  ALGORITHM=INSTANT;
+
+-- lookup index for the repeat check; replaces the hostname index (its leftmost prefix)
+ALTER TABLE `traps`
+  ADD KEY `host_oid_date` (`hostname`,`oid`,`date`),
+  DROP KEY `hostname`,
+  ALGORITHM=INPLACE, LOCK=NONE;
+
+-- optional one-time backfill of the counter for stored traps (600 s = default 10 min window)
+UPDATE `traps` t
+JOIN (
+  SELECT `id`, ROW_NUMBER() OVER (PARTITION BY `hostname`, `oid`, `h`, `chain` ORDER BY `date`, `id`) - 1 AS `rep`
+  FROM (
+    SELECT `id`, `hostname`, `oid`, `date`, `h`,
+           SUM(`brk`) OVER (PARTITION BY `hostname`, `oid`, `h` ORDER BY `date`, `id`) AS `chain`
+    FROM (
+      SELECT `id`, `hostname`, `oid`, `date`, MD5(IFNULL(`content`, '')) AS `h`,
+             IF(TIMESTAMPDIFF(SECOND,
+                  LAG(`date`) OVER (PARTITION BY `hostname`, `oid`, MD5(IFNULL(`content`, '')) ORDER BY `date`, `id`),
+                  `date`) < 600, 0, 1) AS `brk`
+      FROM `traps`
+    ) a
+  ) b
+) r ON r.`id` = t.`id`
+SET t.`repeats` = r.`rep`
+WHERE r.`rep` > 0;
