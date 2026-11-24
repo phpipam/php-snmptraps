@@ -9,7 +9,7 @@ php-snmptraps: `snmptrapd` traphandle script that parses SNMP traps, stores them
 ## Deployment (production)
 
 - Server: `root@10.12.50.51` (FreeBSD 14, **nginx** + php-fpm, **PHP 8.3**, MariaDB 10.11). App at `/usr/local/www/snmptraps`, UI at `http://10.12.50.51/snmptraps/`.
-- The local dir is synced to `/usr/local/www/snmptraps` (Sublime SFTP config in the parent dir: `../sftp-config.json`, remote_path `/usr/local/www/`). There is **no local git** - the git repo (origin `phpipam/php-snmptraps`, working branch `rewrite-1.0`) lives on the server in `/usr/local/www/snmptraps`; commit there after uploading (`.git` is not web-reachable). Upload manually, e.g.
+- The local dir is synced to `/usr/local/www/snmptraps` (Sublime SFTP config in the parent dir: `../sftp-config.json`, remote_path `/usr/local/www/`). There is **no local git** - the git repo (origin `phpipam/php-snmptraps`, branch `master`) lives on the server in `/usr/local/www/snmptraps`; commit there after uploading (`.git` is not web-reachable). Upload manually, e.g.
   `tar czf - --exclude config.php --exclude .DS_Store src views public bin vendor db *.md config.dist.php | ssh root@10.12.50.51 'tar xzf - -C /usr/local/www/snmptraps'`
 - nginx (`/usr/local/etc/nginx/nginx.conf`) exposes only `public/`: `^~ /snmptraps/css|js/` are aliased, everything else under `/snmptraps/` goes to `public/index.php`. `.htaccess` is irrelevant. Other apps (cacti, ranip, sap, cp-radius) share that nginx server block - don't touch them.
 - snmptrapd (`/usr/local/share/snmp/snmptrapd.conf`, runs as user `snmpd`): `traphandle default /usr/local/bin/php /usr/local/www/snmptraps/bin/traphandler.php`. Reload config with `kill -HUP $(cat /var/run/snmptrapd.pid)`.
