@@ -110,3 +110,8 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 60px var(--tblr-bg-forms, var(--tblr-bg-surface)) inset !important;
     -webkit-text-fill-color: var(--tblr-body-color) !important;
 }
+
+/* Tabler datepicker popup (appended to body) must open above modals */
+[data-vc="calendar"] {
+    z-index: 1090 !important;
+}

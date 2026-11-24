@@ -9,6 +9,7 @@ use Snmptraps\Auth;
 use Snmptraps\Notify\Notifier;
 use Snmptraps\Severity;
 use Snmptraps\Web\App;
+use Snmptraps\Web\DateTimeField;
 use Snmptraps\Web\HttpException;
 use Snmptraps\Web\View;
 
@@ -277,7 +278,7 @@ final class Settings
                 $values[$name] = $sel === [] ? $f['empty'] : implode(';', $sel);
                 continue;
             }
-            $raw = $input[$name] ?? '';
+            $raw = $f['type'] === 'datetime' ? DateTimeField::combine($input, $name) : ($input[$name] ?? '');
             if (!is_string($raw)) {
                 $errors[] = "$label: invalid value";
                 continue;

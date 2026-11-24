@@ -40,11 +40,11 @@ $sel = static fn (bool $c) => $c ? ' selected' : '';
             </div>
             <div class="col-12 col-md-6 col-lg-3">
                 <label class="form-label">From</label>
-                <input type="datetime-local" step="1" name="from" class="form-control" value="<?= e(str_replace(' ', 'T', $form['from'])) ?>">
+                <?= Snmptraps\Web\DateTimeField::dateTime('from', $form['from'], '00:00') ?>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
                 <label class="form-label">To</label>
-                <input type="datetime-local" step="1" name="to" class="form-control" value="<?= e(str_replace(' ', 'T', $form['to'])) ?>">
+                <?= Snmptraps\Web\DateTimeField::dateTime('to', $form['to'], '23:59') ?>
             </div>
             <div class="col-6 col-lg-3">
                 <label class="form-label">Order</label>

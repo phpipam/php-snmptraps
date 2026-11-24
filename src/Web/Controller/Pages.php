@@ -7,6 +7,7 @@ namespace Snmptraps\Web\Controller;
 use DateTimeImmutable;
 use Snmptraps\Severity;
 use Snmptraps\Web\App;
+use Snmptraps\Web\DateTimeField;
 use Snmptraps\Web\HttpException;
 use Snmptraps\Web\TrapPresenter;
 use Snmptraps\Web\View;
@@ -131,8 +132,8 @@ final class Pages
         $form = [
             'hostname' => $this->app->input('hostname', 'all'),
             'severity' => $this->app->input('severity', 'all'),
-            'from'     => $this->app->input('from'),
-            'to'       => $this->app->input('to'),
+            'from'     => DateTimeField::combine($_GET, 'from', '00:00'),
+            'to'       => DateTimeField::combine($_GET, 'to', '23:59:59'),
             'text'     => $this->app->input('text'),
             'order'    => $this->app->input('order', 'desc') === 'asc' ? 'asc' : 'desc',
             'limit'    => in_array((int) $this->app->input('limit', '100'), [50, 100, 250, 500], true) ? (int) $this->app->input('limit', '100') : 100,

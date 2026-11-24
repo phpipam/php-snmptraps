@@ -27,6 +27,13 @@ function readCookie(name) {
     return null;
 }
 
+/* ---- Tabler input masks (time fields) in dynamically loaded HTML; datepickers use Tabler's data API ---- */
+function initInputs(root) {
+    var t = window.tabler;
+    if (!t || !t.InputMask) { return; }
+    Array.prototype.forEach.call(root.querySelectorAll('[data-mask]'), function (el) { t.InputMask.getOrCreateInstance(el); });
+}
+
 /* ---- tooltips: tippy-title holds escaped HTML ---- */
 function initTooltips(ctx) {
     var root = ctx || document;
@@ -50,6 +57,7 @@ function hideSpinner() { $('div.loading').fadeOut('fast'); }
 $(function () {
 
     initTooltips();
+    initInputs(document);
 
     /* ---- auto reload ---- */
     var timerPaused = readCookie('stop-refresh') === '1';
@@ -91,7 +99,7 @@ $(function () {
         modalRedirect = $(this).data('redirect') || null;
         var $content = $('#modal1 .modal-content').html(placeholder);
         $.get($(this).attr('href'))
-            .done(function (html) { $content.html(html); initTooltips($content[0]); })
+            .done(function (html) { $content.html(html); initTooltips($content[0]); initInputs($content[0]); })
             .fail(function (xhr) { $content.html('<div class="modal-body">' + (xhr.responseText || '<div class="alert alert-danger">Request failed</div>') + '</div>'); });
         modal.show();
         return false;

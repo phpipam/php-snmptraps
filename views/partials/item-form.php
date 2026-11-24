@@ -52,10 +52,10 @@
         <textarea name="<?= $n ?>" class="form-control" rows="2"><?= e($val) ?></textarea>
         <?php break;
         case 'datetime': ?>
-        <input type="datetime-local" step="1" name="<?= $n ?>" class="form-control" value="<?= e(str_replace(' ', 'T', $val)) ?>">
+        <?= Snmptraps\Web\DateTimeField::dateTime($name, $val) ?>
         <?php break;
         case 'time': ?>
-        <input type="time" step="1" name="<?= $n ?>" class="form-control w-auto" value="<?= e($val) ?>">
+        <div style="max-width:9rem"><?= Snmptraps\Web\DateTimeField::time($name, $val) ?></div>
         <?php break;
         case 'int': ?>
         <input type="number" name="<?= $n ?>" class="form-control w-auto" value="<?= e($val) ?>" min="<?= (int) ($f['min'] ?? 0) ?>" max="<?= (int) ($f['max'] ?? 0) ?>">

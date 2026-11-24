@@ -169,6 +169,9 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
 <script src="js/jquery-3.7.1.min.js"></script>
 <script src="js/popper.min.js"></script>
 <script src="js/tippy-bundle.umd.min.js"></script>
+<!-- Tabler Datepicker / InputMask dependencies (must load before tabler.min.js) -->
+<script src="js/vendor/vanilla-calendar-pro.js?v=<?= $v ?>"></script>
+<script src="js/vendor/imask.min.js?v=<?= $v ?>"></script>
 <script src="js/tabler.min.js?v=<?= $v ?>"></script>
 <script src="js/app.js?v=<?= $v ?>"></script>
 </body>
