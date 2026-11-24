@@ -24,7 +24,7 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
 };
 ?>
 <!DOCTYPE html>
-<html lang="en" <?= Snmptraps\Web\View::THEME ?>>
+<html lang="en" <?= Snmptraps\Web\View::theme() ?>>
 <head>
     <base href="<?= e($cfg->base) ?>">
     <meta charset="utf-8">
@@ -65,6 +65,9 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
         <div class="navbar-nav flex-row order-md-last align-items-center">
             <div class="nav-item d-none d-sm-flex<?= $route === 'search' ? ' active' : '' ?>">
                 <a href="search/" class="nav-link px-2" data-toggle="tooltip-nofollow" tippy-title="Search traps"><i class="ti ti-search icon"></i></a>
+            </div>
+            <div class="nav-item d-none d-sm-flex">
+                <a href="#" class="nav-link px-2 toggle-theme" data-toggle="tooltip-nofollow" tippy-title="Toggle light / dark mode"><i class="ti <?= Snmptraps\Web\View::isLight() ? 'ti-moon' : 'ti-sun' ?> icon"></i></a>
             </div>
             <?php if ($reload > 0): ?>
             <div class="nav-item d-none d-sm-flex">

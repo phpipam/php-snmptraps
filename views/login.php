@@ -5,7 +5,7 @@
 /** @var string $username */
 ?>
 <!DOCTYPE html>
-<html lang="en" <?= Snmptraps\Web\View::THEME ?>>
+<html lang="en" <?= Snmptraps\Web\View::theme() ?>>
 <head>
     <base href="<?= e($app->config->base) ?>">
     <meta charset="utf-8">

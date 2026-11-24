@@ -84,6 +84,15 @@ $(function () {
         return false;
     });
 
+    /* ---- light / dark mode (default dark; cookie read server-side so the page renders without a flash) ---- */
+    $('.toggle-theme').on('click', function () {
+        var light = document.documentElement.getAttribute('data-bs-theme') !== 'light';
+        document.documentElement.setAttribute('data-bs-theme', light ? 'light' : 'dark');
+        createCookie('theme', 'light', light ? 365 : -1);
+        $(this).find('i').toggleClass('ti-sun', !light).toggleClass('ti-moon', light);
+        return false;
+    });
+
     /* ---- modals: links with .load-modal load their href into #modal1 ---- */
     var modalEl = document.getElementById('modal1');
     // Tabler >= 1.x exports Bootstrap as tabler.bootstrap (older builds set window.bootstrap)

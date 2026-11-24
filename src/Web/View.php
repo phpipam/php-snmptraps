@@ -10,8 +10,20 @@ namespace Snmptraps\Web;
  */
 final class View
 {
-    /** Tabler theme defaults (dark, azure accent, gray base) - set on <html> of every page */
-    public const THEME = 'data-bs-theme="dark" data-bs-theme-primary="azure" data-bs-theme-base="gray"';
+    /** Tabler theme defaults (azure accent, gray base) - set on <html> of every page via theme() */
+    public const THEME = 'data-bs-theme-primary="azure" data-bs-theme-base="gray"';
+
+    /** Colour mode: dark by default, light when the navbar toggle set cookie "theme=light" */
+    public static function isLight(): bool
+    {
+        return ($_COOKIE['theme'] ?? '') === 'light';
+    }
+
+    /** Attributes for <html>: colour mode + THEME */
+    public static function theme(): string
+    {
+        return 'data-bs-theme="' . (self::isLight() ? 'light' : 'dark') . '" ' . self::THEME;
+    }
 
     public function __construct(private readonly string $dir, private readonly App $app)
     {
