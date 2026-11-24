@@ -120,10 +120,14 @@ final class MailChannel implements Channel
 
         return '<!DOCTYPE html><html><head><meta charset="utf-8">'
             . '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            . '<meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark">'
+            // page background: transparent (client default) in light mode, UI background in dark mode;
+            // the card itself always keeps the UI colours. [data-ogsb] = Outlook.com dark mode.
+            . '<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">'
+            . "<style>@media (prefers-color-scheme: dark) { body, .snmptraps-bg { background:{$c['body']} !important; } }"
+            . "[data-ogsb] body, [data-ogsb] .snmptraps-bg { background:{$c['body']} !important; }</style>"
             . '<title>' . e($m->subject()) . '</title></head>'
-            . "<body style=\"margin:0;padding:0;background:{$c['body']};\">"
-            . "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"{$c['body']}\" style=\"background:{$c['body']};font-family:{$c['font']};\">"
+            . '<body style="margin:0;padding:0;background:transparent;">'
+            . "<table role=\"presentation\" class=\"snmptraps-bg\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:transparent;font-family:{$c['font']};\">"
             . '<tr><td align="center" style="padding:24px 12px;">'
             . "<table role=\"presentation\" width=\"640\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"{$c['card']}\" style=\"width:100%;max-width:640px;background:{$c['card']};border:1px solid {$c['border']};border-top:3px solid $sev;border-radius:6px;\">"
             // header

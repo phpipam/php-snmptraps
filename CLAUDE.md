@@ -40,7 +40,7 @@ There is no test suite in the repo. When changing the parser, compare old vs new
 - `TrapRepository` - all trap reads/writes. It is constructed with the user's permitted hosts (`Auth::permittedHosts()`, `null` = all) and applies that restriction to every query - always go through `$app->traps()`.
 - `Auth` - session, login (`local` = `password_verify`, legacy crypt hashes auto-rehashed; `ad` = `Ldap` bind), roles `user` < `operator` (define/ignore/delete traps) < `administrator` (settings, users).
 - `Settings::tables()` - explicit field definitions drive the generic add/edit/delete modal and validation for `severity_definitions`, `exceptions`, `maintenance`, `users`.
-- Notification e-mail (`MailChannel::html()`) uses the UI colours as hex (`MailChannel::UI`, `Severity::HEX` - e-mail clients don't support oklch). Preview / test: `php bin/test-mail.php --html [trap-id]` or `php bin/test-mail.php <email> [trap-id]`.
+- Notification e-mail (`MailChannel::html()`): the card always uses the UI colours as hex; the page background is transparent, `#111827` only in dark mode (`prefers-color-scheme` + Outlook.com `[data-ogsb]`). Colours are hex (`MailChannel::UI`, `Severity::HEX` - e-mail clients don't support oklch). Preview / test: `php bin/test-mail.php --html [trap-id]` or `php bin/test-mail.php <email> [trap-id]`.
 - `Notify\*` - `Channel` implementations (`mail` PHPMailer, `sms` HTTP GET gateway, `pushover`, `slack`) registered in `Notifier::CHANNELS`; HTTP via `HttpClient` (PHP streams - the server has **no curl extension**).
 - `Mib` - reads NOTIFICATION-TYPE/TRAP-TYPE from MIB files (basenames inside the MIB dir only), module->file index cached in the system temp dir.
 
