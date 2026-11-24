@@ -95,6 +95,10 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
                     </div>
                     <div class="dropdown-divider"></div>
                     <a href="ajax/profile/" class="dropdown-item load-modal"><i class="ti ti-user-edit me-2"></i>Profile</a>
+                    <a href="#" class="dropdown-item d-flex align-items-center toggle-anonymize" data-toggle="tooltip-nofollow" tippy-title="Hide hostnames and IP addresses (for screenshots)">
+                        <i class="ti <?= Snmptraps\Web\Anonymizer::enabled() ? 'ti-eye-off text-yellow' : 'ti-eye' ?> me-2"></i>Screenshot mode
+                        <span class="form-check form-switch m-0 ms-auto"><input class="form-check-input" type="checkbox" tabindex="-1"<?= Snmptraps\Web\Anonymizer::enabled() ? ' checked' : '' ?>></span>
+                    </a>
                     <?php if ($app->auth->isAdmin()): ?>
                     <a href="settings/" class="dropdown-item"><i class="ti ti-settings me-2"></i>Settings</a>
                     <?php endif; ?>

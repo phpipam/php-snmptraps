@@ -76,6 +76,14 @@ $(function () {
             $('.badge-timer').text(left + 's');
         }, 1000);
     }
+    /* screenshot mode: hostnames / IPs masked server side (cookie per browser) */
+    $('.toggle-anonymize').on('click', function () {
+        var on = readCookie('snmptraps-anonymize') === '1';
+        createCookie('snmptraps-anonymize', on ? '0' : '1', on ? -1 : 30);
+        window.location.reload();
+        return false;
+    });
+
     $('.toggle-timer').on('click', function () {
         timerPaused = !timerPaused;
         createCookie('stop-refresh', timerPaused ? '1' : '0', timerPaused ? 365 : -1);

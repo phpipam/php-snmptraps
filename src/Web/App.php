@@ -106,6 +106,14 @@ final class App
                 $this->redirect('login/');
             }
 
+            if (Anonymizer::enabled()) {
+                // screenshot mode: mask hostnames / addresses in everything sent to this browser
+                $anonymizer = new Anonymizer($this->db->column(
+                    'SELECT DISTINCT `hostname` FROM `traps` UNION SELECT `hostname` FROM `maintenance` UNION SELECT `hostname` FROM `exceptions`',
+                ));
+                ob_start($anonymizer->apply(...));
+            }
+
             $this->dispatch($route);
         } catch (HttpException $e) {
             http_response_code($e->status);
