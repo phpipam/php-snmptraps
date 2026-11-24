@@ -2,103 +2,98 @@
 
 ###### php snmptrap handler and web UI for management
 
-php-snmptraps is an php trpahandler that processes snmp traps, writes them to database and/or file and sends
-notifications via sms/email/pushover to users, based on web settings.
+php-snmptraps is a PHP trap handler for net-snmp's `snmptrapd`. It parses received traps, stores them in a
+MySQL/MariaDB database and sends notifications (e-mail, SMS, Pushover, Slack/Mattermost) to users based on
+their settings.
 
-It comes with nice HMTL5 UI:
-* Dashboard that shows overview of last messages
-* Displays messages sent by specific host
-* Displays messages per severity
-* Displays specific messages received
-* Live update of received traps
+Web UI:
+* Dashboard with the latest traps grouped by severity
+* Traps per host, per severity and per message, live view, search
+* Per-OID severity definitions, ignore rules (exceptions), maintenance windows, MIB import
+* Per-user notification methods, severities, permitted hosts and quiet hours
 
-and more.
+Requirements: PHP 8.3 - 8.5 (extensions: pdo_mysql, mbstring, openssl; ldap for AD login), MySQL/MariaDB, net-snmp.
+The curl extension is **not** required.
 
-You can set severity level for each received message, ignore specific message types, create maintenance periods
-for hosts, set per-user quiet hours and more.
-
-
-Notifications are set per-user/severity, by default aupported are:
-* Email notification
-* Pushover notification
-* SMS notification
-* Slack/Mattermost notification
-
-The can be easily extended to any other custom notification type.
+![Screen1](docs/screenshots/Screen1.png?raw=true "Screen1")
 
 
-## screenshots
-
-Some sample UI screenshots can be found below:
-![Screen1](/css/screenshots/Screen1.png?raw=true "Screen1")
-![Screen2](/css/screenshots/Screen2.png?raw=true "Screen2")
-![Screen3](/css/screenshots/Screen3.png?raw=true "Screen3")
-![Screen4](/css/screenshots/Screen4.png?raw=true "Screen4")
-
-
-## setup
-
-This guide assumes you have a working net-snmp, apache, php and mysql installation with default apache files stored
- in /var/www/.
-
-1.Set traphandler
-
-First, edit file `/etc/snmp/snmptrapd.conf` and add traphandler for default files to traphandler.php:
+## Layout
 
 ```
-# listen on
-agentaddress my_ip_address:162
-# set php-snmptraps as default trap handler
-traphandle default /usr/bin/php /var/www/traphandler.php
+public/        web document root (index.php front controller + css/js) - the ONLY directory the web server exposes
+bin/           traphandler.php - called by snmptrapd
+src/           application classes (namespace Snmptraps\)
+views/         HTML templates
+vendor/        PHPMailer
+db/            SCHEMA.sql (fresh install), migrations/ (upgrades)
+config.php     configuration (copy of config.dist.php, not in git)
 ```
 
-2.Prepare and edit config file
 
-Now go to /var/www/ directory and copy config.dist.php to config.php:
+## Setup
+
+1. **Database**
+
+   ```
+   mysql -u root -p -e "CREATE DATABASE snmptraps CHARACTER SET utf8mb3;"
+   mysql -u root -p -e "CREATE USER 'snmptraps'@'localhost' IDENTIFIED BY 'snmptraps';
+                        GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP ON snmptraps.* TO 'snmptraps'@'localhost';"
+   mysql -u root -p snmptraps < db/SCHEMA.sql
+   ```
+
+2. **Configuration**: `cp config.dist.php config.php` and edit (database, `BASE`, `$url`, notifications).
+
+3. **snmptrapd** (`snmptrapd.conf`):
+
+   ```
+   traphandle default /usr/local/bin/php /usr/local/www/snmptraps/bin/traphandler.php
+   ```
+
+   The user snmptrapd runs as must be able to read the application and write `$filename` (log file).
+
+4. **Web server** - expose only `public/` and route everything else to `public/index.php`.
+   nginx example for the UI at `/snmptraps/` (set `BASE` to `/snmptraps/`):
+
+   ```nginx
+   location = /snmptraps { return 301 /snmptraps/; }
+   location ^~ /snmptraps/css/ { alias /usr/local/www/snmptraps/public/css/; expires 7d; }
+   location ^~ /snmptraps/js/  { alias /usr/local/www/snmptraps/public/js/;  expires 7d; }
+   location ^~ /snmptraps/ {
+       include        fastcgi_params;
+       fastcgi_param  SCRIPT_FILENAME /usr/local/www/snmptraps/public/index.php;
+       fastcgi_param  SCRIPT_NAME     /snmptraps/index.php;
+       fastcgi_pass   unix:/var/run/php-fpm.socket;
+   }
+   ```
+
+   Apache: point `DocumentRoot` (or an `Alias`) to `public/` and add
+   `FallbackResource /snmptraps/index.php`.
+
+5. Log in with **Admin / snmptraps** and change the password.
+
+
+## Upgrading from 0.3.x
+
+1. Back up the database.
+2. Replace the code (keep your `config.php`; its format is unchanged).
+3. Apply `db/migrations/1.0.0.sql` (renames `maintaneance` to `maintenance`, adds indexes, etc.).
+4. Point the web server at `public/` (see above) and snmptrapd at `bin/traphandler.php`.
+
+
+## Testing
+
+Send a trap:
+
 ```
-cp /var/www/config.dist.php /var/www/config.php
-```
-and edit the config file to match your settings.
-
-
-3.Set mod_rewrite
-
-mod_rewrite is required for snmptraps. Example here:
-
-http://phpipam.net/documents/prettified-links-with-mod_rewrite/
-
-4.Import database schema
-
-Now you have to import chema for mysql database with following command:
-
-```
-mysql -u root -p
-Enter password:
-
-mysql> create database snmptraps;
-Query OK, 1 row affected (0.00 sec)
-
-mysql> GRANT ALL on snmptraps.* to snmptraps@localhost identified by "snmptraps";
-Query OK, 0 rows affected (0.00 sec)
-
-mysql> exit
-Bye
-
-# import SCHEMA.SQL file
-mysql -u root -p snmptraps < db/SCHEMA.sql
+snmptrap -v 2c -c public <server> '' .1.3.6.1.4.1.2636.4.1.1 .1.3.6.1.4.1.2636.4.1.1 s "Power supply failure"
 ```
 
-That should be it, fire up browser and login. Default user/pass is Admin/snmptraps.
+or feed one directly to the handler:
 
+```
+printf 'host\nUDP: [10.0.0.1]:1->[10.0.0.2]:162\nDISMAN-EVENT-MIB::sysUpTimeInstance 1\nSNMPv2-MIB::snmpTrapOID.0 IF-MIB::linkDown\nIF-MIB::ifName.3 ge-0/0/1\n' \
+  | php bin/traphandler.php
+```
 
-5.Send test message and debugging
-
-To test snmptrap you can use the following command:
-
-```snmptrap -v 2c -c public my_public_ip '' .1.3.6.1.4.1.2636.4.1.1 .1.3.6.1.4.1.2636.4.1.1 s "Power supply failure"```
-
-Check also the file you set in config.php for possible errors:
-
-```tail -f /tmp/trap.txt```
-
-
+Errors are written to the file set in `$filename` (set `$write_debug_file = true` to dump every parsed trap).

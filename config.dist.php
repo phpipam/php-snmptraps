@@ -1,218 +1,150 @@
 <?php
 
-/*	database connection details
+/**
+ * php-snmptraps configuration
+ *
+ * Copy to config.php (outside the web root, next to public/) and edit.
+ */
+
+/*  database connection details
  ******************************/
 $db['host'] = "localhost";
-$db['user'] = "snmptrapd";
-$db['pass'] = "snmptrapd";
-$db['name'] = "snmptrapd";
+$db['user'] = "snmptraps";
+$db['pass'] = "snmptraps";
+$db['name'] = "snmptraps";
 $db['port'] = 3306;
+// optional TLS to the database server
+// $db['ssl']     = true;
+// $db['ssl_ca']  = "/path/to/ca.pem";
+// $db['ssl_key'] = "/path/to/client-key.pem";
+// $db['ssl_cert']= "/path/to/client-cert.pem";
 
 /**
  * php debugging on/off
  *
- * true  = SHOW all php errors
- * false = HIDE all php errors
+ * true  = show PHP errors / exception details in the UI
+ * false = hide (errors are logged by PHP)
  ******************************/
-$debugging = true;
+$debugging = false;
 
 /**
- *	manual set session name for auth
- *	increases security
- *	optional
+ * Session cookie name
  */
-$phpsessname = "snmptrapd";
+$phpsessname = "snmptraps";
 
 /**
- *	BASE definition if snmptraps
- * 	is not in root directory (e.g. /snmptraps/)
+ * URL path the web UI is served from (must match the web server config),
+ * e.g. "/" or "/snmptraps/"
  ******************************/
-if(!defined('BASE'))
-define('BASE', "/index.php");
-
-
-
-
-# --- trap receiver configuration
+if (!defined('BASE'))
+define('BASE', "/snmptraps/");
 
 /**
- * Use database flag to write file to database
- *
- *  Set database variables under config.php
- *
- * (default value: true)
- *
- * @var bool
- * @access public
+ * Absolute URL of the web UI, used for links in notifications.
+ * Empty = no links.
  */
-$use_database  = true;
+$url = "http://127.0.0.1/snmptraps/";
 
 /**
- * AD connection parameters
- *
- *  if AD selected for authentication
- *
- * @var array
+ * Site title / footer text
+ */
+$title  = "Snmptraps server";
+$footer = "php-snmptraps";
+
+/**
+ * Show only the first label of hostnames in trap lists
+ */
+$strip_hostname_domain = true;
+
+
+# --- trap receiver
+
+/**
+ * Log file for receiver errors (and debug output below). false = PHP error_log.
+ * Must be writable by the user snmptrapd runs as.
+ */
+$filename = "/tmp/traps.txt";
+
+/**
+ * Additionally dump every received trap (raw and/or parsed) to $filename
+ */
+$write_raw_file   = false;
+$write_debug_file = false;
+
+/**
+ * MIB directory used for trap descriptions and the MIB import.
+ * Leave unset to auto-detect /usr/local/share/snmp/mibs/ or /usr/share/snmp/mibs/.
+ */
+// $mib_directory = "/usr/local/share/snmp/mibs/";
+
+
+# --- authentication
+
+/**
+ * Active Directory / LDAP bind for users with auth_method "ad" (requires php-ldap)
  */
 $ad = array (
-    'base_dn'=>"DC=domain,DC=local",
-    'ad_port'=>389,
-    'account_suffix'=>"domain.local",
-    'domain_controllers'=>array("127.0.0.1"),
-    // 'use_ssl'=>false,  // ldaps://
-    // 'use_tls'=>false,  // StartTLS
+    'domain_controllers' => array("127.0.0.1"),
+    'account_suffix'     => "domain.local",   // user -> user@domain.local
+    'ad_port'            => 389,
+    'use_ssl'            => false,            // ldaps://
+    'use_tls'            => false,            // StartTLS
+    'timeout'            => 5,
 );
 
-/**
- * Write result to file or not ?
- *
- *  Useful for DB debugging
- *
- *  false will not write to file
- *
- * (default value: "/tmp/traps.txt")
- *
- * @var string|bool
- * @access public
- */
-$filename = false;
+
+# --- notifications
 
 /**
- * Default MIB directory
- *
- * (default value: "/usr/share/snmp/mibs/")
- *
- * @var string
- * @access public
- */
-$mib_directory = "/usr/share/snmp/mibs/";
-
-/**
- * Send notifications flag
- *
- * false to not send
- *
- *  otherwise provide array of required methods:
- *      - pushover
- *      - mail
- *      - sms
- *      - custom (read docs)
- *
- * @var bool
- * @access public
+ * Enabled notification methods: any of "mail", "sms", "pushover", "slack".
+ * Users choose which of these they receive in their profile.
  */
 $notification_methods = array("mail");
 
-
-/**
- * Params array init
- *
- * (default value: array())
- *
- * @var array
- * @access public
- */
 $notification_params = array();
 
 /**
- * SMS parmeters
- *
- * @var mixed
- * @access public
+ * SMS gateway: GET http://{server}{uri}sendsms?sender=&recipient=&appid=&reference=&message=
  */
 $notification_params['sms'] = array(
-    "server"=>"127.0.0.1:8080",                 // sms server
-    "uri"=>"/sms/",                             // sms server uri
-    "appid"=>"snmptraps",                       // application id
-    "sender"=>"snmptraps",                      // from
-    "length" =>640                              // maximum length. leave 0 for default
+    "server" => "127.0.0.1:8080",
+    "uri"    => "/sms/",
+    "appid"  => "snmptraps",
+    "sender" => "snmptraps",
+    "length" => 640                 // max message length, 0 = unlimited
 );
 
 /**
- * Mail parameters
- *
- *  if Mail selected for notifications
- *
- * @var array
+ * E-mail
  */
 $notification_params['mail'] = array (
-    "type"=>"localhost",                    // mailserver type ('localhost','smtp')
-    "server"=>"127.0.0.1",                  // array of mailservers seperated by ;
-    "port"=>25,                             // smtp port number
-    "security"=>"none",                     // security type ('none','ssl','tls')
-    "auth"=>false,                          // authentication (true, false)
-    "user"=>"",                             // username for smtp auth
-    "pass"=>"",                             // password for smtp auth
-    "from"=>"lsnmptraps@domain.si"          // as who to send mail
+    "type"        => "localhost",   // 'localhost' (sendmail) or 'smtp'
+    "server"      => "127.0.0.1",
+    "port"        => 25,
+    "security"    => "none",        // 'none', 'ssl', 'tls'
+    "verify_peer" => false,         // verify SMTP server TLS certificate
+    "auth"        => false,
+    "user"        => "",
+    "pass"        => "",
+    "from"        => "snmptraps@domain.local",
+    "from_name"   => "php-snmptraps",
 );
 
 /**
- * Pushover parameters
- *
- *  if pushover selected for notifications
- *
- *  https://pushover.net
- *
- * @var array
+ * Pushover (https://pushover.net) - one message to the given user/group key
  */
 $notification_params['pushover'] = array (
-    "token"=>"",     // Pushover APP token
-    "key"=>""        // Pushover APP group / user key
+    "token" => "",                  // application token
+    "key"   => ""                   // user or group key
 );
 
 /**
- * slack parameters
- *
- *  if slack/mattermost selected for notifications
- *
- *
- * @var array
+ * Slack / Mattermost incoming webhook (posted to url . key)
  */
 $notification_params['slack'] = array (
-    "url"=>"",              // url
-    "key"=>"",              // key
-    "mentions"=>array (),   // (optional) mentions (include @)
-    "channel"=>""           // (optional) channel name (example: off-topic)
+    "url"      => "",
+    "key"      => "",
+    "mentions" => array (),         // e.g. array("@channel")
+    "channel"  => "",               // optional channel override
+    "username" => "php-snmptraps",
 );
-
-
-
-
-
-# --- UI parameters
-
-/**
- * URL parameter
- *
- * (default value: "")
- *
- * @var string
- * @access public
- */
-$url = "http://127.0.0.1/";
-
-/**
- * Site title
- *
- * (default value: "Snmptraps server")
- *
- * @var string
- * @access public
- */
-$title = "Snmptraps server";
-
-/**
- * Footer text
- *
- * (default value: "")
- *
- * @var string
- * @access public
- */
-$footer = "php-snmptrap management";
-
-/**
- * Strip domain from hostname
- * @var bool
- */
-$strip_hostname_domain = true;

@@ -1,52 +1,77 @@
-# Dump of table exceptions
-# ------------------------------------------------------------
+-- php-snmptraps database schema (version 1.0.0)
+--
+-- Fresh install:
+--   mysql -u root -p -e "CREATE DATABASE snmptraps CHARACTER SET utf8mb3;"
+--   mysql -u root -p -e "CREATE USER 'snmptraps'@'localhost' IDENTIFIED BY 'snmptraps';
+--                        GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP ON snmptraps.* TO 'snmptraps'@'localhost';"
+--   mysql -u root -p snmptraps < db/SCHEMA.sql
+--
+-- Upgrading an existing installation: apply db/migrations/*.sql in version order instead
+-- (also listed in db/UPDATE.SQL).
+--
+-- Default login: Admin / snmptraps (change it after the first login).
 
+SET NAMES utf8mb3;
+
+
+-- Received traps
+DROP TABLE IF EXISTS `traps`;
+CREATE TABLE `traps` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `hostname` varchar(128) DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `oid` varchar(255) DEFAULT NULL,
+  `date` timestamp NULL DEFAULT current_timestamp(),
+  `message` varchar(1024) DEFAULT NULL,
+  `severity` varchar(32) DEFAULT 'unknown',
+  `content` text DEFAULT NULL,
+  `raw` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `severity` (`severity`),
+  KEY `hostname` (`hostname`),
+  KEY `date` (`date`),
+  KEY `oid` (`oid`(64)),
+  KEY `message` (`message`(64))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+
+-- Ignore rules: matching traps are neither stored nor notified
 DROP TABLE IF EXISTS `exceptions`;
-
 CREATE TABLE `exceptions` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `oid` varchar(128) NOT NULL DEFAULT '',
-  `hostname` varchar(256) DEFAULT NULL,
+  `hostname` varchar(128) NOT NULL DEFAULT 'all',
   `content` varchar(128) DEFAULT NULL,
-  `comment` text,
+  `comment` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `oid` (`oid`,`content`,`hostname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 
-# Dump of table maintaneance
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `maintaneance`;
-
-CREATE TABLE `maintaneance` (
+-- Maintenance windows: no notifications for the host between start and stop
+DROP TABLE IF EXISTS `maintenance`;
+CREATE TABLE `maintenance` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `hostname` varchar(64) NOT NULL DEFAULT '',
+  `hostname` varchar(128) NOT NULL DEFAULT '',
   `start` datetime NOT NULL,
   `stop` datetime NOT NULL,
-  `comment` text,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `comment` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `hostname` (`hostname`,`start`,`stop`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 
-
-# Dump of table severity_definitions
-# ------------------------------------------------------------
-
+-- Severity per OID (first definition by id whose oid is contained in the trap OID wins)
 DROP TABLE IF EXISTS `severity_definitions`;
-
 CREATE TABLE `severity_definitions` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `oid` varchar(128) NOT NULL DEFAULT '',
-  `severity` set('emergency','alert','critical','error','warning','notice','informational','debug') NOT NULL DEFAULT '',
+  `severity` enum('emergency','alert','critical','error','warning','notice','informational','debug') NOT NULL,
   `content` varchar(128) DEFAULT '',
-  `comment` text,
+  `comment` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `oid` (`oid`,`content`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-LOCK TABLES `severity_definitions` WRITE;
-/*!40000 ALTER TABLE `severity_definitions` DISABLE KEYS */;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 INSERT INTO `severity_definitions` (`id`, `oid`, `severity`, `content`, `comment`)
 VALUES
@@ -97,64 +122,31 @@ VALUES
 	(58,'BRIDGE-MIB::topologyChange','warning','topologyChange',NULL),
 	(59,'DISMAN-EVENT-MIB::mteTriggerFired','emergency','mteTriggerFired',NULL);
 
-/*!40000 ALTER TABLE `severity_definitions` ENABLE KEYS */;
-UNLOCK TABLES;
 
-
-# Dump of table traps
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `traps`;
-
-CREATE TABLE `traps` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `hostname` varchar(32) DEFAULT NULL,
-  `ip` varchar(15) DEFAULT NULL,
-  `oid` varchar(128) DEFAULT NULL,
-  `date` timestamp NULL DEFAULT current_timestamp(),
-  `message` varchar(256) DEFAULT NULL,
-  `severity` varchar(32) DEFAULT 'unknown',
-  `content` text DEFAULT NULL,
-  `raw` text DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `severity` (`severity`),
-  KEY `hostname` (`hostname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-# Dump of table users
-# ------------------------------------------------------------
-
+-- Users
 DROP TABLE IF EXISTS `users`;
-
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(25) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `real_name` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
-  `auth_method` set('local','ad', 'krb') COLLATE utf8_bin NOT NULL DEFAULT 'local',
-  `password` char(128) COLLATE utf8_bin DEFAULT NULL,
-  `role` set('user','operator','administrator') CHARACTER SET utf8 NOT NULL DEFAULT 'user',
-  `email` varchar(64) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `tel` varchar(15) COLLATE utf8_bin DEFAULT NULL,
-  `notification_types` varchar(128) COLLATE utf8_bin DEFAULT 'mail',
-  `notification_severities` varchar(128) COLLATE utf8_bin DEFAULT 'emergency;alert;critical;unknown',
+  `username` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `real_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `auth_method` enum('local','ad') NOT NULL DEFAULT 'local',
+  `password` varchar(255) DEFAULT NULL,
+  `role` enum('user','operator','administrator') NOT NULL DEFAULT 'user',
+  `email` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `tel` varchar(32) DEFAULT NULL,
+  `notification_types` varchar(128) DEFAULT 'mail',
+  `notification_severities` varchar(128) DEFAULT 'emergency;alert;critical;unknown',
   `quiet_time_start` time DEFAULT '00:00:00',
   `quiet_time_stop` time DEFAULT '00:00:00',
   `last_login` timestamp NULL DEFAULT NULL,
-  `last_activity` timestamp NULL DEFAULT NULL,
-  `reload_page` INT(32)  NULL  DEFAULT '900',
-  `dash_layout` VARCHAR(128)  NULL  DEFAULT '6:30;6:30;12:15;12:15',
-  `hostnames` text COLLATE utf8_bin NOT NULL,
-  PRIMARY KEY (`username`),
-  KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  `reload_page` int(11) DEFAULT 900,
+  `dash_layout` varchar(128) DEFAULT '6:30;6:30;12:15;12:15',
+  `hostnames` text NOT NULL DEFAULT 'all',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-
-INSERT INTO `users` (`id`, `username`, `real_name`, `auth_method`, `password`, `role`, `email`, `tel`, `notification_types`, `notification_severities`, `quiet_time_start`, `quiet_time_stop`, `last_login`, `last_activity`, `hostnames`)
+-- Admin / snmptraps (legacy SHA-512 crypt hash, upgraded automatically on first login)
+INSERT INTO `users` (`id`, `username`, `real_name`, `auth_method`, `password`, `role`, `email`, `notification_types`, `notification_severities`, `hostnames`)
 VALUES
-  (1,'Admin','Admin user',X'6C6F63616C',X'243624726F756E64733D333030302447546749466E354973506559553254332448775446756E736F566864424930684C3250507871546641444E576F76716358547130624F4A4C58705330426865714A58692E4830592E7A4532363454304A444E2F50426E46597067677044504F6A4F63434B2E7731','administrator','ni@sploh.si',X'',X'6D61696C',X'656D657267656E63793B616C6572743B637269746963616C3B756E6B6E6F776E','00:00:00','00:00:00',NULL,NULL,'');
-
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
+  (1, 'Admin', 'Admin user', 'local', X'243624726F756E64733D333030302447546749466E354973506559553254332448775446756E736F566864424930684C3250507871546641444E576F76716358547130624F4A4C58705330426865714A58692E4830592E7A4532363454304A444E2F50426E46597067677044504F6A4F63434B2E7731', 'administrator', NULL, 'none', 'emergency;alert;critical;unknown', 'all');
