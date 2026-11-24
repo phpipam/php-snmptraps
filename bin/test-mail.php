@@ -19,16 +19,23 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
+$usage = "usage: php bin/test-mail.php <email> [trap-id]   send a test e-mail\n"
+       . "       php bin/test-mail.php --html [trap-id]    print the HTML body only (nothing is sent)\n";
 $to = $argv[1] ?? '';
+$idArg = $argv[2] ?? '';
 if ($to === '' || ($to !== '--html' && !filter_var($to, FILTER_VALIDATE_EMAIL))) {
-    fwrite(STDERR, "usage: php bin/test-mail.php <email>|--html [trap-id]\n");
+    fwrite(STDERR, $usage);
+    exit(2);
+}
+if ($idArg !== '' && !ctype_digit($idArg)) {
+    fwrite(STDERR, "invalid trap id '$idArg'" . ($to === '--html' ? ' - --html only prints the HTML, use <email> instead of --html to send' : '') . "\n" . $usage);
     exit(2);
 }
 
 $config = require __DIR__ . '/../src/bootstrap.php';
 $db = Database::fromConfig($config);
 
-$id = (int) ($argv[2] ?? 0);
+$id = (int) $idArg;
 $row = $id > 0
     ? $db->find('traps', $id)
     : $db->one('SELECT * FROM `traps` ORDER BY `id` DESC LIMIT 1');
