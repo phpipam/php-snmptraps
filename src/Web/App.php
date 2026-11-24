@@ -106,8 +106,8 @@ final class App
                 $this->redirect('login/');
             }
 
-            if (Anonymizer::enabled()) {
-                // screenshot mode: mask hostnames / addresses in everything sent to this browser
+            if ($this->config->screenshotMode) {
+                // $screenshot_mode (config.php): mask hostnames / addresses in everything sent, for all users
                 $anonymizer = new Anonymizer($this->db->column(
                     'SELECT DISTINCT `hostname` FROM `traps` UNION SELECT `hostname` FROM `maintenance` UNION SELECT `hostname` FROM `exceptions`',
                 ));

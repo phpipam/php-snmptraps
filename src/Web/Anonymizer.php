@@ -8,12 +8,11 @@ namespace Snmptraps\Web;
  * Screenshot mode: replaces hostnames and IP / MAC addresses in rendered HTML with a mask.
  *
  * Only text nodes and the tooltip / title attributes are changed - href, value etc. stay
- * real, so links and forms keep working. Enabled per browser by the cookie
- * snmptraps-anonymize=1 (user menu -> "Screenshot mode"); nothing is stored differently.
+ * real, so links and forms keep working. Enabled for all users by $screenshot_mode = true
+ * in config.php (deliberately not in config.dist.php); nothing is stored differently.
  */
 final class Anonymizer
 {
-    public const COOKIE = 'snmptraps-anonymize';
     public const MASK = '******';
 
     /** IPv4 (also "ipv4.a.b.c.d" OID indexes), IPv6 with "::" or 6+ groups, MAC addresses */
@@ -46,11 +45,6 @@ final class Anonymizer
                 }
             }
         }
-    }
-
-    public static function enabled(): bool
-    {
-        return ($_COOKIE[self::COOKIE] ?? '') === '1';
     }
 
     /** mask a rendered HTML page or fragment */
