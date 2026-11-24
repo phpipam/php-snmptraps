@@ -6,7 +6,7 @@
 -- the first trap of the chain.
 --   mysql -u <user> -p <db> < db/migrations/1.0.3.sql
 --   php bin/rebuild-repeats.php        (fills the new columns for stored traps)
--- or simply: php db/migrate.php (applies pending migrations and runs the rebuild)
+-- or simply: php bin/migrate.php (applies pending migrations and runs the rebuild)
 
 ALTER TABLE `traps`
   ADD COLUMN IF NOT EXISTS `fingerprint` char(32) DEFAULT NULL,

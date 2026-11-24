@@ -144,7 +144,7 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
                     <?php foreach ($pending as $ver): ?>
                     <div><code>db/migrations/<?= e($ver) ?>.sql</code> &ndash; <?= e(Snmptraps\Schema::MIGRATIONS[$ver]) ?></div>
                     <?php endforeach; ?>
-                    <div class="small mt-1">Apply them in this order (<code>mysql &lt;db&gt; &lt; db/migrations/&lt;version&gt;.sql</code>), see README. Some features are disabled until then.</div>
+                    <div class="small mt-1">Run <code>php bin/migrate.php</code> on the server (applies them in order), see README. Some features are disabled until then.</div>
                 </div>
             </div>
 <?php endif; ?>

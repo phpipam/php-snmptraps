@@ -7,10 +7,10 @@
  * schema, see Snmptraps\Schema) and applies them in version order, followed by their
  * post-migration step (e.g. bin/rebuild-repeats.php for 1.0.3).
  *
- *   php db/migrate.php            show status, ask, apply pending migrations
- *   php db/migrate.php --check    show status only; exit code 1 if migrations are pending
- *   php db/migrate.php --yes      apply without asking (cron / deploy scripts)
- *   php db/migrate.php --install  empty database: load db/SCHEMA.sql (fresh install)
+ *   php bin/migrate.php            show status, ask, apply pending migrations
+ *   php bin/migrate.php --check    show status only; exit code 1 if migrations are pending
+ *   php bin/migrate.php --yes      apply without asking (cron / deploy scripts)
+ *   php bin/migrate.php --install  empty database: load db/SCHEMA.sql (fresh install)
  *
  * Uses the database credentials of config.php; the user needs ALTER / INDEX / CREATE / DROP.
  * Back up the database first - DDL statements cannot be rolled back. The 1.0.2+ migrations
@@ -39,7 +39,7 @@ $root = dirname(__DIR__);
 $config = require $root . '/src/bootstrap.php';
 $db = Database::fromConfig($config);
 $schema = new Schema($db, $config->db['name']);
-$dir = __DIR__ . '/migrations/';
+$dir = $root . '/db/migrations/';
 
 $out = static function (string $msg = ''): void {
     fwrite(STDOUT, $msg . PHP_EOL);
@@ -60,7 +60,7 @@ if ($schema->isEmpty()) {
         exit(1);
     }
     $out('Loading db/SCHEMA.sql ...');
-    runSqlFile($db, __DIR__ . '/SCHEMA.sql', $out);
+    runSqlFile($db, $root . '/db/SCHEMA.sql', $out);
     Schema::clearCache();
     $out('Done. Default login: Admin / snmptraps - change the password after the first login.');
     exit(0);
@@ -91,7 +91,7 @@ foreach ($pending as $ver) {
     }
 }
 if ($checkOnly) {
-    $out('Pending: ' . implode(', ', $pending) . ' - run php db/migrate.php to apply.');
+    $out('Pending: ' . implode(', ', $pending) . ' - run php bin/migrate.php to apply.');
     exit(1);
 }
 

@@ -36,7 +36,7 @@ final class Schema
     }
 
     /**
-     * @param bool $cached false = inspect the database now (db/migrate.php)
+     * @param bool $cached false = inspect the database now (bin/migrate.php)
      * @return list<string> versions of migrations that are not applied
      */
     public function pending(bool $cached = true): array

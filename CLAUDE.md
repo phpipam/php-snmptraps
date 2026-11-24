@@ -56,7 +56,7 @@ There is no test suite in the repo. When changing the parser, compare old vs new
 
 ## Database
 
-MariaDB in STRICT mode - truncate to column length before insert (see `TrapProcessor::MAX_LEN`). `db/SCHEMA.sql` is the full current schema (fresh installs); every schema change also needs a `db/migrations/<version>.sql`, an entry in `db/UPDATE.SQL` and a detection check in `Schema::MIGRATIONS` / `Schema::detect()` (plus `Schema::POST_MIGRATION` for backfill scripts); `php db/migrate.php` applies pending migrations (`--check` = status only, `--install` = load SCHEMA.sql into an empty DB). Write migrations re-runnable (`IF [NOT] EXISTS`), statements end with `;` at line end (admins see a warning banner while a migration is missing; code that needs new columns must check `Schema::has()` so the app keeps working before the migration). Keep `SCHEMA.sql` updated whenever the schema changes.
+MariaDB in STRICT mode - truncate to column length before insert (see `TrapProcessor::MAX_LEN`). `db/SCHEMA.sql` is the full current schema (fresh installs); every schema change also needs a `db/migrations/<version>.sql`, an entry in `db/UPDATE.SQL` and a detection check in `Schema::MIGRATIONS` / `Schema::detect()` (plus `Schema::POST_MIGRATION` for backfill scripts); `php bin/migrate.php` applies pending migrations (`--check` = status only, `--install` = load SCHEMA.sql into an empty DB). Write migrations re-runnable (`IF [NOT] EXISTS`), statements end with `;` at line end (admins see a warning banner while a migration is missing; code that needs new columns must check `Schema::has()` so the app keeps working before the migration). Keep `SCHEMA.sql` updated whenever the schema changes.
 
 ## UI
 

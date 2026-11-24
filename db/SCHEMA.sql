@@ -4,7 +4,7 @@
 --   mysql -u root -p -e "CREATE DATABASE snmptraps CHARACTER SET utf8mb3;"
 --   mysql -u root -p -e "CREATE USER 'snmptraps'@'localhost' IDENTIFIED BY 'snmptraps';
 --                        GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP ON snmptraps.* TO 'snmptraps'@'localhost';"
---   mysql -u root -p snmptraps < db/SCHEMA.sql      (or: php db/migrate.php --install)
+--   mysql -u root -p snmptraps < db/SCHEMA.sql      (or: php bin/migrate.php --install)
 --
 -- Upgrading an existing installation: apply db/migrations/*.sql in version order instead
 -- (also listed in db/UPDATE.SQL).
