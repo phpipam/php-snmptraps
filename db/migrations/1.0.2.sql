@@ -7,13 +7,13 @@
 -- Apply BEFORE deploying the 1.0.2 code (the receiver writes the new column).
 
 ALTER TABLE `traps`
-  ADD COLUMN `repeats` int(10) unsigned NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `repeats` int(10) unsigned NOT NULL DEFAULT 0,
   ALGORITHM=INSTANT;
 
 -- lookup index for the repeat check; replaces the hostname index (its leftmost prefix)
 ALTER TABLE `traps`
-  ADD KEY `host_oid_date` (`hostname`,`oid`,`date`),
-  DROP KEY `hostname`,
+  ADD KEY IF NOT EXISTS `host_oid_date` (`hostname`,`oid`,`date`),
+  DROP KEY IF EXISTS `hostname`,
   ALGORITHM=INPLACE, LOCK=NONE;
 
 -- optional one-time backfill of the counter for stored traps (600 s = default 10 min window)

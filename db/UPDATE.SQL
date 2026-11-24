@@ -63,13 +63,13 @@ UPDATE `users` SET `dash_layout` = REGEXP_REPLACE(`dash_layout`, ':([2-9][1-9]|[
 
 /* @version 1.0.2 - see db/migrations/1.0.2.sql (traps.repeats + host_oid_date index) */
 ALTER TABLE `traps`
-  ADD COLUMN `repeats` int(10) unsigned NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `repeats` int(10) unsigned NOT NULL DEFAULT 0,
   ALGORITHM=INSTANT;
 
 -- lookup index for the repeat check; replaces the hostname index (its leftmost prefix)
 ALTER TABLE `traps`
-  ADD KEY `host_oid_date` (`hostname`,`oid`,`date`),
-  DROP KEY `hostname`,
+  ADD KEY IF NOT EXISTS `host_oid_date` (`hostname`,`oid`,`date`),
+  DROP KEY IF EXISTS `hostname`,
   ALGORITHM=INPLACE, LOCK=NONE;
 
 -- optional one-time backfill of the counter for stored traps (600 s = default 10 min window)
@@ -93,14 +93,14 @@ WHERE r.`rep` > 0;
 
 /* @version 1.0.3 - see db/migrations/1.0.3.sql, then run: php bin/rebuild-repeats.php */
 ALTER TABLE `traps`
-  ADD COLUMN `fingerprint` char(32) DEFAULT NULL,
-  ADD COLUMN `first_date` timestamp NULL DEFAULT NULL,
-  ADD COLUMN `superseded` tinyint(1) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `fingerprint` char(32) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `first_date` timestamp NULL DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `superseded` tinyint(1) NOT NULL DEFAULT 0,
   ALGORITHM=INSTANT;
 
 -- repeat lookup by fingerprint; host_oid_date (1.0.2) is replaced by the plain hostname index
 ALTER TABLE `traps`
-  ADD KEY `fingerprint` (`fingerprint`,`date`),
-  ADD KEY `hostname` (`hostname`),
-  DROP KEY `host_oid_date`,
+  ADD KEY IF NOT EXISTS `fingerprint` (`fingerprint`,`date`),
+  ADD KEY IF NOT EXISTS `hostname` (`hostname`),
+  DROP KEY IF EXISTS `host_oid_date`,
   ALGORITHM=INPLACE, LOCK=NONE;

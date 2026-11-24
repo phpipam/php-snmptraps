@@ -21,6 +21,11 @@ final class Schema
         '1.0.3' => 'traps.fingerprint / first_date / superseded (collapsed repeats)',
     ];
 
+    /** commands to run after a migration file (relative to the app root), e.g. backfills */
+    public const POST_MIGRATION = [
+        '1.0.3' => 'bin/rebuild-repeats.php',
+    ];
+
     private const CACHE_TTL = 60;
 
     /** @var list<string>|null */
@@ -30,9 +35,15 @@ final class Schema
     {
     }
 
-    /** @return list<string> versions of migrations that are not applied */
-    public function pending(): array
+    /**
+     * @param bool $cached false = inspect the database now (db/migrate.php)
+     * @return list<string> versions of migrations that are not applied
+     */
+    public function pending(bool $cached = true): array
     {
+        if (!$cached) {
+            return $this->pending = $this->detect();
+        }
         if ($this->pending !== null) {
             return $this->pending;
         }
@@ -46,6 +57,22 @@ final class Schema
         $this->pending = $this->detect();
         @file_put_contents($cache, json_encode(['versions' => array_keys(self::MIGRATIONS), 'pending' => $this->pending]), LOCK_EX);
         return $this->pending;
+    }
+
+    /** true when the database has none of the application tables (fresh install) */
+    public function isEmpty(): bool
+    {
+        return (int) $this->db->value(
+            "SELECT COUNT(*) FROM information_schema.`TABLES` WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` IN ('traps', 'users')",
+        ) === 0;
+    }
+
+    /** removes the cached result so web and receiver see a migration immediately */
+    public static function clearCache(): void
+    {
+        foreach (glob(sys_get_temp_dir() . '/snmptraps-schema-*.json') ?: [] as $f) {
+            @unlink($f);
+        }
     }
 
     public function has(string $version): bool
