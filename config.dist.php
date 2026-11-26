@@ -87,10 +87,12 @@ $write_raw_file   = false;
 $write_debug_file = false;
 
 /**
- * MIB directory used for trap descriptions and the MIB import.
+ * MIB directory (string) or directories (array, first match wins) used for trap
+ * descriptions and the MIB import.
  * Leave unset to auto-detect /usr/local/share/snmp/mibs/ or /usr/share/snmp/mibs/.
  */
 // $mib_directory = "/usr/local/share/snmp/mibs/";
+// $mib_directory = array("/usr/share/snmp/mibs-custom/", "/usr/share/snmp/mibs/");
 
 
 # --- authentication

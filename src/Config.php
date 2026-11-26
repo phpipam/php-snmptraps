@@ -26,7 +26,8 @@ final class Config
     public readonly string|false $logFile;
     public readonly bool $writeRawFile;
     public readonly bool $writeDebugFile;
-    public readonly string $mibDirectory;
+    /** @var list<string> MIB directories with trailing slash, in lookup order */
+    public readonly array $mibDirectories;
     /** @var list<string> */
     public readonly array $notificationMethods;
     public readonly array $notificationParams;
@@ -66,12 +67,13 @@ final class Config
         $this->logFile        = (isset($c['filename']) && is_string($c['filename']) && $c['filename'] !== '') ? $c['filename'] : false;
         $this->writeRawFile   = (bool) ($c['write_raw_file'] ?? false);
         $this->writeDebugFile = (bool) ($c['write_debug_file'] ?? false);
-        $mibDir = $c['mib_directory'] ?? null;
-        if (!is_string($mibDir) || $mibDir === '') {
+        // one directory (string) or several (array)
+        $mibDirs = array_filter((array) ($c['mib_directory'] ?? []), static fn ($d): bool => is_string($d) && $d !== '');
+        if ($mibDirs === []) {
             // net-snmp default locations (FreeBSD ports / Linux packages)
-            $mibDir = is_dir('/usr/local/share/snmp/mibs') ? '/usr/local/share/snmp/mibs' : '/usr/share/snmp/mibs';
+            $mibDirs = [is_dir('/usr/local/share/snmp/mibs') ? '/usr/local/share/snmp/mibs' : '/usr/share/snmp/mibs'];
         }
-        $this->mibDirectory   = rtrim($mibDir, '/') . '/';
+        $this->mibDirectories = array_values(array_unique(array_map(static fn (string $d): string => rtrim($d, '/') . '/', $mibDirs)));
 
         $methods = $c['notification_methods'] ?? [];
         $this->notificationMethods = is_array($methods) ? array_values(array_map('strval', $methods)) : [];

@@ -6,49 +6,64 @@ namespace Snmptraps;
 
 /**
  * Reads notification definitions (NOTIFICATION-TYPE / TRAP-TYPE) from MIB files.
- * Only plain file names inside the configured MIB directory are accepted.
+ * Only plain file names inside the configured MIB directories are accepted; if a name
+ * exists in several directories, the first directory wins.
  */
 final class Mib
 {
-    private const EXTENSIONS = ['my', 'txt', 'mib'];
+    /** '' = no extension, as used by the downloaded IETF / IANA MIBs */
+    private const EXTENSIONS = ['my', 'txt', 'mib', ''];
     private const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
-    public function __construct(private readonly string $directory)
+    /** @param list<string> $directories with trailing slash */
+    public function __construct(private readonly array $directories)
     {
     }
 
-    public function directory(): string
+    /** @return list<string> */
+    public function directories(): array
     {
-        return $this->directory;
+        return $this->directories;
     }
 
     /** @return list<array{file:string,size:int}> */
     public function files(): array
     {
-        if (!is_dir($this->directory)) {
-            return [];
-        }
         $out = [];
-        foreach (scandir($this->directory) ?: [] as $f) {
-            $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
-            if ($f[0] !== '.' && in_array($ext, self::EXTENSIONS, true) && is_file($this->directory . $f)) {
-                $out[] = ['file' => $f, 'size' => (int) filesize($this->directory . $f)];
+        foreach ($this->directories as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            foreach (scandir($dir) ?: [] as $f) {
+                if (!isset($out[$f]) && self::isMibName($f) && is_file($dir . $f)) {
+                    $out[$f] = ['file' => $f, 'size' => (int) filesize($dir . $f)];
+                }
             }
         }
-        return $out;
+        ksort($out, SORT_STRING);
+        return array_values($out);
     }
 
     /**
-     * Resolve a user-supplied file name to a path inside the MIB directory.
+     * Resolve a user-supplied file name to a path inside the MIB directories.
      */
     public function path(string $file): ?string
     {
         $file = basename($file);
-        if ($file === '' || $file[0] === '.' || !in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), self::EXTENSIONS, true)) {
+        if (!self::isMibName($file)) {
             return null;
         }
-        $path = $this->directory . $file;
-        return is_file($path) ? $path : null;
+        foreach ($this->directories as $dir) {
+            if (is_file($dir . $file)) {
+                return $dir . $file;
+            }
+        }
+        return null;
+    }
+
+    private static function isMibName(string $file): bool
+    {
+        return $file !== '' && $file[0] !== '.' && in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), self::EXTENSIONS, true);
     }
 
     public function read(string $file): ?string
@@ -120,25 +135,23 @@ final class Mib
     private function fileForModule(string $module): ?string
     {
         foreach (self::EXTENSIONS as $ext) {
-            if ($this->path("$module.$ext") !== null) {
-                return "$module.$ext";
+            $file = $ext === '' ? $module : "$module.$ext";
+            if ($this->path($file) !== null) {
+                return $file;
             }
         }
         return $this->moduleIndex()[$module] ?? null;
     }
 
     /**
-     * module => file index, cached in the system temp dir and rebuilt when the MIB dir changes.
+     * module => file index, cached in the system temp dir and rebuilt when a MIB dir changes.
      *
      * @return array<string,string>
      */
     private function moduleIndex(): array
     {
-        if (!is_dir($this->directory)) {
-            return [];
-        }
-        $cache = sys_get_temp_dir() . '/snmptraps-mib-index-' . md5($this->directory) . '.json';
-        $mtime = (int) filemtime($this->directory);
+        $cache = sys_get_temp_dir() . '/snmptraps-mib-index-' . md5(implode(':', $this->directories)) . '.json';
+        $mtime = implode(':', array_map(static fn (string $d): int => is_dir($d) ? (int) filemtime($d) : 0, $this->directories));
         if (is_file($cache)) {
             $data = json_decode((string) file_get_contents($cache), true);
             if (is_array($data) && ($data['mtime'] ?? null) === $mtime && is_array($data['index'] ?? null)) {
@@ -147,7 +160,7 @@ final class Mib
         }
         $index = [];
         foreach ($this->files() as $f) {
-            $fh = @fopen($this->directory . $f['file'], 'rb');
+            $fh = @fopen((string) $this->path($f['file']), 'rb');
             if ($fh === false) {
                 continue;
             }

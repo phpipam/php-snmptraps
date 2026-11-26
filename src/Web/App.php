@@ -71,7 +71,7 @@ final class App
 
     public function mib(): Mib
     {
-        return new Mib($this->config->mibDirectory);
+        return new Mib($this->config->mibDirectories);
     }
 
     public function run(): void

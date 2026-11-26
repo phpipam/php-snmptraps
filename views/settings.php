@@ -85,7 +85,7 @@ $listValue = static function (mixed $v): string {
         'Web base path'         => $config->base,
         'Notification URL'      => $config->url !== '' ? $config->url : '(not set - links in notifications disabled)',
         'Notification methods'  => $nm === [] ? 'none' : implode(', ', $nm),
-        'MIB directory'         => $config->mibDirectory,
+        'MIB directories'       => implode(', ', $config->mibDirectories),
         'Log file'              => $config->logFile !== false ? $config->logFile : '(disabled)',
         'Debug / raw trap log'  => ($config->writeDebugFile ? 'on' : 'off') . ' / ' . ($config->writeRawFile ? 'on' : 'off'),
         'PHP debugging'         => $config->debugging ? 'on' : 'off',
@@ -106,7 +106,7 @@ $listValue = static function (mixed $v): string {
 <?php elseif ($page === 'mibs'):
     /** @var Snmptraps\Mib $mib */
     /** @var list<array{file:string,size:int}> $files */ ?>
-        <div class="card-body py-2 text-secondary small">Directory <code><?= e($mib->directory()) ?></code> &middot; <?= count($files) ?> files</div>
+        <div class="card-body py-2 text-secondary small">Directories <code><?= e(implode(', ', $mib->directories())) ?></code> &middot; <?= count($files) ?> files</div>
         <div class="table-responsive">
         <table class="table table-vcenter card-table table-hover table-sm table-settings">
             <thead><tr><th>File</th><th style="width:120px">Size</th><th style="width:60px"></th></tr></thead>
