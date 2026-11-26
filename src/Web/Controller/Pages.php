@@ -21,36 +21,6 @@ final class Pages
     {
     }
 
-    public function login(): void
-    {
-        $auth = $this->app->auth;
-        $error = null;
-
-        if ($this->app->isPost()) {
-            $error = $auth->login($this->app->input('trapusername'), (string) ($_POST['trappassword'] ?? ''));
-            if ($error === null) {
-                $to = (string) ($_SESSION['return_to'] ?? '');
-                unset($_SESSION['return_to']);
-                // only allow local paths below the application base
-                $this->app->redirect(str_starts_with($to, $this->app->config->base) && !str_contains($to, '//') ? $to : '');
-            }
-        } elseif ($auth->isAuthenticated()) {
-            $this->app->redirect('');
-        }
-
-        echo $this->app->view->render('login', [
-            'error'    => $error,
-            'username' => $this->app->input('trapusername'),
-            'notice'   => isset($_GET['loggedout']) ? 'You have logged out' : null,
-        ]);
-    }
-
-    public function logout(): void
-    {
-        $this->app->auth->logout();
-        $this->app->redirect('login/?loggedout=1');
-    }
-
     public function dashboard(): string
     {
         $widgets = [];

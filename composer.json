@@ -1,0 +1,112 @@
+{
+    "name": "phpipam/php-snmptraps",
+    "description": "snmptrapd trap handler and web UI: stores SNMP traps in MariaDB/MySQL and sends notifications",
+    "type": "project",
+    "homepage": "https://github.com/phpipam/php-snmptraps",
+    "require": {
+        "php": ">=8.3",
+        "ext-ctype": "*",
+        "ext-filter": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "chillerlan/php-qrcode": "^6.0",
+        "lbuchs/webauthn": "^2.2",
+        "phpmailer/phpmailer": "^6.12",
+        "spomky-labs/otphp": "^11.4",
+        "npm-asset/jquery": "3.7.1",
+        "npm-asset/popperjs-core": "2.11.8",
+        "npm-asset/tabler-core": "1.7.5",
+        "npm-asset/tabler-icons-webfont": "3.52.0",
+        "npm-asset/imask": "7.6.1",
+        "npm-asset/tippy.js": "6.3.7",
+        "npm-asset/vanilla-calendar-pro": "3.4.0"
+    },
+    "suggest": {
+        "ext-ldap": "Active Directory login (users with auth method \"ad\")"
+    },
+    "autoload": {
+        "psr-4": {
+            "Snmptraps\\": "src/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.0"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "post-install-cmd": "@php bin/assets.php",
+        "post-update-cmd": "@php bin/assets.php",
+        "assets": "@php bin/assets.php"
+    },
+    "extra": {
+        "assets": {
+            "npm-asset/jquery":                 { "dist/jquery.min.js": "public/js/jquery.min.js" },
+            "npm-asset/popperjs-core":          { "dist/umd/popper.min.js": "public/js/popper.min.js" },
+            "npm-asset/tippy.js":               { "dist/tippy-bundle.umd.min.js": "public/js/tippy-bundle.umd.min.js" },
+            "npm-asset/tabler-core": {
+                "dist/css/tabler.min.css":        "public/css/tabler/tabler.min.css",
+                "dist/css/tabler-themes.min.css": "public/css/tabler/tabler-themes.min.css",
+                "dist/js/tabler.min.js":          "public/js/tabler.min.js"
+            },
+            "npm-asset/tabler-icons-webfont":   { "dist/tabler-icons.min.css": "public/css/tabler/tabler-icons.css" },
+            "npm-asset/imask":                  { "dist/imask.min.js": "public/js/vendor/imask.min.js" },
+            "npm-asset/vanilla-calendar-pro":   { "index.js": "public/js/vendor/vanilla-calendar-pro.js" }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/jquery", "version": "3.7.1", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/jquery/-/jquery-3.7.1.tgz", "shasum": "083ef98927c9a6a74d05a6af02806566d16274de" }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/popperjs-core", "version": "2.11.8", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/@popperjs/core/-/core-2.11.8.tgz", "shasum": "6b79032e760a0899cd4204710beede972a3a185f" }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/tippy.js", "version": "6.3.7", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/tippy.js/-/tippy.js-6.3.7.tgz", "shasum": "8ccfb651d642010ed9a32ff29b0e9e19c5b8c61c" }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/tabler-core", "version": "1.7.5", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/@tabler/core/-/core-1.7.5.tgz", "shasum": "1f9aea2f37d8048ac6df9217be6ce6c80b2f3081" }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/tabler-icons-webfont", "version": "3.52.0", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/@tabler/icons-webfont/-/icons-webfont-3.52.0.tgz", "shasum": "29a3484cbc7ef9347fc68b9f30a883be120538e7" }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/imask", "version": "7.6.1", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/imask/-/imask-7.6.1.tgz", "shasum": "04fa4693bf47a4a71bbf7325408e0d058a74dcad" }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/vanilla-calendar-pro", "version": "3.4.0", "type": "library",
+                "dist": { "type": "tar", "url": "https://registry.npmjs.org/vanilla-calendar-pro/-/vanilla-calendar-pro-3.4.0.tgz", "shasum": "22f25f2a203498faacaf4ce5b3c4e15e8d8ac463" }
+            }
+        }
+    ]
+}

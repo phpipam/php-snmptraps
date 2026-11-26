@@ -31,8 +31,22 @@ final class Ajax
             'item'         => $post ? (new Settings($this->app))->itemSubmit() : (new Settings($this->app))->itemForm(),
             'profile'      => $post ? (new Settings($this->app))->profileSubmit() : (new Settings($this->app))->profileForm(),
             'mib'          => $post ? $this->mibSubmit() : $this->mibForm(),
+            // two-factor authentication / passkeys (Security controller)
+            'totp'            => $post ? $this->security()->totpSubmit() : $this->security()->totpForm(),
+            'totp-disable'    => $post ? $this->security()->totpDisableSubmit() : $this->security()->totpDisableForm(),
+            'passkey-add'     => $this->security()->passkeyAddForm(),
+            'passkey-options' => $this->security()->passkeyOptions(),
+            'passkey-register' => $post ? $this->security()->passkeyRegister() : throw new HttpException(405, 'POST only'),
+            'passkey-delete'  => $post ? $this->security()->passkeyDeleteSubmit() : $this->security()->passkeyDeleteForm(),
+            'passwordless'    => $post ? $this->security()->passwordlessSubmit() : $this->security()->passwordlessForm(),
+            'user-security'   => $post ? $this->security()->adminSubmit() : $this->security()->adminForm(),
             default        => throw new HttpException(404, 'Unknown action'),
         };
+    }
+
+    private function security(): Security
+    {
+        return new Security($this->app);
     }
 
     /** New rows for the live view since ?id= */

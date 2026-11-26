@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-php-snmptraps: `snmptrapd` traphandle script that parses SNMP traps, stores them in MariaDB and sends notifications, plus a web UI to browse traps and manage severities / ignore rules / maintenance / users. Rewritten in v1.0.0 (namespaced classes, front controller, `public/` docroot). No framework, no Composer, no build step.
+php-snmptraps: `snmptrapd` traphandle script that parses SNMP traps, stores them in MariaDB and sends notifications, plus a web UI to browse traps and manage severities / ignore rules / maintenance / users. Rewritten in v1.0.0 (namespaced classes, front controller, `public/` docroot). No framework, no build step. Since 1.1.0 dependencies are managed with Composer (`composer.json`, see below), but `vendor/` and `public/` assets are committed - the server has no composer and never runs it.
 
 ## Deployment (production)
 
@@ -12,7 +12,7 @@ php-snmptraps: `snmptrapd` traphandle script that parses SNMP traps, stores them
 - The local dir is synced to `/usr/local/www/snmptraps` (Sublime SFTP config in the parent dir: `../sftp-config.json`, remote_path `/usr/local/www/`). There is **no local git** - the git repo (origin `phpipam/php-snmptraps`, branch `master`) lives on the server in `/usr/local/www/snmptraps`; commit there after uploading (`.git` is not web-reachable). Pushing to GitHub is done by the user - don't push unless asked.
 - Upload, verify, commit:
   ```bash
-  COPYFILE_DISABLE=1 tar czf - --no-mac-metadata --exclude config.php --exclude .DS_Store src views public bin vendor db docs *.md config.dist.php \
+  COPYFILE_DISABLE=1 tar czf - --no-mac-metadata --exclude config.php --exclude .DS_Store --exclude vendor/npm-asset src views public bin vendor db docs *.md config.dist.php composer.json composer.lock .gitignore \
     | ssh root@10.12.50.51 'tar xzf - -C /usr/local/www/snmptraps 2>/dev/null; chmod 755 /usr/local/www/snmptraps/bin/*.php'
   # verify: md5 of local vs server files must match (macOS tar prints harmless xattr warnings, exit code is not reliable)
   # commit on the server: check `git status` first and add explicit paths - `git add -A` also picks up untracked files
@@ -25,8 +25,10 @@ php-snmptraps: `snmptrapd` traphandle script that parses SNMP traps, stores them
 - Backups on the server in `/root/snmptraps-backup-20261124/`: pre-1.0 code (incl. old `.git`), nginx/snmptrapd configs, small-table DB dump, and code / `config.php` copies taken before later deploys (`pre-101-*`, `pre-103/`, `config.php.before-*`).
 - Receiver errors go to `$filename` (`/tmp/traps.txt`, owned by snmpd).
 - Cron on the server purges old traps directly via SQL (table `traps` only).
-- `config.php` is not versioned/uploaded; its legacy global-variable format is read by `src/Config.php` (repairs `$url` "http:/" typo, auto-detects the MIB dir `/usr/local/share/snmp/mibs/`). Options added in 1.0.x (missing = default): `$notification_dedup_minutes` (15), `$repeat_window_minutes` (10) - both in `config.dist.php` - and `$screenshot_mode` (false; only in the server's `config.php`, intentionally not in `config.dist.php`). New options go into `config.dist.php` and the server's `config.php` (back it up first). php-fpm opcache revalidates every 2 s, so config edits apply without a restart.
+- `config.php` is not versioned/uploaded; its legacy global-variable format is read by `src/Config.php` (repairs `$url` "http:/" typo, auto-detects the MIB dir `/usr/local/share/snmp/mibs/`). Options added in 1.0.x/1.1.x (missing = default): `$notification_dedup_minutes` (15), `$repeat_window_minutes` (10), `$require_2fa` (false), `$passkey_rp_id` (unset = request host) - all in `config.dist.php` - and `$screenshot_mode` (false; only in the server's `config.php`, intentionally not in `config.dist.php`). New options go into `config.dist.php` and the server's `config.php` (back it up first). php-fpm opcache revalidates every 2 s, so config edits apply without a restart.
 - nginx also denies `^~ /db_bkp/` and `^~ /ranip/bkp/` (database dumps of other apps were downloadable).
+- The UI is plain HTTP on the IP address (no TLS, no host name in nginx): TOTP works, **passkeys do not** (WebAuthn needs HTTPS + a host name; the UI shows why and hides the passkey buttons). Enabling them needs a TLS server block + DNS name (and possibly `$passkey_rp_id`).
+- Running `php` on the server prints net-snmp MIB warnings (snmp extension) and is slow per invocation - avoid per-file loops (`php -l` of all files takes minutes).
 
 ## Commands
 
@@ -42,7 +44,15 @@ printf 'host\nUDP: [10.0.0.1]:1->[10.0.0.2]:162\nX::up 1\nSNMPv2-MIB::snmpTrapOI
 php bin/migrate.php --check             # DB migration status, exit 1 if pending (--yes apply, --install fresh DB)
 php bin/test-mail.php <email> [trap-id] # send the notification e-mail of a stored trap (--html [id] = print only)
 php bin/rebuild-repeats.php             # recompute fingerprint / repeats / superseded of all traps (~20 s)
+php bin/reset-2fa.php <user> [--passkeys] [--password]   # lock-out recovery: remove TOTP, passwordless off
+
+# dependencies (locally, never on the server): PHP libs from Packagist, front-end packages as npm tarballs
+composer install / composer update      # then bin/assets.php copies extra.assets of composer.json into public/
 ```
+
+Composer: platform pinned to PHP 8.3 (`config.platform`). `vendor/` is committed except `vendor/npm-asset/` (gitignored, excluded from the upload) - the front-end files live in `public/`. Front-end packages are `package` repositories in `composer.json` (npm tarball URL + sha1 `shasum`); to upgrade change version / url / shasum together. `bin/assets.php` also copies the woff2 fonts the Tabler Icons CSS references.
+
+Testing without MySQL (used for 1.1.0, production DB untouched): a copy of the app with a test `config.php` and a drop-in `Snmptraps\Database` (same code, `pdo()` returns `Pdo\Sqlite` + `NOW()` function) declared by a `php -S localhost` router before the autoloader runs; `Schema::detect()` fails on SQLite and reports everything as applied. The trap receiver's SQL is MySQL-only. WebAuthn can be tested on `http://localhost` with a PHP software authenticator (CBOR "none" attestation, ES256 via openssl) driving the JSON endpoints, and in headless Chrome by injecting a `navigator.credentials` mock that calls that authenticator.
 
 Testing the web UI without a browser login: run the app locally with PHP's built-in server against the production DB through an SSH tunnel (`ssh -f -N -L 13306:127.0.0.1:3306 root@10.12.50.51`, a local copy of `config.php` with `$db['port'] = 13306` and notifications disabled, a router script that sets a fixed session cookie for an existing session file), then use headless Chrome (`--screenshot`, `--dump-dom`) for screenshots and JS checks. For quick checks on the server itself, create a temporary session file in `/tmp/sess_<id>` (`trapusername|s:5:"Admin";csrf_token|s:64:"...";`, owner `www`), curl with that cookie, and delete it afterwards. Any test trap / maintenance entry written to the production DB must use an obvious test hostname and be deleted afterwards.
 
@@ -50,12 +60,17 @@ There is no test suite in the repo. When changing the parser, compare old vs new
 
 ## Architecture
 
-- `src/bootstrap.php` - constants (`APP_ROOT`, `APP_VERSION`, `APP_MIN_PHP`), PSR-4-ish autoloader (`Snmptraps\` -> `src/`, `PHPMailer\PHPMailer\` -> `vendor/PHPMailer/src/`), loads `Config`. Shared by both entry points.
+- `src/bootstrap.php` - constants (`APP_ROOT`, `APP_VERSION`, `APP_MIN_PHP`), Composer autoloader `vendor/autoload.php` (`Snmptraps\` -> `src/` PSR-4, libraries), loads `Config`. Shared by both entry points.
 - **Receiver**: `bin/traphandler.php` -> `Trap\TrapProcessor`: `Trap\TrapParser` (stdin lines -> `Trap\Trap`), exception check, repeat check (`Trap\Repeats`), insert into `traps`, `Notify\Notifier` (skipped for repeats within `$notification_dedup_minutes`).
 - **Web**: `public/index.php` -> `Web\App::run()`: parses the path below `Config::$base`, starts the session, enforces CSRF on every POST (field `csrf_token` or header `X-CSRF-Token`), requires login, dispatches to `Web\Controller\Pages` (full pages), `Ajax` (`/ajax/{action}/` HTML fragments for modals and the live view) or `Settings` (admin). Controllers return HTML; `App::layout()` wraps pages in `views/layout.php`.
 - `Web\View` renders `views/*.php` templates; `Web\TrapPresenter` renders trap rows/cells. All output is escaped with `e()` / `e_nl()` (`src/helpers.php`). `HttpException` messages are rendered as HTML - only pass static strings.
+- **Sign-in** (`Web\Controller\Login`, no auth required): `login/` password -> `Auth::checkPassword()`; then, with migration 1.1.0, passwordless users are refused, users with TOTP (or all users when `$require_2fa`) get a pending `$_SESSION['mfa']` (`Auth::beginSecondFactor()`, 10 min, 5 wrong codes) and `login/2fa/` asks for the code or runs the setup (QR). `login/passkey/` = WebAuthn JSON (GET options, POST assertion). `Auth::completeLogin()` regenerates the session and stores `login_method` (password / password+totp / passkey). `App::run()` calls `Auth::enforceTwoFactor()` on every request: with `$require_2fa` a password session of a user without TOTP is turned back into a pending setup (passkey sessions / passwordless users exempt).
+- `Totp` (spomky-labs/otphp + chillerlan/php-qrcode SVG): SHA-1 / 6 digits / 30 s, window +-1 step, each step accepted once (`users.totp_last_step`, conditional UPDATE in `Auth::verifyTotp()`).
+- `Passkeys` (lbuchs/webauthn): discoverable credentials, user verification required (= complete 2FA), attestation `none` requested but all formats accepted, random `users.webauthn_handle`, challenge single-use in `$_SESSION['webauthn']`, sign counter checked. rp id = `$passkey_rp_id` or request host; unavailable on IP hosts / plain HTTP (`unavailableReason()`). Deleting the last passkey turns `passwordless` off; turning it on requires a passkey that was used to sign in (lock-out protection).
+- `Web\Controller\Security` - `security/` page (own TOTP, passkeys, passwordless) and its `ajax/` modals/JSON, plus admin actions `ajax/user-security/` (user details page). `public/js/passkey.js` (plain JS, also on the login page) does the WebAuthn browser calls with base64url conversion; `app.js` calls `window.passkeyInit()` for modal content.
 - `TrapRepository` - all trap reads/writes. It is constructed with the user's permitted hosts (`Auth::permittedHosts()`, `null` = all) and applies that restriction to every query - always go through `$app->traps()`.
 - `Auth` - session, login (`local` = `password_verify`, legacy crypt hashes auto-rehashed; `ad` = `Ldap` bind), roles `user` < `operator` (define/ignore/delete traps) < `administrator` (settings, users).
+- Sign-in must not reveal whether a username exists: wrong password and unknown user give the same message; "passkey only" is shown only after a correct password.
 - `Settings::tables()` - explicit field definitions drive the generic add/edit/delete modal and validation for `severity_definitions`, `exceptions`, `maintenance`, `users`.
 - Notification e-mail (`MailChannel::html()`): the card always uses the UI colours as hex; the page background is transparent, `#111827` only in dark mode (`prefers-color-scheme` + Outlook.com `[data-ogsb]`). Colours are hex (`MailChannel::UI`, `Severity::HEX` - e-mail clients don't support oklch). Preview / test: `php bin/test-mail.php --html [trap-id]` or `php bin/test-mail.php <email> [trap-id]`.
 - `Notify\*` - `Channel` implementations (`mail` PHPMailer, `sms` HTTP GET gateway, `pushover`, `slack`) registered in `Notifier::CHANNELS`; HTTP via `HttpClient` (PHP streams - the server has **no curl extension**).
@@ -81,7 +96,7 @@ MariaDB in STRICT mode - truncate to column length before insert (see `TrapProce
 
 ## UI
 
-Tabler 1.7.5 (dark, Bootstrap 5 bundled in `public/js/tabler.min.js` and exposed as `tabler.bootstrap`, not `window.bootstrap`) + Tabler Icons 3.52 webfont (split per-category font files in `public/css/tabler/fonts/`) + jQuery 3.7 + tippy.js/Popper, all vendored in `public/` (no CDN), styled to match the sibling project `pw.ugbb.net/nalarms-dev.ugbb.net`. To upgrade, copy `dist/css/tabler.min.css`, `dist/js/tabler.min.js` (@tabler/core) and `dist/tabler-icons.min.css` + the woff2 files it references (@tabler/icons-webfont) over the vendored files. Asset URLs carry `App::assetVersion()` (file mtimes), so replaced files bypass the 7-day nginx cache.
+Tabler 1.7.5 (dark, Bootstrap 5 bundled in `public/js/tabler.min.js` and exposed as `tabler.bootstrap`, not `window.bootstrap`) + Tabler Icons 3.52 webfont (split per-category font files in `public/css/tabler/fonts/`) + jQuery 3.7 (`public/js/jquery.min.js`) + tippy.js/Popper, all copied into `public/` by `bin/assets.php` from the Composer npm-asset packages (no CDN), styled to match the sibling project `pw.ugbb.net/nalarms-dev.ugbb.net`. To upgrade, bump the package in `composer.json` and run `composer update`. Asset URLs carry `App::assetVersion()` (file mtimes), so replaced files bypass the 7-day nginx cache.
 
 - Theme: `View::theme()` puts the colour mode + `View::THEME` (primary `azure`, base `gray`) on `<html>` of `layout.php`, `login.php`, `bare.php`; needs `public/css/tabler/tabler-themes.min.css`. Dark by default; the navbar sun/moon icon (`.toggle-theme` in app.js) switches `data-bs-theme` live and sets cookie `theme=light` (365 days, removed for dark), read server-side so pages render without a flash. Use theme variables (`var(--tblr-...)`) in `app.css`, not hard-coded colours.
 - `views/layout.php`: navbar, reload timer (`users.reload_page`, paused via cookie `stop-refresh`), single `#modal1`.

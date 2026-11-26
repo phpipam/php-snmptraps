@@ -29,8 +29,7 @@ final class Auth
         if (session_status() === PHP_SESSION_ACTIVE) {
             return;
         }
-        $https = (($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off')
-            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+        $https = self::isHttps();
 
         ini_set('session.use_strict_mode', '1');
         ini_set('session.use_only_cookies', '1');
@@ -50,6 +49,12 @@ final class Auth
                 $this->logout();
             }
         }
+    }
+
+    public static function isHttps(): bool
+    {
+        return (($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
     }
 
     public function isAuthenticated(): bool
@@ -103,15 +108,17 @@ final class Auth
     }
 
     /**
-     * @return string|null error message, null on success
+     * First login step: username + password (local hash or AD bind). Does not log in.
+     *
+     * @return array{0: array<string,mixed>|null, 1: string|null} [user row, error message]
      */
-    public function login(string $username, string $password): ?string
+    public function checkPassword(string $username, string $password): array
     {
         $generic = 'Invalid username or password';
         $user = $this->loadUser($username);
         if ($user === null || $password === '') {
             usleep(random_int(300_000, 800_000));
-            return $generic;
+            return [null, $generic];
         }
 
         try {
@@ -121,18 +128,142 @@ final class Auth
                 default => false,
             };
         } catch (RuntimeException $e) {
-            return 'Authentication error: ' . $e->getMessage();
+            return [null, 'Authentication error: ' . $e->getMessage()];
         }
         if (!$ok) {
             usleep(random_int(300_000, 800_000));
-            return $generic;
+            return [null, $generic];
         }
+        return [$user, null];
+    }
 
+    /**
+     * Logs the user in (new session id).
+     *
+     * @param string $method password | password+totp | passkey (kept in the session)
+     * @return string the page that was requested before the login ("" = none)
+     */
+    public function completeLogin(array $user, string $method): string
+    {
+        $returnTo = (string) ($_SESSION['return_to'] ?? '');
         session_regenerate_id(true);
-        $_SESSION = ['trapusername' => $user['username']];
+        $_SESSION = ['trapusername' => $user['username'], 'login_method' => $method];
         $this->user = $user;
         $this->db->run('UPDATE `users` SET `last_login` = NOW() WHERE `id` = ?', [(int) $user['id']]);
-        return null;
+        return $returnTo;
+    }
+
+    // ---- second factor (TOTP) between the password step and the login
+
+    /** pending second factor expires after (s) / allowed wrong codes */
+    public const MFA_TTL = 600;
+    public const MFA_TRIES = 5;
+
+    /**
+     * Password accepted, a TOTP code is needed next ($setup: the user has none yet and must
+     * set it up first, $require_2fa). The user is not logged in until the code is verified.
+     */
+    public function beginSecondFactor(array $user, bool $setup): void
+    {
+        $returnTo = $_SESSION['return_to'] ?? null;
+        session_regenerate_id(true);
+        $_SESSION = ['mfa' => ['user' => (string) $user['username'], 'setup' => $setup, 'since' => time(), 'tries' => 0, 'secret' => null]];
+        if (is_string($returnTo)) {
+            $_SESSION['return_to'] = $returnTo;
+        }
+        $this->user = null;
+    }
+
+    /**
+     * The pending second factor step, null when there is none or it expired.
+     *
+     * @return array{user: array<string,mixed>, setup: bool, secret: ?string}|null
+     */
+    public function secondFactor(): ?array
+    {
+        $m = $_SESSION['mfa'] ?? null;
+        if (!is_array($m)) {
+            return null;
+        }
+        $user = (int) ($m['since'] ?? 0) >= time() - self::MFA_TTL ? $this->loadUser((string) ($m['user'] ?? '')) : null;
+        if ($user === null) {
+            $this->clearSecondFactor();
+            return null;
+        }
+        return ['user' => $user, 'setup' => (bool) $m['setup'], 'secret' => $m['secret'] ?? null];
+    }
+
+    /** secret shown during the setup at login (kept until the first valid code) */
+    public function setSecondFactorSecret(string $secret): void
+    {
+        $_SESSION['mfa']['secret'] = $secret;
+    }
+
+    /** counts a wrong code; true = too many, the login is aborted */
+    public function secondFactorFailed(): bool
+    {
+        $tries = (int) ($_SESSION['mfa']['tries'] ?? 0) + 1;
+        $_SESSION['mfa']['tries'] = $tries;
+        usleep(random_int(300_000, 800_000));
+        if ($tries >= self::MFA_TRIES) {
+            $this->clearSecondFactor();
+            return true;
+        }
+        return false;
+    }
+
+    public function clearSecondFactor(): void
+    {
+        unset($_SESSION['mfa']);
+    }
+
+    /**
+     * $require_2fa: a user signed in with a password only (session from before 2FA was required,
+     * or the administrator reset the user's 2FA) is sent to the setup. Passkey sessions and
+     * passwordless users are exempt.
+     *
+     * @param bool $ready migration 1.1.0 applied
+     */
+    public function enforceTwoFactor(bool $ready): void
+    {
+        if ($this->user === null || !$ready || !$this->config->require2fa || self::hasTotp($this->user)
+            || !empty($this->user['passwordless']) || ($_SESSION['login_method'] ?? '') === 'passkey') {
+            return;
+        }
+        $this->beginSecondFactor($this->user, true);
+    }
+
+    /** store / remove (null) the TOTP secret of a user */
+    public function setTotp(int $userId, ?string $secret, ?int $step = null): void
+    {
+        $this->db->run('UPDATE `users` SET `totp_secret` = ?, `totp_last_step` = ? WHERE `id` = ?', [$secret, $secret === null ? null : $step, $userId]);
+        if ($this->user !== null && (int) $this->user['id'] === $userId) {
+            $this->user['totp_secret'] = $secret;
+            $this->user['totp_last_step'] = $step;
+        }
+    }
+
+    /**
+     * Verifies a TOTP code of a user and marks its time step as used.
+     */
+    public function verifyTotp(array $user, string $code): bool
+    {
+        $secret = (string) ($user['totp_secret'] ?? '');
+        $last = isset($user['totp_last_step']) ? (int) $user['totp_last_step'] : null;
+        $step = Totp::verify($secret, $code, $last);
+        if ($step === null) {
+            return false;
+        }
+        // conditional update: the same code cannot be used twice in parallel requests
+        return $this->db->run(
+            'UPDATE `users` SET `totp_last_step` = ? WHERE `id` = ? AND (`totp_last_step` IS NULL OR `totp_last_step` < ?)',
+            [$step, (int) $user['id'], $step],
+        )->rowCount() === 1;
+    }
+
+    public static function hasTotp(array $user): bool
+    {
+        return trim((string) ($user['totp_secret'] ?? '')) !== '';
     }
 
     private function verifyLocal(array $user, string $password): bool

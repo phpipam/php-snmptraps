@@ -108,7 +108,13 @@ $(function () {
         modalRedirect = $(this).data('redirect') || null;
         var $content = $('#modal1 .modal-content').html(placeholder);
         $.get($(this).attr('href'))
-            .done(function (html) { $content.html(html); initTooltips($content[0]); initInputs($content[0]); })
+            .done(function (html) {
+                $content.html(html);
+                initTooltips($content[0]);
+                initInputs($content[0]);
+                if (window.passkeyInit) { window.passkeyInit($content[0]); }
+                $content.find('[autofocus]').first().trigger('focus');
+            })
             .fail(function (xhr) { $content.html('<div class="modal-body">' + (xhr.responseText || '<div class="alert alert-danger">Request failed</div>') + '</div>'); });
         modal.show();
         return false;
@@ -117,6 +123,12 @@ $(function () {
         modalEl.addEventListener('show.bs.modal', function () { modalOpen = true; });
         modalEl.addEventListener('hidden.bs.modal', function () { modalOpen = false; });
     }
+
+    /* Enter in a modal form = the modal's submit button (not a native GET submit) */
+    $(document).on('submit', '#modal-form', function () {
+        $(this).closest('.modal-content').find('.modal-execute').trigger('click');
+        return false;
+    });
 
     /* submit the #modal-form to data-action; reload on success */
     $(document).on('click', '.modal-execute', function () {

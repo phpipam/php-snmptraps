@@ -9,9 +9,12 @@ use Snmptraps\Config;
 use Snmptraps\Database;
 use Snmptraps\Schema;
 use Snmptraps\Mib;
+use Snmptraps\Passkeys;
 use Snmptraps\TrapRepository;
 use Snmptraps\Web\Controller\Ajax;
+use Snmptraps\Web\Controller\Login;
 use Snmptraps\Web\Controller\Pages;
+use Snmptraps\Web\Controller\Security;
 use Snmptraps\Web\Controller\Settings;
 use Throwable;
 
@@ -28,7 +31,8 @@ use Throwable;
  *   /message/{base64url}/
  *   /settings/[{page}/]     administrators
  *   /settings/users/{id}/   user details
- *   /login/  /logout/
+ *   /security/              own 2FA / passkeys
+ *   /login/[2fa|passkey/]  /logout/
  *   /ajax/{action}/         XHR endpoints (HTML fragments / JSON)
  */
 final class App
@@ -55,6 +59,11 @@ final class App
     public function presenter(): TrapPresenter
     {
         return $this->presenter ??= new TrapPresenter($this->config->stripHostnameDomain, $this->auth->isOperator(), $this->config->repeatWindowMinutes);
+    }
+
+    public function passkeys(): Passkeys
+    {
+        return new Passkeys($this->config, $this->db);
     }
 
     public function traps(): TrapRepository
@@ -91,8 +100,11 @@ final class App
                 throw new HttpException(400, 'Invalid or expired form token, please reload the page and try again.');
             }
 
+            // $require_2fa: password-only sessions are sent to the TOTP setup
+            $this->auth->enforceTwoFactor($this->schema()->has('1.1.0'));
+
             if ($route === 'login' || $route === 'logout') {
-                (new Pages($this))->{$route}();
+                (new Login($this))->handle($route, $this->segments[1] ?? null);
                 return;
             }
 
@@ -146,6 +158,7 @@ final class App
             // legacy links used standard base64, which may contain "/"
             'message'   => $pages->message(implode('/', array_slice($s, 1))),
             'settings'  => (new Settings($this))->page($s[1] ?? 'severity_definitions', $s[2] ?? null),
+            'security'  => (new Security($this))->page(),
             'ajax'      => (new Ajax($this))->handle($s[1] ?? ''),
             default     => throw new HttpException(404, 'Page not found'),
         };
@@ -229,7 +242,7 @@ final class App
         }
         // changes whenever a vendored or app asset is replaced (assets are cached for 7 days)
         $mtime = 0;
-        foreach (['css/app.css', 'js/app.js', 'css/tabler/tabler.min.css', 'js/tabler.min.js'] as $f) {
+        foreach (['css/app.css', 'js/app.js', 'js/passkey.js', 'css/tabler/tabler.min.css', 'js/tabler.min.js', 'js/jquery.min.js'] as $f) {
             $mtime = max($mtime, (int) @filemtime(APP_ROOT . '/public/' . $f));
         }
         return APP_VERSION . '.' . base_convert((string) $mtime, 10, 36);

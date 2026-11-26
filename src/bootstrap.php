@@ -12,7 +12,7 @@ declare(strict_types=1);
 use Snmptraps\Config;
 
 const APP_ROOT = __DIR__ . '/..';
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.1.0';
 const APP_MIN_PHP = '8.3.0';
 
 if (version_compare(PHP_VERSION, APP_MIN_PHP, '<')) {
@@ -25,21 +25,18 @@ if (version_compare(PHP_VERSION, APP_MIN_PHP, '<')) {
     exit(htmlspecialchars($msg));
 }
 
-spl_autoload_register(static function (string $class): void {
-    $prefixes = [
-        'Snmptraps\\'          => __DIR__ . '/',
-        'PHPMailer\\PHPMailer\\' => APP_ROOT . '/vendor/PHPMailer/src/',
-    ];
-    foreach ($prefixes as $prefix => $dir) {
-        if (str_starts_with($class, $prefix)) {
-            $file = $dir . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
-            if (is_file($file)) {
-                require $file;
-            }
-            return;
-        }
+// Composer autoloader: Snmptraps\ (src/) and the libraries in vendor/ (committed, no composer
+// run needed on the server; maintainers update them with composer update, see composer.json)
+if (!is_file(APP_ROOT . '/vendor/autoload.php')) {
+    $msg = 'vendor/autoload.php is missing - run "composer install" in ' . realpath(APP_ROOT);
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, $msg . PHP_EOL);
+        exit(1);
     }
-});
+    http_response_code(500);
+    exit(htmlspecialchars($msg));
+}
+require APP_ROOT . '/vendor/autoload.php';
 
 require __DIR__ . '/helpers.php';
 

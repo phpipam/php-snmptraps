@@ -108,6 +108,25 @@ $ad = array (
 );
 
 
+/**
+ * Two-factor authentication (TOTP codes from an authenticator app)
+ *
+ *  require_2fa:   true = every user who signs in with a password must also enter a TOTP code;
+ *                 users without one are guided through the setup on their next login.
+ *                 false = optional, users enable it in "Security" (user menu).
+ *                 Signing in with a passkey never asks for a code.
+ *  passkey_rp_id: passkeys (WebAuthn) are bound to the host name the UI is reached by and
+ *                 need HTTPS (except on localhost) - they are not available on a bare IP address.
+ *                 Default: the host name of the request. Set it to a parent domain
+ *                 (e.g. "example.com" for snmptraps.example.com) to keep passkeys valid when the
+ *                 host name changes. Changing it later invalidates all registered passkeys.
+ *
+ * Locked out (lost phone / passkey)? On the server: php bin/reset-2fa.php <username>
+ ******************************/
+$require_2fa = false;
+// $passkey_rp_id = "snmptraps.example.com";
+
+
 # --- notifications
 
 /**

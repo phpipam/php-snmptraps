@@ -115,3 +115,25 @@ input:-webkit-autofill:active {
 [data-vc="calendar"] {
     z-index: 1090 !important;
 }
+
+/* two-factor authentication: QR code needs a light background in dark mode too */
+.totp-qr {
+    background: #fff;
+    border-radius: var(--tblr-border-radius);
+    padding: 4px;
+    line-height: 0;
+}
+.totp-qr img {
+    width: 180px;
+    height: 180px;
+}
+.totp-secret {
+    font-size: .95rem;
+    letter-spacing: .05em;
+    word-break: break-all;
+}
+.totp-code {
+    font-family: var(--tblr-font-monospace);
+    letter-spacing: .3em;
+    max-width: 12rem;
+}

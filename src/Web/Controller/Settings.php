@@ -106,9 +106,16 @@ final class Settings
                 throw new HttpException(404, 'Page not found');
             }
             $user = $this->app->db->find('users', (int) $sub) ?? throw new HttpException(404, 'User not found');
-            unset($user['password']);
+            $ready = $this->app->schema()->has('1.1.0');
+            $security = [
+                'ready'    => $ready,
+                'totp'     => $ready && Auth::hasTotp($user),
+                'passkeys' => $ready ? $this->app->passkeys()->forUser((int) $user['id']) : [],
+            ];
+            unset($user['password'], $user['totp_secret']);
             return $this->app->view->render('settings', $vars + [
                 'user'      => $user,
+                'security'  => $security,
                 'methods'   => Notifier::enabledMethods($this->app->config),
                 'dashboard' => Auth::parseDashLayout($user['dash_layout'] ?? null),
             ]);
@@ -142,7 +149,7 @@ final class Settings
         if ($action !== 'add') {
             $row = $this->app->db->find($table, $id) ?? throw new HttpException(404, 'Invalid item');
         }
-        unset($row['password']);
+        unset($row['password'], $row['totp_secret']);
 
         $body = $this->app->view->render('partials/item-form', [
             'table'  => $table,
@@ -169,6 +176,9 @@ final class Settings
         if ($action === 'delete') {
             if ($table === 'users' && $id === $this->app->auth->userId()) {
                 return View::alert('danger', 'You cannot delete yourself');
+            }
+            if ($table === 'users' && $this->app->schema()->has('1.1.0')) {
+                $this->app->passkeys()->deleteAll($id);
             }
             return $db->delete($table, $id) > 0 ? View::alert('success', 'Item removed') : View::alert('danger', 'Item not found');
         }
@@ -212,7 +222,7 @@ final class Settings
         if ($user['auth_method'] !== 'local') {
             unset($fields['password']);
         }
-        unset($user['password']);
+        unset($user['password'], $user['totp_secret']);
         $body = $this->app->view->render('partials/item-form', [
             'table' => 'profile', 'action' => 'edit', 'id' => 0, 'fields' => $fields, 'row' => $user,
         ]);
