@@ -12,8 +12,9 @@ Web UI:
 * Per-OID severity definitions, ignore rules (exceptions), maintenance windows, MIB import
 * Per-user notification methods, severities, permitted hosts and quiet hours
 
-Requirements: PHP 8.3 - 8.5 (extensions: pdo_mysql, mbstring, openssl; ldap for AD login), MySQL/MariaDB, net-snmp.
-The curl extension is **not** required.
+Requirements: PHP 8.3 - 8.5 (extensions: pdo, pdo_mysql, mbstring, ctype, filter, json, openssl, session; ldap for AD login),
+MySQL/MariaDB, net-snmp. The curl extension is **not** required. The web UI and `bin/migrate.php` refuse to run while a
+required extension is missing and list the missing ones.
 
 ![Dashboard](docs/screenshots/dashboard.png?raw=true "Dashboard")
 
