@@ -60,10 +60,14 @@ final class TrapRepository
         return array_values(array_filter(array_map('strval', $hosts), $this->permitted(...)));
     }
 
-    /** @return list<array<string,mixed>> */
+    /**
+     * Every trap with this message, repeats included (not collapsed).
+     *
+     * @return list<array<string,mixed>>
+     */
     public function byMessage(string $message, int $limit = 200): array
     {
-        [$where, $params] = $this->where([]);
+        [$where, $params] = $this->where(['repeats' => true]);
         $where = ($where === '' ? 'WHERE ' : $where . ' AND ') . '`message` = ?';
         $params[] = $message;
         $limit = max(1, min(5000, $limit));

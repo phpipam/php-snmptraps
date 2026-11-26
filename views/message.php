@@ -67,7 +67,9 @@ arsort($hosts);
 <div class="col-12">
 <div class="card">
     <div class="card-header"><h3 class="card-title">Traps</h3></div>
-    <?= $app->view->render('partials/trap-table', ['traps' => $traps, 'columns' => TrapPresenter::LIST, 'empty' => 'No traps with this message.']) ?>
+    <?php // every trap has its own row, so no repeat badge
+    $rows = array_map(static fn ($t) => ['repeats' => 0] + $t, $traps); ?>
+    <?= $app->view->render('partials/trap-table', ['traps' => $rows, 'columns' => TrapPresenter::LIST, 'empty' => 'No traps with this message.']) ?>
 </div>
 </div>
 </div>

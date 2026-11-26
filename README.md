@@ -47,7 +47,7 @@ config.php     configuration (copy of config.dist.php, not in git)
 
 ## Screenshots
 
-**All traps** - one line per trap, paginated, with a quick filter. Repeated traps are listed once (latest).
+**All traps** - one line per trap, paginated, with a quick filter. Repeated traps are listed once (latest); the message page (click a message) lists each of them individually.
 
 ![All traps](docs/screenshots/traps.png?raw=true "All traps")
 
