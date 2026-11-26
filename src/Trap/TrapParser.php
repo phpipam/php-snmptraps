@@ -10,7 +10,7 @@ use Snmptraps\Severity;
  * Parses the text snmptrapd passes to a traphandle program on STDIN:
  *
  *   line 0  hostname
- *   line 1  transport, e.g. "UDP: [10.0.0.1]:51978->[10.12.50.51]:162"
+ *   line 1  transport, e.g. "UDP: [10.0.0.1]:51978->[10.0.0.2]:162"
  *   line 2  "DISMAN-EVENT-MIB::sysUpTimeInstance 264:6:57:25.11"
  *   line 3  "SNMPv2-MIB::snmpTrapOID.0 IF-MIB::linkDown"
  *   line 4+ variable bindings "NAME VALUE"
@@ -94,7 +94,7 @@ final class TrapParser
     }
 
     /**
-     * "UDP: [10.0.0.1]:51978->[10.12.50.51]:162" or "UDP/IPv6: [2001:db8::1]:..." -> source address
+     * "UDP: [10.0.0.1]:51978->[10.0.0.2]:162" or "UDP/IPv6: [2001:db8::1]:..." -> source address
      */
     private function parseIp(string $line): string
     {
