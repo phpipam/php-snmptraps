@@ -26,6 +26,25 @@ final class UserPresenter
         return "<i class='ti $icon me-1'></i>" . e(self::AUTH_LABELS[$method] ?? $method);
     }
 
+    /** small icons after the authentication method: 2FA, passkeys, passwordless */
+    public static function security(array $u, int $passkeys, bool $required): string
+    {
+        $out = '';
+        $icon = static fn (string $icon, string $color, string $tip): string => " <i class='ti $icon text-$color ms-1' data-toggle='tooltip-nofollow' tippy-title='" . e($tip) . "'></i>";
+        if (trim((string) ($u['totp_secret'] ?? '')) !== '') {
+            $out .= $icon('ti-shield-check', 'green', 'Two-factor authentication active');
+        } elseif ($required && empty($u['passwordless'])) {
+            $out .= $icon('ti-shield-exclamation', 'red', 'Two-factor authentication required, not set up yet');
+        }
+        if ($passkeys > 0) {
+            $out .= $icon('ti-fingerprint', 'azure', $passkeys . ' passkey' . ($passkeys === 1 ? '' : 's'));
+        }
+        if (!empty($u['passwordless'])) {
+            $out .= $icon('ti-lock-password', 'orange', 'Passkey only (passwordless)');
+        }
+        return $out;
+    }
+
     /** "22:00 - 08:00" or null when there is no quiet time */
     public static function quietTime(array $u): ?string
     {

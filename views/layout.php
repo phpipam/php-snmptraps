@@ -12,7 +12,7 @@ $v     = e($app->assetVersion());
 
 // auto reload (seconds) - not on pages where it would interrupt work
 $reload = (int) ($user['reload_page'] ?? 0);
-if (in_array($route, ['settings', 'live', 'search', 'trap', 'message'], true)) {
+if (in_array($route, ['settings', 'live', 'search', 'trap', 'message', 'security'], true)) {
     $reload = 0;
 }
 $paused = ($_COOKIE['stop-refresh'] ?? '') === '1';
@@ -98,6 +98,7 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
                     </div>
                     <div class="dropdown-divider"></div>
                     <a href="ajax/profile/" class="dropdown-item load-modal"><i class="ti ti-user-edit me-2"></i>Profile</a>
+                    <a href="security/" class="dropdown-item<?= $route === 'security' ? ' active' : '' ?>"><i class="ti ti-shield-lock me-2"></i>Security</a>
                     <?php if ($app->auth->isAdmin()): ?>
                     <a href="settings/" class="dropdown-item"><i class="ti ti-settings me-2"></i>Settings</a>
                     <?php endif; ?>
@@ -169,13 +170,14 @@ $nav = static function (string $label, string $icon, string $href, bool $active)
     </div>
 </div>
 
-<script src="js/jquery-3.7.1.min.js"></script>
-<script src="js/popper.min.js"></script>
-<script src="js/tippy-bundle.umd.min.js"></script>
+<script src="js/jquery.min.js?v=<?= $v ?>"></script>
+<script src="js/popper.min.js?v=<?= $v ?>"></script>
+<script src="js/tippy-bundle.umd.min.js?v=<?= $v ?>"></script>
 <!-- Tabler Datepicker / InputMask dependencies (must load before tabler.min.js) -->
 <script src="js/vendor/vanilla-calendar-pro.js?v=<?= $v ?>"></script>
 <script src="js/vendor/imask.min.js?v=<?= $v ?>"></script>
 <script src="js/tabler.min.js?v=<?= $v ?>"></script>
 <script src="js/app.js?v=<?= $v ?>"></script>
+<script src="js/passkey.js?v=<?= $v ?>"></script>
 </body>
 </html>

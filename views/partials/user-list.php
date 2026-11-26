@@ -11,6 +11,8 @@ use Snmptraps\Web\UserPresenter as U;
 
 $enabled = Notifier::enabledMethods($app->config);
 $sevCount = count(Severity::all());
+$mfaReady = $app->schema()->has('1.1.0');
+$passkeyCount = $mfaReady ? array_column($app->db->all('SELECT `user_id`, COUNT(*) AS n FROM `passkeys` GROUP BY `user_id`'), 'n', 'user_id') : [];
 ?>
 <?php if ($rows === []): ?>
 <div class="card-body text-secondary">No users found.</div>
@@ -44,7 +46,7 @@ $sevCount = count(Severity::all());
         </td>
         <td>
             <div><?= U::role((string) $r['role']) ?></div>
-            <div class="small text-secondary mt-1"><?= U::auth((string) $r['auth_method']) ?></div>
+            <div class="small text-secondary mt-1"><?= U::auth((string) $r['auth_method']) ?><?= $mfaReady ? U::security($r, (int) ($passkeyCount[$id] ?? 0), $app->config->require2fa) : '' ?></div>
         </td>
         <td>
             <div><?= $r['email'] ? '<i class="ti ti-mail text-secondary me-1"></i>' . e($r['email']) : '<span class="text-secondary">-</span>' ?></div>

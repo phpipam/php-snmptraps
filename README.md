@@ -11,9 +11,12 @@ Web UI:
 * Traps per host, per severity and per message, live view, search
 * Per-OID severity definitions, ignore rules (exceptions), maintenance windows, MIB import
 * Per-user notification methods, severities, permitted hosts and quiet hours
+* Two-factor authentication (TOTP authenticator apps, optionally required for everyone), passkeys and
+  passkey-only (passwordless) sign-in
 
-Requirements: PHP 8.3 - 8.5 (extensions: pdo_mysql, mbstring, openssl; ldap for AD login), MySQL/MariaDB, net-snmp.
-The curl extension is **not** required.
+Requirements: PHP 8.3 - 8.5 (extensions: pdo, pdo_mysql, mbstring, ctype, filter, json, openssl, session; ldap for AD login),
+MySQL/MariaDB, net-snmp. The curl extension is **not** required. The web UI and `bin/migrate.php` refuse to run while a
+required extension is missing and list the missing ones.
 
 ![Dashboard](docs/screenshots/dashboard.png?raw=true "Dashboard")
 
@@ -30,9 +33,11 @@ bin/           command line scripts:
                  migrate.php          database install / upgrade
                  test-mail.php        send a test notification e-mail
                  rebuild-repeats.php  recalculate repeat counters of stored traps
+                 reset-2fa.php        lock-out recovery: remove a user's 2FA / passkeys
+                 assets.php           copy front-end files from vendor/npm-asset/ to public/ (composer)
 src/           application classes (namespace Snmptraps\)
 views/         HTML templates
-vendor/        PHPMailer
+vendor/        PHP libraries and front-end packages, managed with Composer (committed - no composer run needed to install)
 db/            SCHEMA.sql (fresh install), migrations/ (upgrades) - used by bin/migrate.php
 docs/          screenshots
 config.php     configuration (copy of config.dist.php, not in git)
@@ -128,6 +133,47 @@ All commands are run from the application directory (e.g. `/usr/local/www/snmptr
 
 7. Log in with **Admin / snmptraps**, change the password and set your e-mail and notification options
    in the profile. Then send a test trap and a test e-mail (see [Testing](#testing)).
+
+
+## Two-factor authentication and passkeys
+
+Every user can set up an authenticator app (TOTP: Google / Microsoft Authenticator, Authy, 1Password, ...) and
+passkeys under **Security** in the user menu.
+
+* **Authenticator app** - signing in with a password additionally asks for the 6-digit code.
+  `$require_2fa = true;` in `config.php` makes it mandatory: users without one are guided through the setup
+  (QR code) right after entering their password.
+* **Passkeys** - sign in with fingerprint, face, device PIN or a security key; no password and no code.
+  Passkeys require **HTTPS** and a **host name** (they are bound to it; not available on a bare IP address,
+  `http://localhost` works for testing). Optional `$passkey_rp_id` binds them to a parent domain.
+* **Passkey only (passwordless)** - a user who has signed in with a passkey once can turn off the password
+  sign-in for the account. Administrators can turn it off again on the user details page.
+
+Administrators see the state per user (icons in the user list, details page) and can reset the authenticator
+app, remove passkeys and allow the password again. Locked out completely (e.g. the only administrator lost
+the phone)? On the server:
+
+```
+php bin/reset-2fa.php <username>               # remove TOTP, allow password sign-in
+php bin/reset-2fa.php <username> --passkeys    # ... and remove all passkeys
+php bin/reset-2fa.php <username> --password    # ... and set a new password (local users)
+```
+
+
+## Dependencies (Composer)
+
+`vendor/` and the front-end files in `public/` are committed, so installing from git needs no Composer.
+Maintainers update them with Composer (PHP libraries from Packagist; Tabler, Tabler Icons, jQuery, Popper,
+tippy.js, IMask and vanilla-calendar-pro as npm tarballs declared in `composer.json` - no npm needed):
+
+```
+composer update                 # or: composer install
+```
+
+`bin/assets.php` runs afterwards and copies the files listed in `extra.assets` of `composer.json` (plus the
+icon fonts referenced by the CSS) to `public/`. To upgrade a front-end package, change its version, tarball URL
+and `shasum` (from `https://registry.npmjs.org/<package>/<version>`) in `composer.json`. The platform is pinned
+to PHP 8.3 (`config.platform`), so updates stay compatible with the minimum PHP version.
 
 
 ## Upgrading

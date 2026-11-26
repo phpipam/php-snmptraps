@@ -40,6 +40,10 @@ final class Config
     public readonly int $repeatWindowMinutes;
     /** $screenshot_mode = true in config.php: mask hostnames / IPs in the UI for every user (not in config.dist.php) */
     public readonly bool $screenshotMode;
+    /** $require_2fa: users who sign in with a password must use a TOTP code (set up on their next login) */
+    public readonly bool $require2fa;
+    /** $passkey_rp_id: WebAuthn relying party id (host name the UI is reached by); null = host of the request */
+    public readonly ?string $passkeyRpId;
 
     private function __construct(array $c)
     {
@@ -85,6 +89,9 @@ final class Config
         $this->notificationDedupMinutes = max(0, (int) ($c['notification_dedup_minutes'] ?? 15));
         $this->repeatWindowMinutes      = max(0, (int) ($c['repeat_window_minutes'] ?? 10));
         $this->screenshotMode           = (bool) ($c['screenshot_mode'] ?? false);
+        $this->require2fa               = (bool) ($c['require_2fa'] ?? false);
+        $rp = strtolower(trim((string) ($c['passkey_rp_id'] ?? '')));
+        $this->passkeyRpId              = $rp === '' ? null : $rp;
     }
 
     public static function load(string $file): self

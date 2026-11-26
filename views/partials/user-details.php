@@ -6,6 +6,7 @@
  * @var array $user
  * @var list<string> $methods     notification methods enabled in config.php
  * @var array<string, array{width:int, rows:int}> $dashboard
+ * @var array{ready:bool, totp:bool, passkeys:list<array>} $security
  */
 use Snmptraps\Severity;
 use Snmptraps\Web\UserPresenter as U;
@@ -58,6 +59,27 @@ foreach (Severity::GROUPS as $g => $def) {
                 'Severities' => $sevHtml,
                 'Quiet time' => U::quietBadge($user) . '<div class="small text-secondary mt-1">No notifications are sent between start and stop (also across midnight).</div>',
             ]) ?>
+            <?php if ($security['ready']):
+                $uid = (int) $user['id'];
+                $act = static fn (string $action, string $label, string $icon, int $pk = 0): string => '<a class="btn btn-sm btn-ghost-danger ms-2 py-0 load-modal" href="ajax/user-security/?id=' . $uid . '&amp;action=' . $action . ($pk ? '&amp;pk=' . $pk : '') . '">'
+                    . '<i class="ti ' . $icon . ' me-1"></i>' . e($label) . '</a>';
+                $required = $app->config->require2fa && empty($user['passwordless']);
+                $pkHtml = '';
+                foreach ($security['passkeys'] as $pk) {
+                    $pkHtml .= '<div class="d-flex align-items-center mb-1"><span class="badge badge-outline text-secondary"><i class="ti ti-key me-1"></i>' . e($pk['name']) . '</span>'
+                        . '<span class="small text-secondary ms-2">used ' . e($pk['last_used'] ? date('d.m.Y H:i', (int) strtotime((string) $pk['last_used'])) : 'never') . '</span>'
+                        . $act('delete-passkey', 'Remove', 'ti-trash', (int) $pk['id']) . '</div>';
+                } ?>
+            <?= $section('ti-shield-lock', 'Sign-in security', [
+                'Two-factor' => ($security['totp']
+                        ? '<span class="badge badge-outline text-green"><i class="ti ti-check me-1"></i>authenticator app</span>' . $act('reset-totp', 'Reset', 'ti-refresh')
+                        : '<span class="badge badge-outline ' . ($required ? 'text-red' : 'text-secondary') . '">' . ($required ? 'required - set up at next sign-in' : 'off') . '</span>'),
+                'Passkeys'   => ($pkHtml !== '' ? $pkHtml . (count($security['passkeys']) > 1 ? '<div>' . $act('delete-passkeys', 'Remove all', 'ti-trash-x') . '</div>' : '') : '<span class="text-secondary">none</span>'),
+                'Password'   => !empty($user['passwordless'])
+                        ? '<span class="badge badge-outline text-orange">passkey only (passwordless)</span>' . $act('passwordless-off', 'Allow password', 'ti-lock-open')
+                        : '<span class="text-secondary">allowed</span>' . ($security['passkeys'] !== [] ? $act('passwordless-on', 'Passkey only', 'ti-lock-password') : ''),
+            ]) ?>
+            <?php endif; ?>
             <?= $section('ti-server', 'Permitted hosts', []) ?>
             <?php if (U::allHosts($user)): ?>
             <div class="text-secondary">All hosts<?= $user['role'] === 'administrator' ? ' (administrator)' : '' ?></div>

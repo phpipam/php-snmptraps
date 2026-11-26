@@ -123,7 +123,7 @@ $listValue = static function (mixed $v): string {
         </div>
 
 <?php elseif ($user !== null):
-    echo $app->view->render('partials/user-details', ['user' => $user, 'methods' => $methods, 'dashboard' => $dashboard]); ?>
+    echo $app->view->render('partials/user-details', ['user' => $user, 'methods' => $methods, 'dashboard' => $dashboard, 'security' => $security]); ?>
 
 <?php elseif ($page === 'users'):
     echo $app->view->render('partials/user-list', ['rows' => $rows]); ?>

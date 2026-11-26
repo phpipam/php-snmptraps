@@ -20,6 +20,7 @@
 declare(strict_types=1);
 
 use Snmptraps\Database;
+use Snmptraps\Requirements;
 use Snmptraps\Schema;
 
 if (PHP_SAPI !== 'cli') {
@@ -37,6 +38,20 @@ $assumeYes = isset($opts['yes']) || isset($opts['y']);
 
 $root = dirname(__DIR__);
 $config = require $root . '/src/bootstrap.php';
+
+// ---- PHP extensions (of this CLI PHP; php-fpm may load a different set, the web UI checks its own)
+$missing = Requirements::missing(false);
+if ($missing !== []) {
+    fwrite(STDERR, 'ERROR: missing PHP extensions (' . PHP_BINARY . ' ' . PHP_VERSION . '):' . PHP_EOL);
+    foreach ($missing as $ext => $why) {
+        fwrite(STDERR, sprintf('  %-10s %s', $ext, $why) . PHP_EOL);
+    }
+    exit(2);
+}
+foreach (Requirements::missingOptional() as $ext => $why) {
+    fwrite(STDOUT, "warning: optional PHP extension $ext is not loaded - $why will not work" . PHP_EOL);
+}
+
 $db = Database::fromConfig($config);
 $schema = new Schema($db, $config->db['name']);
 $dir = $root . '/db/migrations/';

@@ -1,4 +1,4 @@
--- php-snmptraps database schema (version 1.0.3)
+-- php-snmptraps database schema (version 1.1.0)
 --
 -- Fresh install:
 --   mysql -u root -p -e "CREATE DATABASE snmptraps CHARACTER SET utf8mb3;"
@@ -147,9 +147,31 @@ CREATE TABLE `users` (
   `reload_page` int(11) DEFAULT 900,
   `dash_layout` varchar(128) DEFAULT '6:20;6:20;12:15;12:15',
   `hostnames` text NOT NULL DEFAULT 'all',
+  `totp_secret` varchar(64) DEFAULT NULL,
+  `totp_last_step` int(10) unsigned DEFAULT NULL,
+  `passwordless` tinyint(1) NOT NULL DEFAULT 0,
+  `webauthn_handle` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+
+-- Passkeys (WebAuthn credentials) of users
+DROP TABLE IF EXISTS `passkeys`;
+CREATE TABLE `passkeys` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `credential_id` varbinary(1023) NOT NULL,
+  `public_key` text NOT NULL,
+  `sign_count` int(10) unsigned NOT NULL DEFAULT 0,
+  `aaguid` char(36) DEFAULT NULL,
+  `synced` tinyint(1) NOT NULL DEFAULT 0,
+  `name` varchar(64) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_used` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `credential_id` (`credential_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Admin / snmptraps (legacy SHA-512 crypt hash, upgraded automatically on first login)
 INSERT INTO `users` (`id`, `username`, `real_name`, `auth_method`, `password`, `role`, `email`, `notification_types`, `notification_severities`, `hostnames`)
