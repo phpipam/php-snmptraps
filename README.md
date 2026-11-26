@@ -96,6 +96,24 @@ All commands are run from the application directory (e.g. `/usr/local/www/snmptr
 3. **Configuration**: `cp config.dist.php config.php` and edit it - at least `$db`, `BASE` (web path, e.g. `/snmptraps/`),
    `$url` (links in notifications), `$notification_methods` / `$notification_params` and `$filename` (log file).
 
+   **MIB files** (trap descriptions and the MIB import under Settings) are read from `/usr/local/share/snmp/mibs/`
+   if it exists, otherwise from `/usr/share/snmp/mibs/`. `$mib_directory` changes this; it takes one directory or
+   a list:
+
+   ```php
+   $mib_directory = array(
+       "/usr/share/snmp/mibs-custom/",   // own MIBs
+       "/usr/share/snmp/mibs/",
+       "/usr/share/snmp/mibs/ietf/",     // Debian: snmp-mibs-downloader
+       "/usr/share/snmp/mibs/iana/",
+   );
+   ```
+
+   Subdirectories are not searched, so list each one. If a file name exists in several directories, the first one
+   wins. Accepted are `.mib`, `.my` and `.txt` files and files without an extension; the web server user must be
+   able to read them. This setting does not affect how `snmptrapd` translates OIDs (`mibdirs` / `mibs` in
+   `snmp.conf`).
+
 4. **Schema** - loads `db/SCHEMA.sql` into the empty database, using the credentials from `config.php`:
 
    ```
